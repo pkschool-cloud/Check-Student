@@ -69,12 +69,15 @@
             fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'login', username: user, password: pass}) })
             .then(res => res.json())
             .then(data => {
-                if (data.status === 'success') {
+            if (data.status === 'success') {
                     // 1. เก็บข้อมูลลงเครื่อง
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('tName', data.name);
                     localStorage.setItem('tRole', data.role);
                     localStorage.setItem('tGrade', data.grade);
+                    
+                    localStorage.setItem('tPassword', pass); // 👈 เพิ่มบรรทัดนี้ลงไป เพื่อจำรหัสผ่าน
+
                     const pic = data.photoUrl || `https://ui-avatars.com/api/?name=${data.name}&background=0D9488&color=fff&size=200`;
                     localStorage.setItem('tPhoto', pic);
 
