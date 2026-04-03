@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PK School - Dashboard</title>
+    <title>PK School - Premium Dashboard</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -13,83 +13,102 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style> 
-        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; overflow: hidden; }
-        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
-        .tab-content.active { display: block; opacity: 1; animation: fadeUp 0.4s ease-out forwards; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        body { font-family: 'Prompt', sans-serif; background-color: #f4f7fe; overflow: hidden; }
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .tab-content.active { display: block; opacity: 1; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
         #pdf-container { position: absolute; left: -9999px; top: -9999px; width: 800px; background: white; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        
+        /* Premium Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Modern Switch */
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+
+        /* Toast Animation */
+        @keyframes toastEnter { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastLeave { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(50px); } }
+        .toast-enter { animation: toastEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .toast-leave { animation: toastLeave 0.4s ease-in forwards; }
     </style>
 </head>
-<body class="flex h-screen w-full text-slate-800">
+<body class="flex h-screen w-full text-slate-700">
 
-    <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col h-full flex-shrink-0 shadow-xl z-20">
-        <div class="p-8 border-b border-slate-800 flex flex-col items-center relative">
-            <button onclick="openPwdModal()" class="absolute top-4 left-4 text-slate-500 hover:text-white bg-slate-800 hover:bg-slate-700 p-2 rounded-lg transition-all" title="เปลี่ยนรหัสผ่าน">
+    <div id="toastContainer" class="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <aside class="w-[280px] bg-white border-r border-slate-100 flex flex-col h-full flex-shrink-0 z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative">
+        <div class="p-8 pb-6 flex flex-col items-center relative border-b border-slate-50">
+            <button onclick="openPwdModal()" class="absolute top-4 left-4 text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="เปลี่ยนรหัสผ่าน">
                 <i class="fa-solid fa-key"></i>
             </button>
-            <div class="w-24 h-24 rounded-full border-4 border-blue-500 overflow-hidden mb-4 shadow-lg bg-white">
-                <img id="sidebarPhoto" src="" class="w-full h-full object-cover">
+            <div class="w-24 h-24 rounded-full border-[3px] border-blue-100 p-1 mb-4">
+                <img id="sidebarPhoto" src="" class="w-full h-full object-cover rounded-full shadow-sm">
             </div>
-            <h2 class="text-xl font-bold text-white" id="sidebarName">...</h2>
-            <p class="text-xs text-blue-300 bg-blue-500/10 px-3 py-1.5 rounded-full mt-2 font-medium" id="sidebarRole">...</p>
+            <h2 class="text-xl font-bold text-slate-800" id="sidebarName">...</h2>
+            <p class="text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg mt-2 font-semibold tracking-wide" id="sidebarRole">...</p>
         </div>
 
-        <div id="adminFilterContainer" class="p-5 border-b border-slate-800 hidden bg-slate-800/50">
-            <label class="text-xs text-slate-400 font-semibold mb-2 block"><i class="fa-solid fa-filter mr-1"></i> มุมมองแอดมิน</label>
-            <select id="adminGradeSelect" onchange="changeAdminView()" class="w-full bg-slate-900 text-white border border-slate-700 rounded-xl p-2.5 text-sm outline-none focus:border-blue-500">
-                <option value="All">ดูภาพรวมทุกระดับชั้น</option>
-                <option value="ป.1">เฉพาะ ป.1</option>
-                <option value="ป.2">เฉพาะ ป.2</option>
-                <option value="ป.3">เฉพาะ ป.3</option>
-                <option value="ป.4">เฉพาะ ป.4</option>
-                <option value="ป.5">เฉพาะ ป.5</option>
-                <option value="ป.6">เฉพาะ ป.6</option>
-            </select>
+        <div id="adminFilterContainer" class="p-5 border-b border-slate-50 hidden bg-slate-50/50">
+            <label class="text-xs text-slate-500 font-bold mb-2 block uppercase tracking-wider"><i class="fa-solid fa-filter mr-1"></i> มุมมองแอดมิน</label>
+            <div class="relative">
+                <select id="adminGradeSelect" onchange="changeAdminView()" class="w-full bg-white border border-slate-200 text-slate-700 rounded-xl p-3 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 appearance-none shadow-sm cursor-pointer transition-all">
+                    <option value="All">ดูภาพรวมทุกระดับชั้น</option>
+                    <option value="ป.1">เฉพาะ ป.1</option>
+                    <option value="ป.2">เฉพาะ ป.2</option>
+                    <option value="ป.3">เฉพาะ ป.3</option>
+                    <option value="ป.4">เฉพาะ ป.4</option>
+                    <option value="ป.5">เฉพาะ ป.5</option>
+                    <option value="ป.6">เฉพาะ ป.6</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+            </div>
         </div>
         
         <div class="p-5 overflow-y-auto flex-1 custom-scroll">
-            <p class="text-xs text-slate-500 font-semibold uppercase tracking-widest mb-3 px-2">เมนูระบบ</p>
-            <nav class="space-y-2" id="nav-menu">
-                <button onclick="switchTab('checkin', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-blue-600 text-white rounded-2xl transition font-medium shadow-md">
-                    <i class="fa-solid fa-qrcode w-5 text-lg"></i><span>ระบบสแกนเช็คชื่อ</span>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3 px-3">เมนูระบบ</p>
+            <nav class="space-y-1.5" id="nav-menu">
+                <button onclick="switchTab('checkin', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-blue-600 text-white rounded-2xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.2)] font-semibold">
+                    <i class="fa-solid fa-qrcode w-5 text-lg"></i><span>สแกนเช็คชื่อ</span>
                 </button>
-                <button onclick="switchTab('manual', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl transition font-medium">
+                <button onclick="switchTab('manual', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-semibold">
                     <i class="fa-solid fa-user-check w-5 text-lg"></i><span>ครูเช็คชื่อแทน</span>
                 </button>
-                <button onclick="switchTab('verify', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl transition font-medium">
+                <button onclick="switchTab('verify', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-semibold">
                     <i class="fa-solid fa-clipboard-check w-5 text-lg"></i><span id="navVerifyText">ตรวจสอบวันนี้</span>
                 </button>
-                <button onclick="switchTab('history', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl transition font-medium">
+                <button onclick="switchTab('history', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-semibold">
                     <i class="fa-solid fa-clock-rotate-left w-5 text-lg"></i><span>ประวัติย้อนหลัง</span>
                 </button>
-                <button onclick="switchTab('random', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-400 hover:bg-slate-800 hover:text-orange-300 rounded-2xl transition font-medium">
+                <button onclick="switchTab('random', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-2xl transition-all font-semibold">
                     <i class="fa-solid fa-dice w-5 text-lg"></i><span>สุ่มชื่อนักเรียน</span>
                 </button>
-                <button onclick="switchTab('export', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl transition font-medium">
-                    <i class="fa-solid fa-file-pdf w-5 text-lg"></i><span>ส่งออก PDF</span>
+                <button onclick="switchTab('export', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-semibold">
+                    <i class="fa-solid fa-file-pdf w-5 text-lg"></i><span>ส่งออกเอกสาร</span>
                 </button>
             </nav>
         </div>
-        <div class="p-5 border-t border-slate-800">
-            <button onclick="logout()" class="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white py-3 rounded-xl transition font-semibold flex items-center justify-center space-x-2">
+        <div class="p-5 border-t border-slate-50">
+            <button onclick="logout()" class="w-full bg-red-50 hover:bg-red-500 text-red-500 hover:text-white py-3.5 rounded-2xl transition-all font-bold flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-power-off"></i><span>ออกจากระบบ</span>
             </button>
         </div>
     </aside>
 
-    <main class="flex-1 h-full overflow-y-auto relative bg-slate-50 scroll-smooth">
-        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 px-8 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 text-white p-2 rounded-lg shadow-sm"><i class="fa-solid fa-school"></i></div>
-                <h1 class="text-xl font-bold text-slate-800 tracking-tight">PK School</h1>
+    <main class="flex-1 h-full overflow-y-auto relative scroll-smooth bg-[#f4f7fe]">
+        
+        <header class="bg-white/70 backdrop-blur-xl sticky top-0 z-20 px-10 py-5 flex justify-between items-center shadow-[0_2px_20px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center space-x-4">
+                <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-school text-lg"></i>
+                </div>
+                <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">PK School</h1>
             </div>
-            <div id="checkinContextBadge" class="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-1.5 rounded-full text-sm font-bold flex items-center shadow-sm">
+            <div id="checkinContextBadge" class="bg-indigo-50 text-indigo-600 border border-indigo-100 px-4 py-2 rounded-xl text-sm font-bold flex items-center shadow-sm">
                 <i class="fa-solid fa-layer-group mr-2"></i> <span>กำลังโหลด...</span>
             </div>
         </header>
@@ -97,24 +116,24 @@
         <div class="p-8 pb-32 max-w-7xl mx-auto">
             
             <section id="checkin" class="tab-content active max-w-3xl mx-auto">
-                <div class="text-center mb-8">
-                    <h2 class="text-4xl font-bold text-slate-800 mb-2">สแกนรหัสเช็คชื่อ</h2>
-                    <p class="text-slate-500">ระบบป้องกันการเช็คชื่อข้ามชั้นเรียน และตรวจสอบการเข้าซ้ำ</p>
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-extrabold text-slate-800 mb-3">สแกนรหัสเช็คชื่อ</h2>
+                    <p class="text-slate-500 text-lg">ระบบป้องกันการข้ามชั้นเรียน และตรวจสอบการเข้าซ้ำอัตโนมัติ</p>
                 </div>
                 
-                <div class="bg-white p-10 rounded-[2rem] shadow-sm border border-slate-200 mb-10 text-center relative overflow-hidden">
-                    <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500">
-                        <i class="fa-solid fa-barcode text-3xl"></i>
+                <div class="bg-white p-12 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-10 text-center relative border border-slate-100">
+                    <div class="w-24 h-24 bg-blue-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-blue-500 shadow-inner">
+                        <i class="fa-solid fa-barcode text-4xl"></i>
                     </div>
                     <input type="text" id="studentInput" autofocus autocomplete="off"
-                        class="w-full max-w-md mx-auto text-center px-6 py-5 text-3xl font-bold bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:text-xl"
+                        class="w-full max-w-md mx-auto text-center px-6 py-5 text-3xl font-bold bg-slate-50 border-2 border-slate-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:text-xl shadow-sm"
                         placeholder="กรอกรหัสแล้วกด Enter...">
                     <div id="checkinStatus" class="mt-6 font-medium h-6"></div>
                 </div>
 
-                <div id="studentCard" class="hidden bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden transition-all">
-                    <div class="p-8 sm:p-10 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative">
-                        <div class="w-32 h-32 rounded-full border-4 border-slate-50 shadow-md overflow-hidden bg-white flex-shrink-0">
+                <div id="studentCard" class="hidden bg-white rounded-[2.5rem] shadow-[0_10px_40px_rgb(0,0,0,0.08)] border border-slate-100 overflow-hidden transition-all">
+                    <div class="p-10 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative">
+                        <div class="w-36 h-36 rounded-full border-[6px] border-slate-50 shadow-md overflow-hidden bg-white flex-shrink-0">
                             <img id="studentPhotoCard" src="" class="w-full h-full object-cover">
                         </div>
                         <div class="flex-1 text-center sm:text-left w-full mt-2">
@@ -122,11 +141,11 @@
                             <h3 id="studentName" class="text-3xl font-bold text-slate-800 mb-2">-</h3>
                             <p class="text-slate-500 font-medium mb-6">รหัสประจำตัว: <span id="studentIdDisplay" class="text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-lg">-</span></p>
                             <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100">
                                     <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">ระดับชั้น</p>
                                     <p id="studentGrade" class="text-xl font-bold text-slate-700">-</p>
                                 </div>
-                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100">
                                     <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">เวลาเข้าเรียน</p>
                                     <p id="studentTime" class="text-xl font-bold text-blue-600">-</p>
                                 </div>
@@ -136,138 +155,150 @@
                 </div>
             </section>
 
-            <section id="manual" class="tab-content">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                    <div>
-                        <h2 class="text-3xl font-bold text-slate-800 mb-2">เช็คชื่อด้วยตนเอง</h2>
-                        <p class="text-slate-500">ระบบจะ <span class="text-orange-500 font-bold">แอบบันทึกอัตโนมัติภายใน 2 วินาที</span> หากไม่มีการคลิกเพิ่ม</p>
-                    </div>
-                    <div id="manualSaveIndicator" class="flex items-center text-sm font-semibold bg-slate-100 text-slate-500 px-5 py-3 rounded-xl border border-slate-200 mt-6 md:mt-0 transition-all">
-                        <i class="fa-solid fa-cloud mr-2"></i> ข้อมูลเชื่อมต่อกันแล้ว
-                    </div>
+            <section id="manual" class="tab-content relative">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold text-slate-800 mb-2">เช็คชื่อด้วยตนเอง</h2>
+                    <p class="text-slate-500">ตรวจสอบและแก้ไขประวัติ ค่าเริ่มต้นของนักเรียนที่ยังไม่สแกนคือ "ขาด/ลา"</p>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row items-center gap-4">
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row items-center gap-4">
                     <div class="flex-1 w-full max-w-sm">
-                        <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-regular fa-calendar-check text-emerald-500 mr-2"></i>เลือกวันที่ต้องการเช็คชื่อ:</label>
-                        <input type="date" id="manualDate" onchange="renderManualTable()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium">
+                        <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-regular fa-calendar-check text-blue-500 mr-2"></i>เลือกวันที่ต้องการเช็ค:</label>
+                        <input type="date" id="manualDate" onchange="renderManualTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-slate-700">
                     </div>
-                    <div class="flex items-center text-sm font-semibold bg-emerald-50 text-emerald-600 px-5 py-3 rounded-xl border border-emerald-200 mt-6 md:mt-0">
-                        <i class="fa-solid fa-rotate mr-2"></i> หากนักเรียนสแกนด้านหน้า สวิตช์จะเปิดให้เอง
+                    <div class="flex items-center text-sm font-medium bg-amber-50 text-amber-600 px-5 py-4 rounded-xl border border-amber-100 mt-6 md:mt-0">
+                        <i class="fa-solid fa-circle-info mr-3 text-lg"></i> การแก้ไขในหน้านี้ จะไม่ลบเวลาที่นักเรียนเคยสแกนไว้จริง
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
+                <div class="bg-white rounded-[2rem] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100 overflow-hidden pb-24">
+                    <div class="overflow-x-auto p-2">
                         <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
-                                    <th class="py-4 px-6 font-semibold uppercase text-center w-20">ลำดับ</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">รหัส</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">ชื่อ-นามสกุล</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">ชั้นเรียน</th>
-                                    <th class="py-4 px-6 font-semibold uppercase text-center w-40">สถานะ</th>
+                                <tr class="text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-5 px-6 font-bold text-center w-20">ลำดับ</th>
+                                    <th class="py-5 px-6 font-bold">รหัส</th>
+                                    <th class="py-5 px-6 font-bold">ชื่อ-นามสกุล</th>
+                                    <th class="py-5 px-6 font-bold">ชั้นเรียน</th>
+                                    <th class="py-5 px-6 font-bold text-center w-48">สถานะเข้าเรียน</th>
                                 </tr>
                             </thead>
-                            <tbody id="manualTableBody" class="text-slate-700 divide-y divide-slate-100">
-                                <tr><td colspan="5" class="text-center py-10 text-slate-400">กรุณารอโหลดข้อมูล...</td></tr>
+                            <tbody id="manualTableBody" class="text-slate-600 font-medium divide-y divide-slate-50">
+                                <tr><td colspan="5" class="text-center py-16 text-slate-400">กรุณารอโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 ml-[140px] z-40 bg-white/90 backdrop-blur-lg px-8 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-200 flex items-center gap-6 pointer-events-none opacity-0 transition-all duration-300 translate-y-10" id="manualActionBar">
+                    <span class="text-sm font-bold text-orange-500 pointer-events-auto"><i class="fa-solid fa-pen mr-2"></i>มีการเปลี่ยนแปลงข้อมูล</span>
+                    <button onclick="saveManualSync()" id="btnSaveManual" class="pointer-events-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-1">
+                        บันทึกข้อมูล
+                    </button>
                 </div>
             </section>
 
             <section id="verify" class="tab-content">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                     <div>
-                        <h2 class="text-3xl font-bold text-slate-800 mb-2">ข้อมูลการเข้าเรียน (วันนี้)</h2>
-                        <p class="text-slate-500">ระบบสรุปยอดผู้ป่วย/ขาดเรียนอัตโนมัติหลัง 10:00 น. (จ-ศ)</p>
+                        <h2 class="text-3xl font-extrabold text-slate-800 mb-2">สรุปการเข้าเรียน (วันนี้)</h2>
+                        <p class="text-slate-500">ระบบประมวลผลยอดขาด/ป่วยอัตโนมัติ</p>
                     </div>
-                    <div id="verifyStatus" class="bg-white border border-slate-200 px-4 py-2 rounded-full text-sm font-semibold text-slate-500 shadow-sm"></div>
+                    <button onclick="loadRecords()" class="bg-white border border-slate-200 hover:bg-slate-50 px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 shadow-sm transition-all flex items-center">
+                        <i class="fa-solid fa-rotate-right text-blue-500 mr-2"></i> โหลดข้อมูลล่าสุด
+                    </button>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center justify-center relative">
-                        <h3 class="text-sm font-bold text-slate-400 absolute top-6 left-6 uppercase">ภาพรวม</h3>
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center relative">
+                        <h3 class="text-xs font-bold text-slate-400 absolute top-6 left-6 uppercase tracking-widest">อัตราส่วน</h3>
                         <div class="w-40 h-40 relative mt-4"><canvas id="todayChart"></canvas></div>
                     </div>
                     <div class="lg:col-span-2 grid grid-cols-2 gap-4">
-                        <div class="bg-blue-600 p-6 rounded-3xl shadow-sm text-white flex flex-col justify-center">
-                            <p class="text-blue-200 font-medium mb-1"><i class="fa-solid fa-users mr-2"></i>นักเรียนทั้งหมด</p>
-                            <p id="todayTotal" class="text-5xl font-bold">0</p>
+                        <div class="bg-slate-800 p-8 rounded-[2rem] shadow-sm text-white flex flex-col justify-center relative overflow-hidden">
+                            <i class="fa-solid fa-users absolute -right-4 -bottom-4 text-7xl text-white/10"></i>
+                            <p class="text-slate-400 font-bold mb-1 text-sm uppercase tracking-wider">นักเรียนทั้งหมด</p>
+                            <p id="todayTotal" class="text-5xl font-black mt-2">0</p>
                         </div>
-                        <div class="bg-emerald-500 p-6 rounded-3xl shadow-sm text-white flex flex-col justify-center">
-                            <p class="text-emerald-100 font-medium mb-1"><i class="fa-solid fa-check-double mr-2"></i>มาเรียนแล้ว</p>
-                            <p id="todayPresent" class="text-5xl font-bold">0</p>
+                        <div class="bg-emerald-500 p-8 rounded-[2rem] shadow-sm text-white flex flex-col justify-center relative overflow-hidden">
+                            <i class="fa-solid fa-check-double absolute -right-4 -bottom-4 text-7xl text-white/20"></i>
+                            <p class="text-emerald-100 font-bold mb-1 text-sm uppercase tracking-wider">มาเรียนแล้ว</p>
+                            <p id="todayPresent" class="text-5xl font-black mt-2">0</p>
                         </div>
-                        <div class="bg-orange-500 p-6 rounded-3xl shadow-sm text-white flex flex-col justify-center col-span-2">
-                            <p class="text-orange-100 font-medium mb-1"><i class="fa-solid fa-virus mr-2"></i>ขาด / ป่วย (คำนวณอัตโนมัติ)</p>
-                            <p id="todayAbsent" class="text-5xl font-bold">0</p>
+                        <div class="bg-orange-500 p-8 rounded-[2rem] shadow-sm text-white flex flex-col justify-center col-span-2 relative overflow-hidden">
+                            <i class="fa-solid fa-virus absolute -right-2 -bottom-6 text-8xl text-white/20"></i>
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-orange-100 font-bold mb-1 text-sm uppercase tracking-wider">ขาด / ป่วย</p>
+                                    <p id="todayAbsent" class="text-5xl font-black mt-2">0</p>
+                                </div>
+                                <span class="bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg font-bold backdrop-blur-sm">อัปเดตอัตโนมัติ</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
+                <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto p-2">
                         <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
-                                    <th class="py-4 px-6 font-semibold uppercase">เวลาที่สแกน</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">รหัส</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">ชื่อ-นามสกุล</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">ชั้นเรียน</th>
-                                    <th class="py-4 px-6 font-semibold uppercase text-center">ลบ</th>
+                                <tr class="text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-5 px-6 font-bold">เวลาที่สแกน</th>
+                                    <th class="py-5 px-6 font-bold">รหัส</th>
+                                    <th class="py-5 px-6 font-bold">ชื่อ-นามสกุล</th>
+                                    <th class="py-5 px-6 font-bold">ชั้นเรียน</th>
+                                    <th class="py-5 px-6 font-bold text-center">จัดการ</th>
                                 </tr>
                             </thead>
-                            <tbody id="todayTableBody" class="text-slate-700 divide-y divide-slate-100"></tbody>
+                            <tbody id="todayTableBody" class="text-slate-600 font-medium divide-y divide-slate-50"></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
             <section id="history" class="tab-content">
-                <h2 class="text-3xl font-bold text-slate-800 mb-2">ประวัติย้อนหลัง</h2>
-                <p class="text-slate-500 mb-8">ค้นหาและดูสถิติการเข้าเรียนในวันต่างๆ ที่ผ่านมา</p>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-2">ประวัติย้อนหลัง</h2>
+                <p class="text-slate-500 mb-8">ค้นหาและดูสถิติการเข้าเรียนในอดีต</p>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row items-center gap-4">
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row items-center gap-4">
                     <div class="flex-1 w-full">
-                        <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-regular fa-calendar-days text-blue-500 mr-2"></i>เลือกวันที่ต้องการดู:</label>
-                        <input type="date" id="historyDate" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-regular fa-calendar-days text-blue-500 mr-2"></i>เลือกวันที่ต้องการดู:</label>
+                        <input type="date" id="historyDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700">
                     </div>
-                    <button onclick="renderHistory()" class="w-full md:w-auto mt-6 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-md transition-all">
-                        ค้นหาข้อมูล
+                    <button onclick="renderHistory()" class="w-full md:w-auto mt-6 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold shadow-md transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-magnifying-glass mr-2"></i> ค้นหาข้อมูล
                     </button>
                 </div>
 
                 <div id="historyStats" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 hidden">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center">
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center">
                         <div class="w-32 h-32 relative"><canvas id="historyChart"></canvas></div>
                     </div>
                     <div class="md:col-span-2 grid grid-cols-2 gap-4">
-                         <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex flex-col justify-center items-center">
-                             <p class="text-emerald-600 font-bold mb-1">มาเรียน</p>
-                             <p id="historyPresent" class="text-4xl font-bold text-emerald-900">0</p>
+                         <div class="bg-emerald-50 p-8 rounded-[2rem] border border-emerald-100 flex flex-col justify-center items-center">
+                             <p class="text-emerald-600 font-bold text-sm uppercase tracking-widest mb-2">มาเรียน</p>
+                             <p id="historyPresent" class="text-5xl font-black text-emerald-700">0</p>
                          </div>
-                         <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100 flex flex-col justify-center items-center">
-                             <p class="text-orange-600 font-bold mb-1">ขาด/ป่วย</p>
-                             <p id="historyAbsent" class="text-4xl font-bold text-orange-900">0</p>
+                         <div class="bg-orange-50 p-8 rounded-[2rem] border border-orange-100 flex flex-col justify-center items-center">
+                             <p class="text-orange-600 font-bold text-sm uppercase tracking-widest mb-2">ขาด/ป่วย</p>
+                             <p id="historyAbsent" class="text-5xl font-black text-orange-700">0</p>
                          </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
+                <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto p-2">
                         <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
-                                    <th class="py-4 px-6 font-semibold uppercase">เวลา</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">รหัส</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">ชื่อ-สกุล</th>
-                                    <th class="py-4 px-6 font-semibold uppercase">ชั้นเรียน</th>
-                                    <th class="py-4 px-6 font-semibold uppercase text-center">ลบ</th>
+                                <tr class="text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-5 px-6 font-bold">เวลา</th>
+                                    <th class="py-5 px-6 font-bold">รหัส</th>
+                                    <th class="py-5 px-6 font-bold">ชื่อ-สกุล</th>
+                                    <th class="py-5 px-6 font-bold">ชั้นเรียน</th>
+                                    <th class="py-5 px-6 font-bold text-center">ลบ</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyTableBody" class="text-slate-700 divide-y divide-slate-100"></tbody>
+                            <tbody id="historyTableBody" class="text-slate-600 font-medium divide-y divide-slate-50"></tbody>
                         </table>
                     </div>
                 </div>
@@ -275,95 +306,93 @@
 
             <section id="random" class="tab-content">
                 <div class="text-center mb-10">
-                    <h2 class="text-4xl font-bold text-orange-500 mb-3">สุ่มผู้โชคดีประจำวัน</h2>
-                    <p class="text-slate-500 text-lg">สุ่มเลือกเฉพาะนักเรียนที่ "มาเรียน" ในวันนี้เท่านั้น</p>
+                    <h2 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-500 mb-3">สุ่มผู้โชคดีประจำวัน</h2>
+                    <p class="text-slate-500 text-lg">สุ่มเลือกจากนักเรียนที่ลงชื่อ "มาเรียน" ในวันนี้</p>
                 </div>
                 
                 <div class="max-w-2xl mx-auto text-center">
-                    <div class="bg-white rounded-[3rem] shadow-xl border-4 border-orange-50 p-12">
-                        <div id="randomResult" class="min-h-[200px] flex flex-col items-center justify-center">
-                            <div class="w-40 h-40 mx-auto bg-orange-100 rounded-full flex items-center justify-center text-orange-500 text-6xl mb-6 shadow-inner border-4 border-white">
+                    <div class="bg-white rounded-[3rem] shadow-2xl border-8 border-orange-50 p-12 relative overflow-hidden">
+                        <div id="randomResult" class="min-h-[200px] flex flex-col items-center justify-center relative z-10">
+                            <div class="w-40 h-40 mx-auto bg-gradient-to-tr from-orange-100 to-rose-100 rounded-full flex items-center justify-center text-orange-500 text-6xl mb-8 shadow-inner border-4 border-white">
                                 <i class="fa-solid fa-gift"></i>
                             </div>
-                            <h3 id="randomName" class="text-4xl font-bold text-slate-800 mb-4">กดปุ่มเพื่อสุ่ม!</h3>
-                            <p id="randomId" class="text-xl text-orange-600 font-bold h-8 bg-orange-50 px-6 rounded-full flex items-center justify-center"></p>
+                            <h3 id="randomName" class="text-4xl font-black text-slate-800 mb-4">กดปุ่มด้านล่าง!</h3>
+                            <p id="randomId" class="text-xl text-orange-600 font-bold h-8 bg-orange-50 px-6 py-1 rounded-full flex items-center justify-center"></p>
                         </div>
-                        <button id="randomBtn" onclick="startRandomizer()" class="mt-8 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xl py-4 px-12 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95">
-                            <i class="fa-solid fa-shuffle mr-2"></i> สุ่มเลย
+                        <button id="randomBtn" onclick="startRandomizer()" class="relative z-10 mt-10 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-bold text-xl py-5 px-14 rounded-full shadow-[0_10px_30px_rgba(249,115,22,0.3)] transition-transform hover:scale-105 active:scale-95 flex items-center mx-auto">
+                            <i class="fa-solid fa-shuffle mr-3"></i> เริ่มสุ่มเลย
                         </button>
                     </div>
                 </div>
             </section>
 
             <section id="export" class="tab-content">
-                <h2 class="text-3xl font-bold text-slate-800 mb-2">ส่งออกเอกสาร PDF</h2>
-                <p class="text-slate-500 mb-8">ดาวน์โหลดรายงานข้อมูลสรุปการเข้าเรียนทางการ</p>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-2">ส่งออกเอกสาร PDF</h2>
+                <p class="text-slate-500 mb-8">ดาวน์โหลดรายงานข้อมูลสรุปทางการ</p>
 
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 max-w-2xl mx-auto">
-                    <div class="flex gap-4 mb-6">
-                        <label class="flex-1 border border-slate-200 rounded-2xl p-4 cursor-pointer hover:bg-slate-50 flex items-center has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/30 transition-all">
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 max-w-2xl mx-auto">
+                    <div class="flex gap-4 mb-8">
+                        <label class="flex-1 border-2 border-slate-100 rounded-2xl p-5 cursor-pointer hover:bg-slate-50 flex items-center has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50 transition-all group">
                             <input type="radio" name="dateMode" value="single" checked onchange="toggleDateMode()" class="w-5 h-5 text-blue-600 mr-3">
-                            <span class="font-bold text-slate-700">สรุปวันเดียว</span>
+                            <span class="font-bold text-slate-600 group-has-[:checked]:text-blue-700">สรุปวันเดียว</span>
                         </label>
-                        <label class="flex-1 border border-slate-200 rounded-2xl p-4 cursor-pointer hover:bg-slate-50 flex items-center has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/30 transition-all">
+                        <label class="flex-1 border-2 border-slate-100 rounded-2xl p-5 cursor-pointer hover:bg-slate-50 flex items-center has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50 transition-all group">
                             <input type="radio" name="dateMode" value="range" onchange="toggleDateMode()" class="w-5 h-5 text-blue-600 mr-3">
-                            <span class="font-bold text-slate-700">สรุปแบบช่วงเวลา</span>
+                            <span class="font-bold text-slate-600 group-has-[:checked]:text-blue-700">สรุปแบบช่วงเวลา</span>
                         </label>
                     </div>
 
-                    <div id="singleDateBox" class="mb-6">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">เลือกวันที่ต้องการดาวน์โหลด:</label>
-                        <input type="date" id="exportDateSingle" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <div id="singleDateBox" class="mb-8">
+                        <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">เลือกวันที่ต้องการดาวน์โหลด</label>
+                        <input type="date" id="exportDateSingle" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700">
                     </div>
                     
-                    <div id="rangeDateBox" class="mb-6 hidden grid-cols-2 gap-4">
+                    <div id="rangeDateBox" class="mb-8 hidden grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">ตั้งแต่วันที่:</label>
-                            <input type="date" id="exportDateStart" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">ตั้งแต่วันที่</label>
+                            <input type="date" id="exportDateStart" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">ถึงวันที่:</label>
-                            <input type="date" id="exportDateEnd" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">ถึงวันที่</label>
+                            <input type="date" id="exportDateEnd" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700">
                         </div>
                     </div>
 
-                    <button onclick="generatePDF()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-lg py-4 rounded-xl shadow-md transition-all">
-                        <i class="fa-solid fa-download mr-2"></i> สร้างและดาวน์โหลด PDF
+                    <button onclick="generatePDF()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-lg py-5 rounded-2xl shadow-xl transition-all flex justify-center items-center">
+                        <i class="fa-solid fa-file-pdf mr-3 text-red-400"></i> สร้างและดาวน์โหลดเอกสาร PDF
                     </button>
                 </div>
             </section>
         </div>
     </main>
 
-    <div id="pwdModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all relative" id="pwdModalCard">
-            <button onclick="closePwdModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button>
-            <div class="text-center mb-6">
-                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-blue-100 text-blue-600 mb-4"><i class="fa-solid fa-key text-xl"></i></div>
-                <h3 class="text-xl font-bold">เปลี่ยนรหัสผ่าน</h3>
+    <div id="pwdModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all relative" id="pwdModalCard">
+            <button onclick="closePwdModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-800 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-all"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center mb-8">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 text-blue-600 mb-4"><i class="fa-solid fa-unlock-keyhole text-2xl"></i></div>
+                <h3 class="text-2xl font-extrabold text-slate-800">เปลี่ยนรหัสผ่าน</h3>
             </div>
             <div class="space-y-4">
-                <input type="password" id="oldPwd" placeholder="รหัสผ่านเดิม" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-center">
-                <input type="password" id="newPwd" placeholder="รหัสผ่านใหม่" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-center">
-                <input type="password" id="confirmNewPwd" placeholder="ยืนยันรหัสใหม่" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-center">
+                <input type="password" id="oldPwd" placeholder="รหัสผ่านเดิม" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-center font-bold tracking-wider">
+                <input type="password" id="newPwd" placeholder="รหัสผ่านใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-center font-bold tracking-wider">
+                <input type="password" id="confirmNewPwd" placeholder="ยืนยันรหัสใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-center font-bold tracking-wider">
             </div>
-            <p id="pwdErrorMsg" class="text-red-500 text-sm font-bold text-center mt-4 hidden"></p>
-            <p id="pwdSuccessMsg" class="text-emerald-500 text-sm font-bold text-center mt-4 hidden">✅ เปลี่ยนรหัสสำเร็จ!</p>
-            <button id="btnSavePwd" onclick="savePassword()" class="w-full mt-6 py-3.5 bg-blue-600 text-white font-bold rounded-xl shadow-md">บันทึกรหัสผ่าน</button>
+            <button id="btnSavePwd" onclick="savePassword()" class="w-full mt-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all">บันทึกรหัสผ่าน</button>
         </div>
     </div>
 
-    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all" id="deleteModalCard">
+    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all" id="deleteModalCard">
             <div class="text-center mb-6">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-500 mb-4"><i class="fa-solid fa-trash text-2xl"></i></div>
-                <h3 class="text-xl font-bold">ยืนยันการลบข้อมูล</h3>
+                <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-50 text-red-500 mb-5"><i class="fa-solid fa-trash-can text-3xl"></i></div>
+                <h3 class="text-2xl font-extrabold text-slate-800">ยืนยันลบประวัติ?</h3>
+                <p class="text-sm text-slate-500 mt-2 font-medium">กรุณากรอกรหัสผ่านเพื่อยืนยัน</p>
             </div>
-            <input type="password" id="deletePassword" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-red-500" placeholder="รหัสผ่านของคุณ">
-            <p id="deleteErrorMsg" class="text-red-500 text-sm font-bold text-center mt-3 hidden">❌ รหัสผ่านไม่ถูกต้อง</p>
-            <div class="flex gap-3 mt-6">
-                <button onclick="closeDeleteModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">ยกเลิก</button>
-                <button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md">ยืนยันลบ</button>
+            <input type="password" id="deletePassword" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 tracking-wider mb-2" placeholder="••••••••">
+            <div class="flex gap-4 mt-8">
+                <button onclick="closeDeleteModal()" class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all">ยกเลิก</button>
+                <button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all">ยืนยันลบ</button>
             </div>
         </div>
     </div>
@@ -387,8 +416,8 @@
 
     <script>
         // ==============================================================
-        // 🛑 วาง URL สคริปต์อันใหม่ที่ Deploy เสร็จแล้ว ที่นี่ครับ
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwmgFTyPxkhbQyjmrpMJrk1GjVreJRigKNYXjey8BNO20Vaxaxe64Q2to1Ar6xWRu6t/exec'; 
+        // 🛑 นำ Web App URL อันใหม่ที่ Deploy เสร็จแล้ว มาวางที่นี่ครับ 🛑
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbw6XAJr2O9D4DLFIBbLoyxxDJ7gGvn0tLWCewxWTj_01oaxJ5bW9Xs1zT8QMoyrV9vf/exec'; 
         // ==============================================================
 
         if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
@@ -397,18 +426,27 @@
         const tName = localStorage.getItem('tName') || 'แอดมิน';
         const tRole = localStorage.getItem('tRole') || 'Admin';
         const tGrade = localStorage.getItem('tGrade') || 'All';
-        const tPhoto = localStorage.getItem('tPhoto') || `https://ui-avatars.com/api/?name=${tName}&background=0D9488&color=fff`;
+        const tPhoto = localStorage.getItem('tPhoto') || `https://ui-avatars.com/api/?name=${tName}&background=2563EB&color=fff`;
         
         let allRecords = [], globalStudents = [], rawGradeTotals = {};
         let activeGradeContext = tRole === 'Admin' ? 'All' : tGrade; 
         let targetDeleteId = null;
         let todayChartObj, historyChartObj;
 
-        // ตัวแปรสำหรับ Auto Save
-        let manualSyncTimer = null;
-        let pendingManualUpdates = {};
+        // Custom Toast Notification System
+        function showToast(type, message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>' : '<i class="fa-solid fa-circle-xmark text-red-500 text-xl"></i>';
+            toast.className = `bg-white px-6 py-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-3 toast-enter pointer-events-auto`;
+            toast.innerHTML = `${icon} <span class="font-bold text-slate-700">${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-leave');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
 
-        // Helper Function: แปลงวันที่ให้ตรงกับ Timezone ท้องถิ่น (ป้องกันวันเพี้ยน)
         function getLocalYYYYMMDD(dateObj) {
             const d = new Date(dateObj);
             if(isNaN(d)) return "";
@@ -434,7 +472,6 @@
             loadRecords(true);
         }
 
-        // --- UI & Tabs ---
         function updateContextUI() {
             const ctxText = activeGradeContext === 'All' ? 'ทุกระดับชั้น' : activeGradeContext;
             document.getElementById('checkinContextBadge').innerHTML = `<i class="fa-solid fa-layer-group mr-1"></i> ${ctxText}`;
@@ -451,12 +488,12 @@
             
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.className = b.textContent.includes('สุ่ม') 
-                    ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-400 hover:bg-slate-800 hover:text-orange-300 rounded-2xl transition font-medium"
-                    : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl transition font-medium";
+                    ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-2xl transition-all font-semibold"
+                    : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-semibold";
             });
             btnElement.className = tabId === 'random' 
-                ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-orange-500/10 text-orange-400 rounded-2xl transition font-bold"
-                : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-blue-600 text-white rounded-2xl transition font-bold shadow-md";
+                ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-orange-100 text-orange-600 rounded-2xl transition-all font-bold shadow-sm"
+                : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-blue-600 text-white rounded-2xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.2)] font-bold";
 
             if(['verify','export','manual'].includes(tabId)) loadRecords();
             if(tabId === 'history' && document.getElementById('historyDate').value) renderHistory();
@@ -467,8 +504,6 @@
         // --- รหัสผ่าน ---
         function openPwdModal() {
             ['oldPwd','newPwd','confirmNewPwd'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('pwdErrorMsg').classList.add('hidden');
-            document.getElementById('pwdSuccessMsg').classList.add('hidden');
             const m = document.getElementById('pwdModal'), c = document.getElementById('pwdModalCard');
             m.classList.remove('hidden'); setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10);
         }
@@ -478,19 +513,18 @@
         }
         function savePassword() {
             const o = document.getElementById('oldPwd').value, n = document.getElementById('newPwd').value, c = document.getElementById('confirmNewPwd').value;
-            const err = document.getElementById('pwdErrorMsg'), succ = document.getElementById('pwdSuccessMsg'), btn = document.getElementById('btnSavePwd');
-            err.classList.add('hidden'); succ.classList.add('hidden');
-            if(!o || !n || !c) { err.textContent = "❌ กรุณากรอกข้อมูลให้ครบ"; err.classList.remove('hidden'); return; }
-            if(n !== c) { err.textContent = "❌ รหัสผ่านใหม่ไม่ตรงกัน"; err.classList.remove('hidden'); return; }
-            if(o !== localStorage.getItem('tPassword')) { err.textContent = "❌ รหัสเดิมไม่ถูกต้อง"; err.classList.remove('hidden'); return; }
+            const btn = document.getElementById('btnSavePwd');
+            if(!o || !n || !c) { showToast('error', 'กรุณากรอกข้อมูลให้ครบ'); return; }
+            if(n !== c) { showToast('error', 'รหัสผ่านใหม่ไม่ตรงกัน'); return; }
+            if(o !== localStorage.getItem('tPassword')) { showToast('error', 'รหัสเดิมไม่ถูกต้อง'); return; }
 
             const ori = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
             fetch(scriptUrl, { method: 'POST', body: JSON.stringify({action: 'changePassword', username: tUsername, oldPwd: o, newPwd: n}) })
             .then(r => r.json()).then(data => {
                 btn.innerHTML = ori; btn.disabled = false;
-                if(data.status === 'success') { localStorage.setItem('tPassword', n); succ.classList.remove('hidden'); setTimeout(closePwdModal, 1500); } 
-                else { err.textContent = "❌ " + data.message; err.classList.remove('hidden'); }
-            }).catch(()=> { err.textContent = "❌ เชื่อมต่อขัดข้อง"; err.classList.remove('hidden'); btn.innerHTML = ori; btn.disabled = false;});
+                if(data.status === 'success') { localStorage.setItem('tPassword', n); showToast('success', 'เปลี่ยนรหัสสำเร็จ'); closePwdModal(); } 
+                else { showToast('error', data.message); }
+            }).catch(()=> { showToast('error', 'เชื่อมต่อขัดข้อง'); btn.innerHTML = ori; btn.disabled = false;});
         }
 
         // --- สแกนบาร์โค้ด ---
@@ -513,8 +547,7 @@
                         document.getElementById('studentGrade').textContent = data.grade;
                         document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
                         document.getElementById('studentCard').classList.remove('hidden');
-                        
-                        // เมื่อสแกนผ่าน ให้โหลดข้อมูลตารางเบื้องหลังใหม่ และจะกระทบถึงหน้า Manual ทันที
+                        showToast('success', `บันทึก ${data.name} สำเร็จ`);
                         loadRecords(true); 
                     } else if (data.status === 'unauthorized') {
                         badge.className = "inline-flex items-center px-4 py-1.5 bg-red-100 text-red-700 text-sm font-bold rounded-full mb-3";
@@ -525,19 +558,20 @@
                         document.getElementById('studentGrade').textContent = "-";
                         document.getElementById('studentTime').textContent = "-"; 
                         document.getElementById('studentCard').classList.remove('hidden');
-                        statusEl.innerHTML = `<span class="text-red-500 font-bold">❌ ${data.message}</span>`;
+                        showToast('error', data.message);
                     } else if (data.status === 'duplicate') {
-                        badge.className = "inline-flex items-center px-4 py-1.5 bg-orange-100 text-orange-700 text-sm font-bold rounded-full mb-3";
+                        badge.className = "inline-flex items-center px-4 py-1.5 bg-amber-100 text-amber-700 text-sm font-bold rounded-full mb-3";
                         badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> สแกนซ้ำ!';
-                        document.getElementById('studentPhotoCard').src = `https://ui-avatars.com/api/?name=W&background=f97316&color=fff`;
+                        document.getElementById('studentPhotoCard').src = `https://ui-avatars.com/api/?name=W&background=f59e0b&color=fff`;
                         document.getElementById('studentName').textContent = "เช็คชื่อไปแล้ววันนี้";
                         document.getElementById('studentIdDisplay').textContent = sid;
                         document.getElementById('studentGrade').textContent = "-";
                         document.getElementById('studentTime').textContent = "-";
                         document.getElementById('studentCard').classList.remove('hidden');
-                    } else { statusEl.innerHTML = `❌ ${data.message}`; }
+                        showToast('error', 'นักเรียนเช็คชื่อไปแล้ว');
+                    } else { showToast('error', data.message); }
                     this.value = ''; 
-                }).catch(()=> { statusEl.innerHTML = '❌ เชื่อมต่อล้มเหลว'; this.value = ''; });
+                }).catch(()=> { showToast('error', 'การเชื่อมต่อขัดข้อง'); this.value = ''; statusEl.innerHTML = '';});
             }
         });
 
@@ -562,7 +596,7 @@
             if(canvasId === 'historyChart' && historyChartObj) historyChartObj.destroy();
             const chart = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels: ['มาเรียน', 'ขาด'], datasets: [{ data: [present, (absent===0&&present===0)?1:absent], backgroundColor: (absent===0&&present===0)?['#e2e8f0','#e2e8f0']:['#10b981', '#f97316'], borderWidth: 0 }] },
+                data: { labels: ['มาเรียน', 'ขาด'], datasets: [{ data: [present, (absent===0&&present===0)?1:absent], backgroundColor: (absent===0&&present===0)?['#f1f5f9','#f1f5f9']:['#10b981', '#f97316'], borderWidth: 0 }] },
                 options: { cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: (present>0 || absent>0) } } }
             });
             if(canvasId === 'todayChart') todayChartObj = chart;
@@ -595,34 +629,36 @@
 
                     const tbody = document.getElementById('todayTableBody'); tbody.innerHTML = '';
                     const todayRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === todayStr).reverse();
-                    if(todayRecs.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400">ยังไม่มีข้อมูลวันนี้</td></tr>'; }
+                    if(todayRecs.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-slate-400">ยังไม่มีข้อมูลการเข้าเรียนในวันนี้</td></tr>'; }
                     else { todayRecs.forEach(row => { 
                         tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 border-b border-slate-100">
-                                <td class="py-3 px-6 text-sm text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td>
-                                <td class="py-3 px-6 font-bold text-blue-600">${row[1]}</td>
-                                <td class="py-3 px-6 font-medium">${row[2]}</td>
-                                <td class="py-3 px-6 text-sm text-slate-600">${row[4]}</td>
-                                <td class="py-3 px-6 text-center">
-                                    <button onclick="openDeleteModal('${row[0]}')" class="text-slate-400 hover:text-red-500 transition-colors p-2"><i class="fa-solid fa-trash-can"></i></button>
+                            <tr class="hover:bg-blue-50/50 transition-colors group">
+                                <td class="py-4 px-6 text-sm text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td>
+                                <td class="py-4 px-6 font-bold text-blue-600">${row[1]}</td>
+                                <td class="py-4 px-6 font-bold text-slate-700">${row[2]}</td>
+                                <td class="py-4 px-6 text-sm text-slate-500">${row[4]}</td>
+                                <td class="py-4 px-6 text-center">
+                                    <button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-red-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 hover:border-red-500 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                             </tr>`;
                     });}
 
-                    if(!silent) statusEl.innerHTML = `อัปเดต: ${new Date().toLocaleTimeString('th-TH')}`;
+                    if(!silent) statusEl.innerHTML = `<i class="fa-solid fa-check text-emerald-500 mr-2"></i> อัปเดตล่าสุด ${new Date().toLocaleTimeString('th-TH')}`;
                     if(document.getElementById('history').classList.contains('active')) renderHistory();
-                    
-                    // อัปเดตหน้า Manual ถ้าเปิดอยู่
                     if(document.getElementById('manual').classList.contains('active')) renderManualTable();
-
                 } else { if(!silent) statusEl.innerHTML = '❌ โหลดล้มเหลว'; }
             }).catch(()=> { if(!silent) statusEl.innerHTML = '❌ เชื่อมต่อขัดข้อง'; });
         }
 
-        // --- 📌 ระบบครูเช็คชื่อแทน (Auto-Save Debounce 2 Secs) ---
+        // --- 📌 ครูเช็คชื่อแทน (ใช้ระบบเซฟปุ่ม + แถบเมนูลอย) ---
+        let manualInitialState = {};
+        
         function renderManualTable() {
             const dateStr = document.getElementById('manualDate').value; if(!dateStr) return;
             const tbody = document.getElementById('manualTableBody');
+            const actionBar = document.getElementById('manualActionBar');
+            actionBar.classList.remove('opacity-100', 'translate-y-0');
+            actionBar.classList.add('opacity-0', 'translate-y-10'); // ซ่อนแถบเซฟ
             
             let filteredSt = globalStudents;
             if(activeGradeContext !== 'All') {
@@ -630,83 +666,91 @@
                 filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g)));
             }
 
-            if(filteredSt.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400">ไม่พบรายชื่อนักเรียน</td></tr>'; return; }
+            if(filteredSt.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-16 text-slate-400">ไม่พบรายชื่อนักเรียน</td></tr>'; return; }
             
-            // ดึงประวัติแบบ Local Timezone เพื่อป้องกันข้ามวัน
             const dateRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === dateStr);
-            
+            manualInitialState = {};
             tbody.innerHTML = '';
+
             filteredSt.forEach((st, idx) => {
-                const rec = dateRecs.find(r => String(r[1]) === String(st.id));
-                const isPresentInDB = !!rec;
-                
-                // เช็คว่าสถานะกำลังรอ Auto-save หรือไม่ ถ้ามีให้ยึดค่าที่กำลังกดค้างไว้ก่อน
-                let displayPresent = isPresentInDB;
-                if (pendingManualUpdates[st.id]) {
-                    displayPresent = (pendingManualUpdates[st.id].status === 'present');
-                }
+                const isPresent = dateRecs.some(r => String(r[1]) === String(st.id));
+                manualInitialState[st.id] = isPresent; // จำค่าเริ่มต้นไว้เทียบตอนเซฟ
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="py-3 px-6 text-center text-sm text-slate-400">${idx + 1}</td>
-                        <td class="py-3 px-6 font-bold text-slate-600">${st.id}</td>
-                        <td class="py-3 px-6 font-medium">${st.name}</td>
-                        <td class="py-3 px-6 text-sm">${st.grade}</td>
-                        <td class="py-3 px-6 text-center">
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6 text-center text-sm font-bold text-slate-300">${idx + 1}</td>
+                        <td class="py-4 px-6 font-bold text-slate-500">${st.id}</td>
+                        <td class="py-4 px-6 font-bold text-slate-700">${st.name}</td>
+                        <td class="py-4 px-6 text-sm font-medium text-slate-400">${st.grade}</td>
+                        <td class="py-4 px-6 text-center">
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer toggle-checkbox" ${displayPresent ? 'checked' : ''} onchange="toggleManualCheckin(this, '${st.id}', '${st.name}', '${st.gender}', '${st.grade}')">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
-                                <span class="ml-3 text-sm font-bold ${displayPresent ? 'text-emerald-600' : 'text-slate-400'}" id="lbl-${st.id}">${displayPresent ? 'มาเรียน' : 'ขาด/ลา'}</span>
+                                <input type="checkbox" class="sr-only peer toggle-checkbox" id="toggle-${st.id}" ${isPresent ? 'checked' : ''} onchange="checkManualChanges()">
+                                <div class="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
+                                <span class="ml-4 text-sm font-bold w-12 text-left inline-block transition-colors ${isPresent ? 'text-emerald-600' : 'text-slate-400'}" id="lbl-${st.id}">${isPresent ? 'มาเรียน' : 'ขาด/ลา'}</span>
                             </label>
                         </td>
                     </tr>`;
             });
         }
 
-        // เมื่อมีการกดสวิตช์ ให้หน่วงเวลาบันทึก 2 วินาที
-        function toggleManualCheckin(cb, id, name, gender, grade) {
-            const lbl = document.getElementById(`lbl-${id}`);
-            if(cb.checked) { lbl.textContent = 'มาเรียน'; lbl.className = 'ml-3 text-sm font-bold text-emerald-600'; } 
-            else { lbl.textContent = 'ขาด/ลา'; lbl.className = 'ml-3 text-sm font-bold text-slate-400'; }
+        // เช็คว่ามีการเปลี่ยนแปลงหรือไม่ เพื่อโชว์ปุ่มเซฟ
+        function checkManualChanges() {
+            let hasChanges = false;
+            let filteredSt = globalStudents;
+            if(activeGradeContext !== 'All') {
+                const allowedList = activeGradeContext.split(',').map(g => g.trim());
+                filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g)));
+            }
 
-            // เพิ่มลงในคิวรอ Auto-save
-            pendingManualUpdates[id] = { id: id, name: name, gender: gender, grade: grade, status: cb.checked ? 'present' : 'absent' };
+            filteredSt.forEach(st => {
+                const cb = document.getElementById(`toggle-${st.id}`);
+                const lbl = document.getElementById(`lbl-${st.id}`);
+                if(cb.checked) { lbl.textContent = 'มาเรียน'; lbl.className = 'ml-4 text-sm font-bold w-12 text-left inline-block transition-colors text-emerald-600'; } 
+                else { lbl.textContent = 'ขาด/ลา'; lbl.className = 'ml-4 text-sm font-bold w-12 text-left inline-block transition-colors text-slate-400'; }
+                
+                if (cb.checked !== manualInitialState[st.id]) hasChanges = true;
+            });
 
-            // เปลี่ยนสถานะป้ายด้านบนเป็น "รอการบันทึก"
-            const indicator = document.getElementById('manualSaveIndicator');
-            indicator.innerHTML = '<i class="fa-solid fa-pen text-orange-500 mr-2"></i> รอการบันทึก...';
-            indicator.className = "flex items-center text-sm font-semibold bg-orange-50 text-orange-600 px-5 py-3 rounded-xl border border-orange-200 mt-6 md:mt-0 transition-all";
-
-            // รีเซ็ตเวลานับถอยหลัง 2 วินาที (Debounce)
-            clearTimeout(manualSyncTimer);
-            manualSyncTimer = setTimeout(executeAutoSave, 2000);
+            const actionBar = document.getElementById('manualActionBar');
+            if (hasChanges) {
+                actionBar.classList.remove('opacity-0', 'translate-y-10');
+                actionBar.classList.add('opacity-100', 'translate-y-0');
+            } else {
+                actionBar.classList.remove('opacity-100', 'translate-y-0');
+                actionBar.classList.add('opacity-0', 'translate-y-10');
+            }
         }
 
-        // ฟังก์ชันลั่น Auto-Save
-        function executeAutoSave() {
-            if (Object.keys(pendingManualUpdates).length === 0) return;
-
+        function saveManualSync() {
             const dateStr = document.getElementById('manualDate').value;
-            const updatesArray = Object.values(pendingManualUpdates);
+            let toAdd = [], toRemove = [];
 
-            const indicator = document.getElementById('manualSaveIndicator');
-            indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-blue-500 mr-2"></i> กำลังแอบบันทึกเบื้องหลัง...';
-            indicator.className = "flex items-center text-sm font-semibold bg-blue-50 text-blue-600 px-5 py-3 rounded-xl border border-blue-200 mt-6 md:mt-0 transition-all";
+            let filteredSt = globalStudents;
+            if(activeGradeContext !== 'All') {
+                const allowedList = activeGradeContext.split(',').map(g => g.trim());
+                filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g)));
+            }
 
-            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, updates: updatesArray }) })
-            .then(r => r.json()).then(data => {
-                if(data.status === 'success') {
-                    indicator.innerHTML = '<i class="fa-solid fa-check-circle text-emerald-500 mr-2"></i> ข้อมูลเชื่อมต่อกันแล้ว';
-                    indicator.className = "flex items-center text-sm font-semibold bg-emerald-50 text-emerald-600 px-5 py-3 rounded-xl border border-emerald-200 mt-6 md:mt-0 transition-all";
-                    pendingManualUpdates = {}; // ล้างคิวหลังจากเซฟเสร็จ
-                    loadRecords(true); // โหลดข้อมูลมาทับใหม่เงียบๆ
-                } else {
-                    indicator.innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-2"></i> บันทึกไม่สำเร็จ';
-                    indicator.className = "flex items-center text-sm font-semibold bg-red-50 text-red-600 px-5 py-3 rounded-xl border border-red-200 mt-6 md:mt-0 transition-all";
-                }
-            }).catch(()=>{ 
-                indicator.innerHTML = '<i class="fa-solid fa-wifi text-red-500 mr-2"></i> เชื่อมต่อขัดข้อง';
+            filteredSt.forEach(st => {
+                const cb = document.getElementById(`toggle-${st.id}`);
+                const isNowP = cb.checked; const wasP = manualInitialState[st.id];
+                if (isNowP && !wasP) toAdd.push(st.id);
+                if (!isNowP && wasP) toRemove.push(st.id);
             });
+
+            const btn = document.getElementById('btnSaveManual'), ori = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...'; btn.disabled = true;
+
+            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, toAdd: toAdd, toRemove: toRemove }) })
+            .then(r => r.json()).then(data => {
+                btn.innerHTML = ori; btn.disabled = false;
+                if(data.status === 'success') { 
+                    showToast('success', 'บันทึกข้อมูลสำเร็จ!'); 
+                    document.getElementById('manualActionBar').classList.remove('opacity-100', 'translate-y-0');
+                    document.getElementById('manualActionBar').classList.add('opacity-0', 'translate-y-10');
+                    loadRecords(true); // โหลดซิงก์ตารางอื่น
+                } else showToast('error', 'บันทึกไม่สำเร็จ');
+            }).catch(()=>{ btn.innerHTML = ori; btn.disabled = false; showToast('error', 'การเชื่อมต่อขัดข้อง');});
         }
 
         // --- ประวัติย้อนหลัง ---
@@ -719,15 +763,15 @@
 
             const tbody = document.getElementById('historyTableBody'); tbody.innerHTML = '';
             const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d).reverse();
-            if(recs.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400">ไม่มีข้อมูล</td></tr>';
+            if(recs.length === 0) tbody.innerHTML = '<tr><td colspan=\"5\" class=\"text-center py-12 text-slate-400\">ไม่มีข้อมูลในวันนี้</td></tr>';
             else recs.forEach(row => { 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="py-3 px-6 text-sm text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td>
-                        <td class="py-3 px-6 font-bold text-blue-600">${row[1]}</td>
-                        <td class="py-3 px-6 font-medium">${row[2]}</td>
-                        <td class="py-3 px-6 text-sm">${row[4]}</td>
-                        <td class="py-3 px-6 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-400 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can"></i></button></td>
+                    <tr class="hover:bg-slate-50 transition-colors group border-b border-slate-50">
+                        <td class="py-4 px-6 text-sm text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td>
+                        <td class="py-4 px-6 font-bold text-blue-600">${row[1]}</td>
+                        <td class="py-4 px-6 font-bold text-slate-700">${row[2]}</td>
+                        <td class="py-4 px-6 text-sm text-slate-500">${row[4]}</td>
+                        <td class="py-4 px-6 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-red-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 hover:border-red-500 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button></td>
                     </tr>`;
             });
         }
@@ -737,16 +781,16 @@
         function startRandomizer() {
             const d = getLocalYYYYMMDD(new Date());
             const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
-            if(recs.length === 0) { alert("ไม่มีนักเรียนมาเรียนวันนี้"); return; }
-            const btn = document.getElementById('randomBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังสุ่ม...';
+            if(recs.length === 0) { showToast("error", "ไม่มีนักเรียนมาเรียนวันนี้"); return; }
+            const btn = document.getElementById('randomBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> กำลังสุ่ม...';
             let count = 0; if(randomInterval) clearInterval(randomInterval);
             randomInterval = setInterval(() => {
                 const rand = recs[Math.floor(Math.random() * recs.length)];
                 document.getElementById('randomName').textContent = rand[2]; document.getElementById('randomId').textContent = "รหัส: " + rand[1];
                 count++;
-                if(count >= 20) { 
-                    clearInterval(randomInterval); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-shuffle mr-2"></i> สุ่มใหม่';
-                    document.querySelector('#randomResult div').innerHTML = `<img src="https://ui-avatars.com/api/?name=${rand[2]}&background=f97316&color=fff" class="w-full h-full rounded-full">`;
+                if(count >= 25) { 
+                    clearInterval(randomInterval); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-shuffle mr-3"></i> สุ่มใหม่อีกครั้ง';
+                    document.querySelector('#randomResult div').innerHTML = `<img src="https://ui-avatars.com/api/?name=${rand[2]}&background=f43f5e&color=fff" class="w-full h-full rounded-full border-[6px] border-white shadow-lg">`;
                 }
             }, 80);
         }
@@ -764,14 +808,18 @@
         }
         function confirmDelete() {
             const p = document.getElementById('deletePassword');
-            if (p.value !== localStorage.getItem('tPassword')) { document.getElementById('deleteErrorMsg').classList.remove('hidden'); return; }
+            if (p.value !== localStorage.getItem('tPassword')) { 
+                document.getElementById('deleteErrorMsg').classList.remove('hidden'); 
+                p.classList.add('-translate-x-2'); setTimeout(()=>p.classList.remove('-translate-x-2'), 100); setTimeout(()=>p.classList.add('translate-x-2'), 200); setTimeout(()=>p.classList.remove('translate-x-2'), 300);
+                return; 
+            }
             const btn = document.getElementById('confirmDeleteBtn'), ori = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
             fetch(scriptUrl, { method: 'POST', body: JSON.stringify({action: 'deleteRecord', timestampId: targetDeleteId}) })
             .then(r => r.json()).then(data => {
                 btn.innerHTML = ori; btn.disabled = false;
-                if(data.status === 'success') { closeDeleteModal(); loadRecords(); } else alert('ผิดพลาด');
-            }).catch(()=>{ btn.innerHTML = ori; btn.disabled = false; alert('ขัดข้อง');});
+                if(data.status === 'success') { closeDeleteModal(); loadRecords(); showToast('success', 'ลบข้อมูลสำเร็จ');} else showToast('error', 'ผิดพลาด');
+            }).catch(()=>{ btn.innerHTML = ori; btn.disabled = false; showToast('error', 'เชื่อมต่อขัดข้อง');});
         }
 
         // --- PDF ---
@@ -781,19 +829,19 @@
             document.getElementById('rangeDateBox').classList.toggle('hidden', mode === 'single');
         }
         function generatePDF() {
-            if(allRecords.length === 0) { alert("ไม่มีข้อมูล"); return; }
+            if(allRecords.length === 0) { showToast("error", "ไม่มีข้อมูล"); return; }
             const mode = document.querySelector('input[name="dateMode"]:checked').value;
             let fData = [], dText = "";
             if(mode === 'single') {
-                const d = document.getElementById('exportDateSingle').value; if(!d) return alert("เลือกวันที่");
+                const d = document.getElementById('exportDateSingle').value; if(!d) return showToast("error", "เลือกวันที่");
                 fData = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
                 dText = "วันที่ " + new Date(d).toLocaleDateString('th-TH');
             } else {
-                const ds = document.getElementById('exportDateStart').value, de = document.getElementById('exportDateEnd').value; if(!ds||!de) return alert("เลือกวันที่");
+                const ds = document.getElementById('exportDateStart').value, de = document.getElementById('exportDateEnd').value; if(!ds||!de) return showToast("error", "เลือกวันที่");
                 fData = allRecords.filter(r => { const d = getLocalYYYYMMDD(r[0]); return d >= ds && d <= de; });
                 dText = `${new Date(ds).toLocaleDateString('th-TH')} - ${new Date(de).toLocaleDateString('th-TH')}`;
             }
-            if(fData.length === 0) return alert("ไม่พบข้อมูล");
+            if(fData.length === 0) return showToast("error", "ไม่พบข้อมูล");
 
             document.getElementById('pdf-date-subtitle').textContent = dText;
             const total = getTotalContextStudents();
