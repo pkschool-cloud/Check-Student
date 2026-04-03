@@ -71,62 +71,93 @@
 
     </div>
 
-    <script>
-        // ตรวจสอบสิทธิ์ก่อน ถ้ายังไม่ล็อคอินให้เด้งกลับไปหน้า index
+  <script>
+        // 1. ตรวจสอบสิทธิ์ก่อน ถ้ายังไม่ล็อคอินให้เด้งกลับไปหน้า index
         if (!localStorage.getItem('isLoggedIn')) {
             window.location.href = 'index.html';
         }
 
-        // แสดงชื่อครูบน Navbar
+        // 2. แสดงชื่อครูบน Navbar
         document.getElementById('displayTeacherName').textContent = 'คุณครู: ' + localStorage.getItem('teacherName');
 
-        // ฟังก์ชันออกจากระบบ
+        // 3. ฟังก์ชันออกจากระบบ
         function logout() {
             localStorage.clear();
             window.location.href = 'index.html';
         }
 
-        // ตัวแปรจำลองนับจำนวน
+        // เตรียมตัวแปรสำหรับอ้างอิงจุดต่างๆ บนหน้าเว็บ
         let present = 0;
         let absent = 100;
-
-        // ดักจับการกด Enter ที่ช่อง Input
         const inputElement = document.getElementById('studentInput');
         const statusElement = document.getElementById('checkinStatus');
         const tableBody = document.getElementById('tableBody');
 
+        // ==========================================
+        // ส่วนที่คุณต้องนำ URL ของ Google Script มาใส่
+        // ==========================================
+        const scriptUrl = 'วาง_Web_App_URL_ที่คุณคัดลอกมาที่นี่';
+
         inputElement.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const studentId = this.value.trim();
+                if (studentId === "") return;
+
+                // แสดงข้อความว่ากำลังบันทึกระหว่างรอโหลด
+                statusElement.textContent = "กำลังบันทึก...";
+                statusElement.className = "mt-3 text-blue-600 font-medium h-6"; 
                 
-                if (studentId !== "") {
-                    // จำลองการอัปเดตหน้าจอ (เมื่อมี Backend ตรงนี้จะรอ Response จาก Google Script)
-                    statusElement.textContent = `✅ บันทึกรหัส ${studentId} สำเร็จ!`;
-                    
-                    // อัปเดตตัวเลข
-                    present++;
-                    absent--;
-                    document.getElementById('presentCount').innerHTML = `${present} <span class="text-sm font-normal text-slate-500">คน</span>`;
-                    document.getElementById('absentCount').innerHTML = `${absent} <span class="text-sm font-normal text-slate-500">คน</span>`;
+                // ยิงข้อมูลไปที่ Google Apps Script
+                fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'checkin',
+                        studentId: studentId,
+                        teacherName: localStorage.getItem('teacherName')
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // บันทึกสำเร็จ
+                        statusElement.textContent = `✅ บันทึกสำเร็จ: ${data.name} (ป.${data.grade})`;
+                        statusElement.className = "mt-3 text-green-600 font-medium h-6";
+                        
+                        // อัปเดตตัวเลขจำลองบนหน้าจอ
+                        present++;
+                        absent--;
+                        document.getElementById('presentCount').innerHTML = `${present} <span class="text-sm font-normal text-slate-500">คน</span>`;
+                        document.getElementById('absentCount').innerHTML = `${absent} <span class="text-sm font-normal text-slate-500">คน</span>`;
 
-                    // เพิ่มข้อมูลลงในตารางแถวแรก
-                    const timeNow = new Date().toLocaleTimeString('th-TH');
-                    const newRow = `
-                        <tr class="hover:bg-slate-50">
-                            <td class="py-3 px-6">${timeNow}</td>
-                            <td class="py-3 px-6 font-semibold text-blue-600">${studentId}</td>
-                            <td class="py-3 px-6">ป.X/X</td>
-                            <td class="py-3 px-6"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">มาเรียน</span></td>
-                        </tr>
-                    `;
-                    tableBody.insertAdjacentHTML('afterbegin', newRow);
+                        // เพิ่มข้อมูลลงตารางด้านล่างทันที
+                        const timeNow = new Date().toLocaleTimeString('th-TH');
+                        const newRow = `
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-6">${timeNow}</td>
+                                <td class="py-3 px-6 font-semibold text-blue-600">${studentId}</td>
+                                <td class="py-3 px-6">ป.${data.grade}</td>
+                                <td class="py-3 px-6"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">มาเรียน</span></td>
+                            </tr>
+                        `;
+                        tableBody.insertAdjacentHTML('afterbegin', newRow);
 
-                    // เคลียร์ช่องให้พร้อมยิง/พิมพ์คนต่อไป
-                    this.value = '';
+                    } else {
+                        // กรณีหาเด็กไม่เจอ หรือเกิด Error จาก Google Script
+                        statusElement.textContent = `❌ Error: ${data.message}`;
+                        statusElement.className = "mt-3 text-red-600 font-medium h-6";
+                    }
                     
-                    // ลบข้อความสถานะหลังผ่านไป 2 วินาที
-                    setTimeout(() => statusElement.textContent = '', 2000);
-                }
+                    // ล้างช่องกรอกให้พร้อมยิงบาร์โค้ดหรือพิมพ์คนต่อไป
+                    inputElement.value = ''; 
+                    
+                    // ลบข้อความแจ้งเตือนหลังผ่านไป 3 วินาที
+                    setTimeout(() => statusElement.textContent = '', 3000); 
+                })
+                .catch(error => {
+                    statusElement.textContent = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย`;
+                    statusElement.className = "mt-3 text-red-600 font-medium h-6";
+                    inputElement.value = '';
+                });
             }
         });
     </script>
