@@ -17,10 +17,11 @@
         .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
         .tab-content.active { display: block; opacity: 1; animation: fadeUp 0.4s ease-out forwards; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
         #pdf-container { position: absolute; left: -9999px; top: -9999px; width: 800px; background: white; }
-        
-        /* สวิตช์ปุ่ม */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
     </style>
@@ -139,20 +140,20 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                     <div>
                         <h2 class="text-3xl font-bold text-slate-800 mb-2">เช็คชื่อด้วยตนเอง</h2>
-                        <p class="text-slate-500">ซิงก์ข้อมูลกับระบบสแกนอัตโนมัติ ค่าเริ่มต้นคือ "ขาด/ลา"</p>
+                        <p class="text-slate-500">ระบบจะ <span class="text-orange-500 font-bold">แอบบันทึกอัตโนมัติภายใน 2 วินาที</span> หากไม่มีการคลิกเพิ่ม</p>
                     </div>
-                    <button onclick="saveManualSync()" id="btnSaveManual" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold shadow-md transition-all flex items-center">
-                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> บันทึกเข้าระบบ
-                    </button>
+                    <div id="manualSaveIndicator" class="flex items-center text-sm font-semibold bg-slate-100 text-slate-500 px-5 py-3 rounded-xl border border-slate-200 mt-6 md:mt-0 transition-all">
+                        <i class="fa-solid fa-cloud mr-2"></i> ข้อมูลเชื่อมต่อกันแล้ว
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row items-center gap-4">
                     <div class="flex-1 w-full max-w-sm">
-                        <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-regular fa-calendar-check text-emerald-500 mr-2"></i>เลือกวันที่ต้องการ:</label>
+                        <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-regular fa-calendar-check text-emerald-500 mr-2"></i>เลือกวันที่ต้องการเช็คชื่อ:</label>
                         <input type="date" id="manualDate" onchange="renderManualTable()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium">
                     </div>
-                    <div class="flex items-center text-sm font-semibold bg-orange-50 text-orange-600 px-5 py-3 rounded-xl border border-orange-200 mt-6 md:mt-0">
-                        <i class="fa-solid fa-circle-exclamation mr-2"></i> หากมีการสแกนแล้ว ปุ่มจะเป็น 'มาเรียน' ให้อัตโนมัติ
+                    <div class="flex items-center text-sm font-semibold bg-emerald-50 text-emerald-600 px-5 py-3 rounded-xl border border-emerald-200 mt-6 md:mt-0">
+                        <i class="fa-solid fa-rotate mr-2"></i> หากนักเรียนสแกนด้านหน้า สวิตช์จะเปิดให้เอง
                     </div>
                 </div>
 
@@ -387,7 +388,7 @@
     <script>
         // ==============================================================
         // 🛑 วาง URL สคริปต์อันใหม่ที่ Deploy เสร็จแล้ว ที่นี่ครับ
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbyfdejsFn4JonJ-N6Y5OtCMv2FlJa07XtUaIDNJjcXB1EFmam58eEo5VLNU7wF8Ake8/exec'; 
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwmgFTyPxkhbQyjmrpMJrk1GjVreJRigKNYXjey8BNO20Vaxaxe64Q2to1Ar6xWRu6t/exec'; 
         // ==============================================================
 
         if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
@@ -403,6 +404,17 @@
         let targetDeleteId = null;
         let todayChartObj, historyChartObj;
 
+        // ตัวแปรสำหรับ Auto Save
+        let manualSyncTimer = null;
+        let pendingManualUpdates = {};
+
+        // Helper Function: แปลงวันที่ให้ตรงกับ Timezone ท้องถิ่น (ป้องกันวันเพี้ยน)
+        function getLocalYYYYMMDD(dateObj) {
+            const d = new Date(dateObj);
+            if(isNaN(d)) return "";
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
         window.onload = () => {
             document.getElementById('sidebarName').textContent = tName;
             document.getElementById('sidebarRole').textContent = tRole === 'Admin' ? 'แอดมินระบบ' : `ครู ${tGrade}`;
@@ -414,7 +426,7 @@
             }
             updateContextUI();
             
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalYYYYMMDD(new Date());
             document.getElementById('exportDateSingle').value = todayStr;
             document.getElementById('historyDate').value = todayStr;
             document.getElementById('manualDate').value = todayStr;
@@ -468,7 +480,6 @@
             const o = document.getElementById('oldPwd').value, n = document.getElementById('newPwd').value, c = document.getElementById('confirmNewPwd').value;
             const err = document.getElementById('pwdErrorMsg'), succ = document.getElementById('pwdSuccessMsg'), btn = document.getElementById('btnSavePwd');
             err.classList.add('hidden'); succ.classList.add('hidden');
-            
             if(!o || !n || !c) { err.textContent = "❌ กรุณากรอกข้อมูลให้ครบ"; err.classList.remove('hidden'); return; }
             if(n !== c) { err.textContent = "❌ รหัสผ่านใหม่ไม่ตรงกัน"; err.classList.remove('hidden'); return; }
             if(o !== localStorage.getItem('tPassword')) { err.textContent = "❌ รหัสเดิมไม่ถูกต้อง"; err.classList.remove('hidden'); return; }
@@ -477,9 +488,8 @@
             fetch(scriptUrl, { method: 'POST', body: JSON.stringify({action: 'changePassword', username: tUsername, oldPwd: o, newPwd: n}) })
             .then(r => r.json()).then(data => {
                 btn.innerHTML = ori; btn.disabled = false;
-                if(data.status === 'success') {
-                    localStorage.setItem('tPassword', n); succ.classList.remove('hidden'); setTimeout(closePwdModal, 1500);
-                } else { err.textContent = "❌ " + data.message; err.classList.remove('hidden'); }
+                if(data.status === 'success') { localStorage.setItem('tPassword', n); succ.classList.remove('hidden'); setTimeout(closePwdModal, 1500); } 
+                else { err.textContent = "❌ " + data.message; err.classList.remove('hidden'); }
             }).catch(()=> { err.textContent = "❌ เชื่อมต่อขัดข้อง"; err.classList.remove('hidden'); btn.innerHTML = ori; btn.disabled = false;});
         }
 
@@ -503,6 +513,8 @@
                         document.getElementById('studentGrade').textContent = data.grade;
                         document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
                         document.getElementById('studentCard').classList.remove('hidden');
+                        
+                        // เมื่อสแกนผ่าน ให้โหลดข้อมูลตารางเบื้องหลังใหม่ และจะกระทบถึงหน้า Manual ทันที
                         loadRecords(true); 
                     } else if (data.status === 'unauthorized') {
                         badge.className = "inline-flex items-center px-4 py-1.5 bg-red-100 text-red-700 text-sm font-bold rounded-full mb-3";
@@ -535,11 +547,11 @@
             let t = 0; activeGradeContext.split(',').forEach(g => { t += (rawGradeTotals[g.trim()] || 0); }); return t;
         }
         function calculateStats(recordsList, targetDateStr) {
-            const present = recordsList.filter(r => new Date(r[0]).toISOString().split('T')[0] === targetDateStr).length;
+            const present = recordsList.filter(r => getLocalYYYYMMDD(r[0]) === targetDateStr).length;
             let absent = 0; const now = new Date(), targetDate = new Date(targetDateStr);
             const total = getTotalContextStudents();
             if (targetDate.getDay() >= 1 && targetDate.getDay() <= 5) { 
-                if (now.toISOString().split('T')[0] === targetDateStr) { if (now.getHours() >= 10) absent = Math.max(0, total - present); }
+                if (getLocalYYYYMMDD(now) === targetDateStr) { if (now.getHours() >= 10) absent = Math.max(0, total - present); }
                 else if (targetDate < now) { absent = Math.max(0, total - present); }
             }
             return { present, absent, total };
@@ -573,7 +585,7 @@
                     }
                     allRecords = filtered; rawGradeTotals = data.gradeTotals || {};
 
-                    const todayStr = new Date().toISOString().split('T')[0];
+                    const todayStr = getLocalYYYYMMDD(new Date());
                     const stats = calculateStats(allRecords, todayStr);
                     
                     document.getElementById('todayTotal').textContent = stats.total;
@@ -582,7 +594,7 @@
                     createChart('todayChart', stats.present, stats.absent);
 
                     const tbody = document.getElementById('todayTableBody'); tbody.innerHTML = '';
-                    const todayRecs = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === todayStr).reverse();
+                    const todayRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === todayStr).reverse();
                     if(todayRecs.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400">ยังไม่มีข้อมูลวันนี้</td></tr>'; }
                     else { todayRecs.forEach(row => { 
                         tbody.innerHTML += `
@@ -599,12 +611,15 @@
 
                     if(!silent) statusEl.innerHTML = `อัปเดต: ${new Date().toLocaleTimeString('th-TH')}`;
                     if(document.getElementById('history').classList.contains('active')) renderHistory();
+                    
+                    // อัปเดตหน้า Manual ถ้าเปิดอยู่
                     if(document.getElementById('manual').classList.contains('active')) renderManualTable();
+
                 } else { if(!silent) statusEl.innerHTML = '❌ โหลดล้มเหลว'; }
             }).catch(()=> { if(!silent) statusEl.innerHTML = '❌ เชื่อมต่อขัดข้อง'; });
         }
 
-        // --- ครูเช็คชื่อแทน ---
+        // --- 📌 ระบบครูเช็คชื่อแทน (Auto-Save Debounce 2 Secs) ---
         function renderManualTable() {
             const dateStr = document.getElementById('manualDate').value; if(!dateStr) return;
             const tbody = document.getElementById('manualTableBody');
@@ -616,12 +631,20 @@
             }
 
             if(filteredSt.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400">ไม่พบรายชื่อนักเรียน</td></tr>'; return; }
-            const dateRecs = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === dateStr);
+            
+            // ดึงประวัติแบบ Local Timezone เพื่อป้องกันข้ามวัน
+            const dateRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === dateStr);
             
             tbody.innerHTML = '';
             filteredSt.forEach((st, idx) => {
                 const rec = dateRecs.find(r => String(r[1]) === String(st.id));
-                const isPresent = !!rec; const tStr = isPresent ? new Date(rec[0]).toString() : '';
+                const isPresentInDB = !!rec;
+                
+                // เช็คว่าสถานะกำลังรอ Auto-save หรือไม่ ถ้ามีให้ยึดค่าที่กำลังกดค้างไว้ก่อน
+                let displayPresent = isPresentInDB;
+                if (pendingManualUpdates[st.id]) {
+                    displayPresent = (pendingManualUpdates[st.id].status === 'present');
+                }
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
@@ -631,39 +654,59 @@
                         <td class="py-3 px-6 text-sm">${st.grade}</td>
                         <td class="py-3 px-6 text-center">
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer toggle-checkbox" ${isPresent ? 'checked' : ''} data-id="${st.id}" data-name="${st.name}" data-gender="${st.gender}" data-grade="${st.grade}" data-timestamp="${tStr}" onchange="updateToggleUI(this, '${st.id}')">
+                                <input type="checkbox" class="sr-only peer toggle-checkbox" ${displayPresent ? 'checked' : ''} onchange="toggleManualCheckin(this, '${st.id}', '${st.name}', '${st.gender}', '${st.grade}')">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
-                                <span class="ml-3 text-sm font-bold ${isPresent ? 'text-emerald-600' : 'text-slate-400'}" id="lbl-${st.id}">${isPresent ? 'มาเรียน' : 'ขาด/ลา'}</span>
+                                <span class="ml-3 text-sm font-bold ${displayPresent ? 'text-emerald-600' : 'text-slate-400'}" id="lbl-${st.id}">${displayPresent ? 'มาเรียน' : 'ขาด/ลา'}</span>
                             </label>
                         </td>
                     </tr>`;
             });
         }
-        function updateToggleUI(cb, id) {
+
+        // เมื่อมีการกดสวิตช์ ให้หน่วงเวลาบันทึก 2 วินาที
+        function toggleManualCheckin(cb, id, name, gender, grade) {
             const lbl = document.getElementById(`lbl-${id}`);
             if(cb.checked) { lbl.textContent = 'มาเรียน'; lbl.className = 'ml-3 text-sm font-bold text-emerald-600'; } 
             else { lbl.textContent = 'ขาด/ลา'; lbl.className = 'ml-3 text-sm font-bold text-slate-400'; }
+
+            // เพิ่มลงในคิวรอ Auto-save
+            pendingManualUpdates[id] = { id: id, name: name, gender: gender, grade: grade, status: cb.checked ? 'present' : 'absent' };
+
+            // เปลี่ยนสถานะป้ายด้านบนเป็น "รอการบันทึก"
+            const indicator = document.getElementById('manualSaveIndicator');
+            indicator.innerHTML = '<i class="fa-solid fa-pen text-orange-500 mr-2"></i> รอการบันทึก...';
+            indicator.className = "flex items-center text-sm font-semibold bg-orange-50 text-orange-600 px-5 py-3 rounded-xl border border-orange-200 mt-6 md:mt-0 transition-all";
+
+            // รีเซ็ตเวลานับถอยหลัง 2 วินาที (Debounce)
+            clearTimeout(manualSyncTimer);
+            manualSyncTimer = setTimeout(executeAutoSave, 2000);
         }
-        function saveManualSync() {
+
+        // ฟังก์ชันลั่น Auto-Save
+        function executeAutoSave() {
+            if (Object.keys(pendingManualUpdates).length === 0) return;
+
             const dateStr = document.getElementById('manualDate').value;
-            const cbs = document.querySelectorAll('.toggle-checkbox');
-            let toAdd = [], toDel = [];
+            const updatesArray = Object.values(pendingManualUpdates);
 
-            cbs.forEach(cb => {
-                const wasP = cb.getAttribute('data-timestamp') !== ''; const isP = cb.checked;
-                if (isP && !wasP) toAdd.push({ id: cb.getAttribute('data-id'), name: cb.getAttribute('data-name'), gender: cb.getAttribute('data-gender'), grade: cb.getAttribute('data-grade') });
-                else if (!isP && wasP) toDel.push(cb.getAttribute('data-timestamp'));
-            });
+            const indicator = document.getElementById('manualSaveIndicator');
+            indicator.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-blue-500 mr-2"></i> กำลังแอบบันทึกเบื้องหลัง...';
+            indicator.className = "flex items-center text-sm font-semibold bg-blue-50 text-blue-600 px-5 py-3 rounded-xl border border-blue-200 mt-6 md:mt-0 transition-all";
 
-            if(toAdd.length===0 && toDel.length===0) { alert('ไม่มีการเปลี่ยนแปลง'); return; }
-            const btn = document.getElementById('btnSaveManual'), ori = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...'; btn.disabled = true;
-
-            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, toAdd: toAdd, toDeleteTimestamps: toDel }) })
+            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, updates: updatesArray }) })
             .then(r => r.json()).then(data => {
-                btn.innerHTML = ori; btn.disabled = false;
-                if(data.status === 'success') { alert('บันทึกสำเร็จ!'); loadRecords(true); } else alert('ผิดพลาดในการบันทึก');
-            }).catch(()=>{ btn.innerHTML = ori; btn.disabled = false; alert('เชื่อมต่อขัดข้อง');});
+                if(data.status === 'success') {
+                    indicator.innerHTML = '<i class="fa-solid fa-check-circle text-emerald-500 mr-2"></i> ข้อมูลเชื่อมต่อกันแล้ว';
+                    indicator.className = "flex items-center text-sm font-semibold bg-emerald-50 text-emerald-600 px-5 py-3 rounded-xl border border-emerald-200 mt-6 md:mt-0 transition-all";
+                    pendingManualUpdates = {}; // ล้างคิวหลังจากเซฟเสร็จ
+                    loadRecords(true); // โหลดข้อมูลมาทับใหม่เงียบๆ
+                } else {
+                    indicator.innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-2"></i> บันทึกไม่สำเร็จ';
+                    indicator.className = "flex items-center text-sm font-semibold bg-red-50 text-red-600 px-5 py-3 rounded-xl border border-red-200 mt-6 md:mt-0 transition-all";
+                }
+            }).catch(()=>{ 
+                indicator.innerHTML = '<i class="fa-solid fa-wifi text-red-500 mr-2"></i> เชื่อมต่อขัดข้อง';
+            });
         }
 
         // --- ประวัติย้อนหลัง ---
@@ -675,7 +718,7 @@
             createChart('historyChart', stats.present, stats.absent);
 
             const tbody = document.getElementById('historyTableBody'); tbody.innerHTML = '';
-            const recs = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === d).reverse();
+            const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d).reverse();
             if(recs.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400">ไม่มีข้อมูล</td></tr>';
             else recs.forEach(row => { 
                 tbody.innerHTML += `
@@ -692,8 +735,8 @@
         // --- สุ่มชื่อ ---
         let randomInterval;
         function startRandomizer() {
-            const d = new Date().toISOString().split('T')[0];
-            const recs = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === d);
+            const d = getLocalYYYYMMDD(new Date());
+            const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
             if(recs.length === 0) { alert("ไม่มีนักเรียนมาเรียนวันนี้"); return; }
             const btn = document.getElementById('randomBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังสุ่ม...';
             let count = 0; if(randomInterval) clearInterval(randomInterval);
@@ -743,11 +786,11 @@
             let fData = [], dText = "";
             if(mode === 'single') {
                 const d = document.getElementById('exportDateSingle').value; if(!d) return alert("เลือกวันที่");
-                fData = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === d);
+                fData = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
                 dText = "วันที่ " + new Date(d).toLocaleDateString('th-TH');
             } else {
                 const ds = document.getElementById('exportDateStart').value, de = document.getElementById('exportDateEnd').value; if(!ds||!de) return alert("เลือกวันที่");
-                fData = allRecords.filter(r => { const d = new Date(r[0]).toISOString().split('T')[0]; return d >= ds && d <= de; });
+                fData = allRecords.filter(r => { const d = getLocalYYYYMMDD(r[0]); return d >= ds && d <= de; });
                 dText = `${new Date(ds).toLocaleDateString('th-TH')} - ${new Date(de).toLocaleDateString('th-TH')}`;
             }
             if(fData.length === 0) return alert("ไม่พบข้อมูล");
