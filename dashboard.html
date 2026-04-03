@@ -751,11 +751,14 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        function confirmDelete() {
+function confirmDelete() {
             const pwdInput = document.getElementById('deletePassword');
-            if (pwdInput.value !== "002304") {
+            const correctPassword = localStorage.getItem('tPassword'); // 👈 ดึงรหัสผ่านจริงของคนที่ใช้งานอยู่
+
+            // เช็คว่ารหัสที่พิมพ์ ตรงกับรหัสที่ล็อคอินเข้ามาหรือไม่
+            if (pwdInput.value !== correctPassword) {
                 document.getElementById('deleteErrorMsg').classList.remove('hidden');
-                // เขย่ากล่อง Input
+                // เอฟเฟกต์เขย่ากล่อง Input
                 pwdInput.classList.add('-translate-x-2');
                 setTimeout(() => pwdInput.classList.remove('-translate-x-2'), 100);
                 setTimeout(() => pwdInput.classList.add('translate-x-2'), 200);
