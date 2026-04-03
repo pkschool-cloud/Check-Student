@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PK School - Playful Dashboard</title>
+    <title>PK School - Premium Dashboard</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -20,11 +20,9 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-2deg); } 75% { transform: translateX(5px) rotate(2deg); } }
         
-        /* Fun Loader Animation */
         @keyframes rollDice { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
         .animate-roll { animation: rollDice 1s infinite ease-in-out; }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f4f7fe; }
@@ -33,7 +31,6 @@
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
 
-        /* Card Holographic Effect */
         .holo-card { position: relative; overflow: hidden; }
         .holo-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); transform: rotate(30deg); animation: holoSweep 3s infinite linear; pointer-events: none; }
         @keyframes holoSweep { 0% { transform: translateX(-100%) rotate(30deg); } 100% { transform: translateX(100%) rotate(30deg); } }
@@ -53,7 +50,7 @@
                 <i class="fa-solid fa-key"></i>
             </button>
             <div class="w-24 h-24 rounded-full border-4 border-blue-200 p-1 mb-4">
-                <img id="sidebarPhoto" src="" class="w-full h-full object-cover rounded-full shadow-sm hover:scale-105 transition-transform">
+                <img id="sidebarPhoto" src="" class="w-full h-full object-cover rounded-full shadow-sm">
             </div>
             <h2 class="text-xl font-extrabold text-slate-800" id="sidebarName">...</h2>
             <p class="text-xs text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mt-2 font-bold tracking-wide border border-blue-100" id="sidebarRole">...</p>
@@ -74,11 +71,14 @@
         
         <div class="p-4 overflow-y-auto flex-1 custom-scroll">
             <nav class="space-y-2" id="nav-menu">
-                <button onclick="switchTab('checkin', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl transition-all shadow-md font-bold hover:shadow-lg hover:-translate-y-0.5">
+                <button onclick="switchTab('checkin', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl transition-all shadow-md font-bold">
                     <i class="fa-solid fa-wand-magic-sparkles w-5 text-xl"></i><span>สแกนเช็คชื่อ</span>
                 </button>
+                <button onclick="switchTab('search', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-all font-bold mt-2">
+                    <i class="fa-solid fa-magnifying-glass w-5 text-lg"></i><span>ค้นหานักเรียน</span>
+                </button>
                 <button onclick="switchTab('manual', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-user-check w-5 text-lg"></i><span>ระบบเช็คชื่อ<br>(ครูประจำชั้น)</span>
+                    <i class="fa-solid fa-user-check w-5 text-lg"></i><span>ครูเช็คชื่อแทน</span>
                 </button>
                 <button onclick="switchTab('verify', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
                     <i class="fa-solid fa-chart-pie w-5 text-lg"></i><span id="navVerifyText">ตรวจสอบวันนี้</span>
@@ -124,7 +124,7 @@
                 <section id="checkin" class="tab-content active max-w-2xl mx-auto">
                     <div class="text-center mb-8">
                         <h2 class="text-4xl font-extrabold text-slate-800 mb-3 tracking-tight">สวัสดีตอนเช้า! ☀️</h2>
-                        <p class="text-slate-500 text-lg font-medium">ยิงบาร์โค้ด หรือพิมพ์รหัสประจำตัวได้เลย</p>
+                        <p class="text-slate-500 text-lg font-medium">ยิงบาร์โค้ด หรือพิมพ์ชื่อ (4 ตัวอักษรขึ้นไป) เพื่อเช็คชื่อ</p>
                     </div>
                     
                     <div class="bg-white p-12 rounded-[2.5rem] shadow-xl border border-slate-100 mb-10 text-center relative overflow-hidden group">
@@ -133,8 +133,8 @@
                             <i class="fa-solid fa-barcode text-5xl"></i>
                         </div>
                         <input type="text" id="studentInput" autofocus autocomplete="off"
-                            class="w-full max-w-sm mx-auto text-center px-6 py-5 text-3xl font-black bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:text-lg shadow-sm tracking-widest relative z-10"
-                            placeholder="รหัสนักเรียน...">
+                            class="w-full max-w-md mx-auto text-center px-6 py-5 text-2xl font-black bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:text-lg shadow-sm tracking-widest relative z-10"
+                            placeholder="รหัส หรือ ชื่อนักเรียน...">
                         
                         <div id="checkinStatus" class="mt-6 font-bold h-8 text-lg flex items-center justify-center transition-all"></div>
                     </div>
@@ -147,7 +147,7 @@
                             <div class="flex-1 text-center sm:text-left w-full mt-2">
                                 <div id="statusBadge" class="inline-flex items-center px-4 py-1.5 bg-white/20 text-white border border-white/30 text-sm font-bold rounded-full mb-3 backdrop-blur-sm"></div>
                                 <h3 id="studentName" class="text-3xl font-black mb-2 tracking-tight drop-shadow-md">-</h3>
-                                <p class="text-blue-100 font-medium mb-6 text-lg">รหัสประจำตัว: <span id="studentIdDisplay" class="font-bold bg-white/20 px-3 py-1 rounded-lg">-</span></p>
+                                <p class="text-blue-100 font-medium mb-6 text-lg">รหัส: <span id="studentIdDisplay" class="font-bold bg-white/20 px-3 py-1 rounded-lg">-</span></p>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
                                         <p class="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">ระดับชั้น</p>
@@ -163,11 +163,49 @@
                     </div>
                 </section>
 
+                <section id="search" class="tab-content">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-black text-slate-800 mb-2">ค้นหาสถานะนักเรียน</h2>
+                        <p class="text-slate-500 font-medium">พิมพ์รหัส ชื่อ หรือสกุลบางส่วนเพื่อค้นหา (พิมพ์อย่างน้อย 2 ตัวอักษร)</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 relative flex items-center">
+                        <div class="absolute left-10 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400 text-2xl"></i>
+                        </div>
+                        <input type="text" id="searchInput" oninput="executeSearch()"
+                            class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-16 pr-6 text-xl font-bold text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+                            placeholder="พิมพ์ชื่อ หรือ รหัส เพื่อค้นหา...">
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-6 items-start">
+                        <div class="w-full md:w-1/2">
+                            <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 mb-4 flex items-center justify-between shadow-sm">
+                                <h3 class="font-bold text-emerald-700 text-lg"><i class="fa-solid fa-check-circle mr-2"></i>มาเรียนแล้ว</h3>
+                                <span class="bg-emerald-200 text-emerald-800 px-4 py-1 rounded-full text-sm font-bold shadow-inner" id="searchPresentCount">0</span>
+                            </div>
+                            <div id="searchPresentList" class="flex flex-col gap-4">
+                                <div class="text-center py-10 text-slate-400 font-medium bg-white rounded-2xl border border-slate-100">พิมพ์คำค้นหาด้านบน</div>
+                            </div>
+                        </div>
+
+                        <div class="w-full md:w-1/2">
+                            <div class="bg-rose-50 border border-rose-100 rounded-2xl p-5 mb-4 flex items-center justify-between shadow-sm">
+                                <h3 class="font-bold text-rose-700 text-lg"><i class="fa-solid fa-xmark-circle mr-2"></i>ยังไม่มาเรียน / ขาด</h3>
+                                <span class="bg-rose-200 text-rose-800 px-4 py-1 rounded-full text-sm font-bold shadow-inner" id="searchAbsentCount">0</span>
+                            </div>
+                            <div id="searchAbsentList" class="flex flex-col gap-4">
+                                <div class="text-center py-10 text-slate-400 font-medium bg-white rounded-2xl border border-slate-100">พิมพ์คำค้นหาด้านบน</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="manual" class="tab-content relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                         <div>
                             <h2 class="text-3xl font-black text-slate-800 mb-2">เช็คชื่อด้วยตนเอง</h2>
-                            <p class="text-slate-500 font-medium">กดสวิตช์เพื่อบันทึก <span class="text-orange-500 font-bold">(ระบบบันทึกอัตโนมัติภายใน 2 วินาที)</span></p>
+                            <p class="text-slate-500 font-medium">สลับสวิตช์เพื่อบันทึก <span class="text-orange-500 font-bold">(ออโต้เซฟ 2 วินาที)</span></p>
                         </div>
                         <div id="manualSaveIndicator" class="bg-white text-slate-500 px-6 py-3 rounded-2xl font-bold shadow-sm border border-slate-200 flex items-center transition-all">
                             <i class="fa-solid fa-cloud-arrow-up mr-2"></i> ซิงก์ตรงกันแล้ว
@@ -176,7 +214,7 @@
 
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row items-center gap-4">
                         <div class="flex-1 w-full max-w-sm">
-                            <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-regular fa-calendar-check text-blue-500 mr-2"></i>เลือกวันที่:</label>
+                            <label class="block text-sm font-bold text-slate-600 mb-2"><i class="fa-regular fa-calendar-check text-blue-500 mr-2"></i>เลือกวันที่ต้องการเช็ค:</label>
                             <input type="date" id="manualDate" onchange="renderManualTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-slate-700">
                         </div>
                     </div>
@@ -190,10 +228,12 @@
                                         <th class="py-5 px-6 font-bold">รหัส</th>
                                         <th class="py-5 px-6 font-bold">ชื่อ-นามสกุล</th>
                                         <th class="py-5 px-6 font-bold">ชั้นเรียน</th>
-                                        <th class="py-5 px-6 font-bold text-center w-48">สถานะ</th>
+                                        <th class="py-5 px-6 font-bold text-center w-48">สถานะเข้าเรียน</th>
                                     </tr>
                                 </thead>
-                                <tbody id="manualTableBody" class="text-slate-600 font-bold divide-y divide-slate-50"></tbody>
+                                <tbody id="manualTableBody" class="text-slate-600 font-bold divide-y divide-slate-50">
+                                    <tr><td colspan="5" class="text-center py-16 text-slate-400">กรุณารอโหลดข้อมูล...</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -224,7 +264,6 @@
                                 <button onclick="addNewStudent()" class="bg-emerald-600 hover:bg-emerald-700 text-white w-14 rounded-xl flex items-center justify-center transition-colors shadow-sm"><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </div>
-                        <p class="text-xs text-emerald-600 mt-3 font-semibold">* ระบบจะล็อกให้แสดงผลเฉพาะนักเรียนในระดับชั้นที่คุณรับผิดชอบเท่านั้น</p>
                     </div>
 
                     <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
@@ -302,7 +341,7 @@
 
                 <section id="export" class="tab-content">
                     <h2 class="text-3xl font-extrabold text-slate-800 mb-8">ส่งออกเอกสาร PDF</h2>
-                    <div class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-200 max-w-2xl mx-auto">
+                    <div class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 max-w-2xl mx-auto">
                         <div class="flex gap-4 mb-8">
                             <label class="flex-1 border-2 border-slate-100 rounded-2xl p-5 cursor-pointer hover:bg-slate-50 flex items-center has-[:checked]:border-blue-500 group"><input type="radio" name="dateMode" value="single" checked onchange="toggleDateMode()" class="w-5 h-5 mr-3"><span class="font-bold text-slate-600">วันเดียว</span></label>
                             <label class="flex-1 border-2 border-slate-100 rounded-2xl p-5 cursor-pointer hover:bg-slate-50 flex items-center has-[:checked]:border-blue-500 group"><input type="radio" name="dateMode" value="range" onchange="toggleDateMode()" class="w-5 h-5 mr-3"><span class="font-bold text-slate-600">ช่วงเวลา</span></label>
@@ -327,7 +366,7 @@
 
     <script>
         // ==============================================================
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzYzOzBAAqteJh-S-lI1y1wP6wxnUbD-ZTMUBZelzCikkFeS8GsbSNYNvcl_rKEHY7q/exec'; 
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzX-pUFGJuI4SBDAiojW64GJNCfR2hCrcA3U4XUwKkClcnisvnNcQRWxtiGCQsr-u5j/exec'; 
         // ==============================================================
 
         if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
@@ -342,7 +381,6 @@
         let activeGradeContext = tRole === 'Admin' ? 'All' : tGrade; 
         let targetDeleteId = null;
         let todayChartObj, historyChartObj;
-        let targetDeleteStudentId = null; // สำหรับฟังก์ชันลบเด็ก
 
         function showToast(type, message) {
             const container = document.getElementById('toastContainer'); const toast = document.createElement('div');
@@ -363,8 +401,6 @@
             
             const todayStr = getLocalYYYYMMDD(new Date());
             document.getElementById('exportDateSingle').value = todayStr; document.getElementById('historyDate').value = todayStr; document.getElementById('manualDate').value = todayStr;
-            
-            // ใส่ชื่อชั้นให้ช่องกรอก (ถ้าเป็นครู)
             if(tRole !== 'Admin') document.getElementById('addStGrade').value = tGrade;
             
             loadRecords(true);
@@ -376,19 +412,23 @@
             document.getElementById('navVerifyText').textContent = `ตรวจสอบ (${ctxText})`;
         }
         function changeAdminView() { activeGradeContext = document.getElementById('adminGradeSelect').value; updateContextUI(); loadRecords(true); }
+        
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.className = b.textContent.includes('สุ่ม') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-2xl transition-all font-bold"
                 : b.textContent.includes('จัดการรายชื่อ') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-2xl transition-all font-bold mt-4 border border-emerald-100"
+                : b.textContent.includes('ค้นหา') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-all font-bold mt-2"
                 : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold";
             });
             btnElement.className = tabId === 'random' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-orange-100 text-orange-600 rounded-2xl transition-all font-bold shadow-sm"
             : tabId === 'students' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-emerald-600 text-white rounded-2xl transition-all shadow-[0_4px_12px_rgba(16,185,129,0.3)] font-bold mt-4"
+            : tabId === 'search' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-indigo-600 text-white rounded-2xl transition-all shadow-[0_4px_12px_rgba(79,70,229,0.3)] font-bold mt-2"
             : "nav-btn w-full flex items-center space-x-4 px-5 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.2)] font-bold";
 
             if(['verify','export','students'].includes(tabId)) loadRecords();
             if(tabId === 'manual') renderManualTable();
+            if(tabId === 'search') executeSearch();
             if(tabId === 'history' && document.getElementById('historyDate').value) renderHistory();
         }
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
@@ -406,12 +446,76 @@
             }).catch(()=> { showToast('error', 'ขัดข้อง'); btn.innerHTML = 'บันทึก'; btn.disabled = false;});
         }
 
-        // --- สแกนบาร์โค้ด (Fun Loader) ---
+        // --- 📌 ค้นหานักเรียน (Search) ---
+        function executeSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const pList = document.getElementById('searchPresentList');
+            const aList = document.getElementById('searchAbsentList');
+            const pCount = document.getElementById('searchPresentCount');
+            const aCount = document.getElementById('searchAbsentCount');
+
+            if (query.length < 2) {
+                pList.innerHTML = '<div class="text-center py-10 text-slate-400 font-medium bg-white rounded-2xl border border-slate-100">พิมพ์คำค้นหาด้านบน</div>';
+                aList.innerHTML = '<div class="text-center py-10 text-slate-400 font-medium bg-white rounded-2xl border border-slate-100">พิมพ์คำค้นหาด้านบน</div>';
+                pCount.textContent = '0'; aCount.textContent = '0';
+                return;
+            }
+
+            let filteredSt = globalStudents;
+            if (activeGradeContext !== 'All') {
+                const allowed = activeGradeContext.split(',').map(g => g.trim());
+                filteredSt = globalStudents.filter(s => allowed.some(g => s.grade.startsWith(g)));
+            }
+
+            const matches = filteredSt.filter(s => s.id.toLowerCase().includes(query) || s.name.toLowerCase().includes(query));
+
+            if (matches.length === 0) {
+                pList.innerHTML = '<div class="text-center py-10 text-slate-400 font-medium bg-white rounded-2xl border border-slate-100">ไม่พบข้อมูล</div>';
+                aList.innerHTML = '<div class="text-center py-10 text-slate-400 font-medium bg-white rounded-2xl border border-slate-100">ไม่พบข้อมูล</div>';
+                pCount.textContent = '0'; aCount.textContent = '0';
+                return;
+            }
+
+            const todayStr = getLocalYYYYMMDD(new Date());
+            const todayRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === todayStr);
+
+            pList.innerHTML = ''; aList.innerHTML = '';
+            let pC = 0, aC = 0;
+
+            matches.forEach(st => {
+                const rec = todayRecs.find(r => String(r[1]) === String(st.id));
+                const isPresent = !!rec;
+                const timeStr = isPresent ? new Date(rec[0]).toLocaleTimeString('th-TH') : '-';
+                
+                const card = `
+                    <div class="bg-white p-5 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border-l-[6px] ${isPresent ? 'border-emerald-500' : 'border-rose-500'} flex items-center gap-4 transition-transform hover:-translate-y-1">
+                        <img src="https://ui-avatars.com/api/?name=${st.name}&background=${isPresent ? '10b981' : 'f43f5e'}&color=fff" class="w-14 h-14 rounded-full object-cover shadow-sm">
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-800 text-[15px]">${st.name}</p>
+                            <p class="text-[13px] text-slate-500 mt-0.5">รหัส: <span class="font-bold text-slate-700">${st.id}</span> | ชั้น: ${st.grade}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">เวลา</p>
+                            <p class="text-sm font-black ${isPresent ? 'text-emerald-600' : 'text-slate-300'}">${timeStr}</p>
+                        </div>
+                    </div>`;
+                    
+                if (isPresent) { pList.innerHTML += card; pC++; }
+                else { aList.innerHTML += card; aC++; }
+            });
+
+            if(pC === 0) pList.innerHTML = '<div class="text-center py-6 text-slate-400 font-medium">ไม่มีรายการ</div>';
+            if(aC === 0) aList.innerHTML = '<div class="text-center py-6 text-slate-400 font-medium">ไม่มีรายการ</div>';
+
+            pCount.textContent = pC;
+            aCount.textContent = aC;
+        }
+
+        // --- สแกนบาร์โค้ด (Fun Loader + Partial Match) ---
         document.getElementById('studentInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const sid = this.value.trim(); if (!sid) return;
                 const statusEl = document.getElementById('checkinStatus');
-                // โหลดเดอร์แบบใหม่
                 statusEl.innerHTML = '<div class="flex items-center justify-center text-blue-500"><i class="fa-solid fa-book-open animate-pulse mr-2 text-2xl"></i> กำลังตรวจรายชื่อ...</div>';
                 document.getElementById('studentCard').classList.add('hidden');
                 
@@ -424,7 +528,7 @@
                         badge.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> เข้าเรียนสำเร็จ';
                         document.getElementById('studentPhotoCard').src = data.photoUrl || `https://ui-avatars.com/api/?name=${data.name}&background=ffffff&color=2563eb`; 
                         document.getElementById('studentName').textContent = data.name;
-                        document.getElementById('studentIdDisplay').textContent = sid;
+                        document.getElementById('studentIdDisplay').textContent = data.name.includes(sid) ? "ค้นหาด้วยชื่อ" : sid; // โชว์ว่าสแกนด้วยอะไร
                         document.getElementById('studentGrade').textContent = data.grade;
                         document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
                         document.getElementById('studentCard').className = "bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] shadow-2xl overflow-hidden transform transition-all duration-300 holo-card text-white p-1";
@@ -503,6 +607,7 @@
                     if(document.getElementById('students').classList.contains('active')) renderStudentManager();
                     if(document.getElementById('history').classList.contains('active')) renderHistory();
                     if(document.getElementById('manual').classList.contains('active') && Object.keys(pendingUpdates).length === 0) renderManualTable();
+                    if(document.getElementById('search').classList.contains('active')) executeSearch();
                 } else { if(!silent) showToast('error', 'โหลดข้อมูลล้มเหลว'); }
             }).catch(()=> { if(!silent) showToast('error', 'เชื่อมต่อขัดข้อง'); });
         }
@@ -581,7 +686,7 @@
             XLSX.writeFile(wb, `รายชื่อนักเรียน_${activeGradeContext}.xlsx`);
         }
 
-        // --- 📌 1.5 ระบบเช็คชื่อ(ครูประจำชั้น) ---
+        // --- 📌 1.5 ครูเช็คชื่อแทน ---
         let manualSyncTimer = null; let pendingUpdates = {};
         function renderManualTable() {
             const dateStr = document.getElementById('manualDate').value; if(!dateStr) return;
@@ -649,9 +754,10 @@
         }
 
         // --- สุ่มชื่อ ---
+        let randomInterval;
         function startRandomizer() {
             const d = getLocalYYYYMMDD(new Date()); const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
-            if(recs.length === 0) { showToast("error", "ยังไม่มีนักเรียนมาเรียนวันนี้"); return; }
+            if(recs.length === 0) { showToast("error", "ไม่มีนักเรียนมาเรียนวันนี้"); return; }
             const btn = document.getElementById('randomBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> กำลังสุ่ม...';
             document.getElementById('randomIcon').innerHTML = '<i class="fa-solid fa-dice animate-roll"></i>';
             let count = 0; if(randomInterval) clearInterval(randomInterval);
