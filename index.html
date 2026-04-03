@@ -51,9 +51,8 @@
     </div>
 
     <script>
-        // ==========================================
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbyUt_SCDKswaokUSdcDbvctpjFIEJqaNYpvqsTFr71evgAiZHUVzuo8nhN-bJehQZq4/exec'; // <<<<<<<
-        // ==========================================
+        // ลิงก์ตรงกันกับไฟล์ Dashboard ของคุณ
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxdLFYl2jzCPybCF6ad8s8q0LieA1hnkA3HJh1aYSRliQTfMjxtShFg70gWqKwBdWzi/exec';
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -69,19 +68,20 @@
             fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'login', username: user, password: pass}) })
             .then(res => res.json())
             .then(data => {
-            if (data.status === 'success') {
-                    // 1. เก็บข้อมูลลงเครื่อง
+                if (data.status === 'success') {
+                    // 📌 1. บันทึกข้อมูลที่ถูกต้อง ส่งไปให้หน้า Dashboard
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('tName', data.name);
                     localStorage.setItem('tRole', data.role);
                     localStorage.setItem('tGrade', data.grade);
                     
-                    localStorage.setItem('tPassword', pass); // 👈 เพิ่มบรรทัดนี้ลงไป เพื่อจำรหัสผ่าน
+                    // 📌 ไฮไลท์: จำรหัสผ่านเอาไว้ใช้ยืนยันการลบข้อมูล
+                    localStorage.setItem('tPassword', pass); 
 
                     const pic = data.photoUrl || `https://ui-avatars.com/api/?name=${data.name}&background=0D9488&color=fff&size=200`;
                     localStorage.setItem('tPhoto', pic);
 
-                    // 2. จัดการแอนิเมชันลูกเล่น
+                    // 2. จัดการแอนิเมชัน
                     document.getElementById('loginContainer').classList.add('scale-95', 'opacity-0');
                     document.getElementById('userPhoto').src = pic;
                     document.getElementById('userName').textContent = data.name;
@@ -96,7 +96,7 @@
                         popup.classList.add('scale-100', 'opacity-100');
                     }, 100);
 
-                    // 3. ดีเลย์ 2.5 วิ แล้วเด้งไป Dashboard
+                    // 3. เด้งไป Dashboard
                     setTimeout(() => { window.location.href = 'dashboard.html'; }, 2500);
 
                 } else {
