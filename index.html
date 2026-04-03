@@ -5,54 +5,156 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PK School - เข้าสู่ระบบ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style> body { font-family: 'Prompt', sans-serif; } </style>
+    <style> 
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background: linear-gradient(-45deg, #e0e7ff, #c7d2fe, #ede9fe, #f3e8ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ของตกแต่งลอยไปมาเบื้องหลัง (Floating Icons) */
+        .float-icon { position: absolute; opacity: 0.15; z-index: -1; animation: float 6s ease-in-out infinite; }
+        .float-1 { top: 10%; left: 10%; font-size: 5rem; animation-delay: 0s; color: #4f46e5; }
+        .float-2 { top: 70%; left: 15%; font-size: 6rem; animation-delay: 2s; color: #db2777; }
+        .float-3 { top: 20%; right: 10%; font-size: 4.5rem; animation-delay: 1s; color: #059669; }
+        .float-4 { bottom: 15%; right: 15%; font-size: 7rem; animation-delay: 3s; color: #ea580c; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* แอนิเมชันสลับหน้าต่าง */
+        .fade-out { animation: fadeOut 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes fadeOut { 
+            0% { opacity: 1; transform: scale(1); } 
+            100% { opacity: 0; transform: scale(0.9); pointer-events: none; visibility: hidden; display: none;} 
+        }
+        @keyframes fadeIn { 
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); } 
+            100% { opacity: 1; transform: scale(1) translateY(0); } 
+        }
+
+        /* วงแหวนหมุนรอบรูปโปรไฟล์ */
+        .profile-ring {
+            background: conic-gradient(from 0deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* รูปโปรไฟล์เด้งดึ๋ง */
+        .profile-pop { animation: popBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; transform: scale(0); }
+        @keyframes popBounce { 
+            0% { opacity: 0; transform: scale(0.3); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
+    </style>
 </head>
-<body class="bg-slate-50 h-screen flex items-center justify-center relative overflow-hidden">
+<body class="h-screen flex items-center justify-center relative">
 
-    <div id="loginContainer" class="bg-white p-10 rounded-2xl shadow-xl max-w-md w-full border border-slate-100 relative z-10 transition-all duration-500">
-        <div class="absolute top-0 left-0 w-full h-2 bg-blue-950"></div>
-        <div class="text-center mb-10">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-teal-50 text-teal-600 mb-4"><i class="fa-solid fa-school text-3xl"></i></div>
-            <h1 class="text-3xl font-extrabold text-blue-950">ยินดีต้อนรับ</h1>
-            <p class="text-sm text-slate-500 mt-2 font-medium">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
+    <i class="fa-solid fa-graduation-cap float-icon float-1"></i>
+    <i class="fa-solid fa-book-open float-icon float-2"></i>
+    <i class="fa-solid fa-dice float-icon float-3"></i>
+    <i class="fa-solid fa-paintbrush float-icon float-4"></i>
+
+    <div id="mainContainer" class="glass-card p-10 rounded-[2.5rem] max-w-md w-full relative z-10 mx-4 transition-all duration-500 min-h-[450px] flex flex-col justify-center">
+        
+        <div id="loginSection" class="w-full">
+            <div class="text-center mb-8">
+                <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white mb-5 shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-school text-4xl"></i>
+                </div>
+                <h1 class="text-3xl font-black text-slate-800 tracking-tight">PK School</h1>
+                <p class="text-sm text-slate-500 mt-2 font-medium">เข้าสู่ระบบเพื่อจัดการชั้นเรียนของคุณ</p>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5 ml-1">ชื่อผู้ใช้งาน</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user text-slate-400"></i>
+                        </div>
+                        <input type="text" id="username" required 
+                            class="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 placeholder:font-medium placeholder:text-slate-400" 
+                            placeholder="Username">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5 ml-1">รหัสผ่าน</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-slate-400"></i>
+                        </div>
+                        <input type="password" id="password" required 
+                            class="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 placeholder:font-medium placeholder:text-slate-400 tracking-wider" 
+                            placeholder="••••••••">
+                    </div>
+                </div>
+                
+                <div id="errorMessage" class="hidden bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i> <span id="errorText">รหัสผ่านไม่ถูกต้อง!</span>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg shadow-blue-500/30 transform transition-all hover:-translate-y-1 active:translate-y-0 flex justify-center items-center gap-2 mt-4">
+                    เข้าสู่ระบบ <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
         </div>
 
-        <form id="loginForm" class="space-y-6">
-            <div>
-                <label class="block text-sm font-semibold text-blue-950 mb-1.5">ชื่อผู้ใช้งาน</label>
-                <input type="text" id="username" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-400 focus:border-teal-500 outline-none transition font-medium" placeholder="เช่น admin">
+        <div id="welcomeSection" class="hidden w-full flex-col items-center text-center justify-center py-4">
+            
+            <div class="relative w-36 h-36 mx-auto mb-6 profile-pop" id="profileAnim">
+                <div class="absolute inset-0 rounded-full profile-ring blur-[2px]"></div>
+                <div class="absolute inset-[4px] bg-white rounded-full p-1 z-10">
+                    <img id="userPhoto" src="" class="w-full h-full object-cover rounded-full shadow-inner">
+                </div>
+                <div class="absolute bottom-0 right-0 bg-emerald-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-4 border-white z-20 transform scale-0 transition-transform duration-500 delay-500" id="checkAnim">
+                    <i class="fa-solid fa-check text-xl"></i>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-semibold text-blue-950 mb-1.5">รหัสผ่าน</label>
-                <input type="password" id="password" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-400 focus:border-teal-500 outline-none transition font-medium" placeholder="••••••••">
-            </div>
-            <p id="errorMessage" class="text-red-600 text-sm hidden text-center font-semibold bg-red-50 py-2 rounded-lg"></p>
-            <button type="submit" id="submitBtn" class="w-full bg-blue-950 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl transition duration-300 shadow-md flex justify-center items-center">
-                เข้าสู่ระบบ
-            </button>
-        </form>
-    </div>
 
-    <div id="successOverlay" class="fixed inset-0 bg-slate-50/95 backdrop-blur-md z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-700">
-        <div class="transform scale-75 opacity-0 transition-all duration-700 delay-300" id="profilePopup">
-            <div class="relative w-40 h-40 mx-auto mb-6">
-                <img id="userPhoto" src="" class="w-full h-full object-cover rounded-full border-8 border-white shadow-2xl">
-                <div class="absolute bottom-0 right-0 bg-green-500 text-white p-3 rounded-full shadow-lg border-4 border-white"><i class="fa-solid fa-check text-xl"></i></div>
+            <h2 class="text-xl font-bold text-slate-500 mb-1 opacity-0 transform translate-y-4 transition-all duration-500 delay-[600ms]" id="textAnim1">ยินดีต้อนรับกลับมา</h2>
+            <h1 id="userName" class="text-3xl font-black text-slate-800 mb-3 tracking-tight opacity-0 transform translate-y-4 transition-all duration-500 delay-[700ms]">...</h1>
+            
+            <div class="opacity-0 transform translate-y-4 transition-all duration-500 delay-[800ms]" id="textAnim2">
+                <span id="userRole" class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-indigo-50 text-indigo-600 font-bold rounded-full border border-indigo-100 shadow-sm text-sm">
+                    <i class="fa-solid fa-chalkboard-user"></i> ...
+                </span>
             </div>
-            <h2 id="userName" class="text-4xl font-bold text-blue-950 text-center mb-2"></h2>
-            <p id="userRole" class="text-lg text-teal-600 font-semibold text-center mb-8 bg-teal-50 inline-block px-6 py-2 rounded-full mx-auto"></p>
-            <div class="flex items-center justify-center space-x-3 text-slate-500 font-medium">
-                <i class="fa-solid fa-circle-notch fa-spin text-xl text-blue-500"></i>
-                <span>กำลังพาท่านไปที่ห้องทำงาน...</span>
+
+            <div class="mt-8 text-slate-400 font-medium flex items-center justify-center gap-2 opacity-0 transition-opacity duration-500 delay-[1000ms]" id="loadingAnim">
+                <i class="fa-solid fa-circle-notch fa-spin text-blue-500"></i> กำลังเตรียมห้องทำงานของคุณ...
             </div>
         </div>
+
     </div>
 
     <script>
         // ==============================================================
-        // 🛑 นำ Web App URL อันใหม่ที่ Deploy เสร็จแล้ว มาวางที่นี่ด้วยครับ 🛑
+        // 🛑 นำ Web App URL อันใหม่ที่ Deploy เสร็จแล้ว มาวางที่นี่ครับ 🛑
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbzYzOzBAAqteJh-S-lI1y1wP6wxnUbD-ZTMUBZelzCikkFeS8GsbSNYNvcl_rKEHY7q/exec'; 
         // ==============================================================
 
@@ -61,61 +163,78 @@
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value.trim();
             const btn = document.getElementById('submitBtn');
-            const errorMsg = document.getElementById('errorMessage');
+            const errorBox = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
 
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังตรวจสอบ...';
+            // เปลี่ยนสถานะปุ่ม
+            btn.innerHTML = '<i class="fa-solid fa-dice animate-spin text-xl"></i> กำลังค้นหาข้อมูล...';
             btn.disabled = true;
-            errorMsg.classList.add('hidden');
+            errorBox.classList.add('hidden');
 
             fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'login', username: user, password: pass}) })
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // 📌 1. บันทึกข้อมูลที่ถูกต้อง ส่งไปให้หน้า Dashboard
+                    // 📌 1. บันทึกข้อมูลลงเครื่อง
                     localStorage.setItem('isLoggedIn', 'true');
-                    
-                    // 👉 สิ่งที่เพิ่มเข้ามา: บันทึก Username ไว้ใช้ตอนเปลี่ยนรหัสผ่าน
                     localStorage.setItem('tUsername', user); 
-                    
                     localStorage.setItem('tName', data.name);
                     localStorage.setItem('tRole', data.role);
                     localStorage.setItem('tGrade', data.grade);
-                    
-                    // บันทึกรหัสผ่านไว้ใช้ยืนยันตอนกดลบข้อมูล
                     localStorage.setItem('tPassword', pass); 
 
-                    const pic = data.photoUrl || `https://ui-avatars.com/api/?name=${data.name}&background=0D9488&color=fff&size=200`;
+                    const pic = data.photoUrl || `https://ui-avatars.com/api/?name=${data.name}&background=2563EB&color=fff&size=200`;
                     localStorage.setItem('tPhoto', pic);
 
-                    // 2. จัดการแอนิเมชัน
-                    document.getElementById('loginContainer').classList.add('scale-95', 'opacity-0');
-                    document.getElementById('userPhoto').src = pic;
-                    document.getElementById('userName').textContent = data.name;
-                    document.getElementById('userRole').textContent = data.role === 'Admin' ? 'ผู้ดูแลระบบ (Admin)' : `ครูประจำชั้น ${data.grade}`;
+                    // 📌 2. เล่นแอนิเมชัน (สลับหน้าต่าง)
+                    const loginSec = document.getElementById('loginSection');
+                    const welcomeSec = document.getElementById('welcomeSection');
                     
-                    const overlay = document.getElementById('successOverlay');
-                    const popup = document.getElementById('profilePopup');
-                    overlay.classList.remove('opacity-0', 'pointer-events-none');
-                    
-                    setTimeout(() => {
-                        popup.classList.remove('scale-75', 'opacity-0');
-                        popup.classList.add('scale-100', 'opacity-100');
-                    }, 100);
+                    // เฟดฟอร์มล็อคอินออก
+                    loginSec.classList.add('fade-out');
 
-                    // 3. เด้งไป Dashboard
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 2500);
+                    setTimeout(() => {
+                        loginSec.classList.add('hidden');
+                        loginSec.classList.remove('fade-out');
+                        
+                        // เซ็ตข้อมูลลงการ์ดต้อนรับ
+                        document.getElementById('userPhoto').src = pic;
+                        document.getElementById('userName').textContent = data.name;
+                        document.getElementById('userRole').innerHTML = data.role === 'Admin' ? '<i class="fa-solid fa-crown mr-1"></i> ผู้ดูแลระบบ (Admin)' : `<i class="fa-solid fa-chalkboard-user mr-1"></i> ครูประจำชั้น ${data.grade}`;
+                        
+                        // โชว์การ์ดต้อนรับและเริ่มแอนิเมชัน
+                        welcomeSec.classList.remove('hidden');
+                        welcomeSec.classList.add('fade-in');
+
+                        // เล่น Effect ย่อยด้านใน
+                        document.getElementById('checkAnim').classList.remove('scale-0');
+                        document.getElementById('checkAnim').classList.add('scale-100');
+                        
+                        ['textAnim1', 'userName', 'textAnim2', 'loadingAnim'].forEach(id => {
+                            document.getElementById(id).classList.remove('opacity-0', 'translate-y-4');
+                            document.getElementById(id).classList.add('opacity-100', 'translate-y-0');
+                        });
+
+                    }, 500); // รอฟอร์มหายไป 0.5 วิ
+
+                    // 📌 3. วาร์ปไปหน้า Dashboard (รวมเวลาโชว์แอนิเมชัน 3.5 วินาที)
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 3500);
 
                 } else {
-                    errorMsg.textContent = "❌ " + data.message;
-                    errorMsg.classList.remove('hidden');
-                    btn.innerHTML = 'เข้าสู่ระบบ';
+                    errorText.textContent = data.message;
+                    errorBox.classList.remove('hidden');
+                    // ใส่ Effect สั่นให้กล่อง Error
+                    errorBox.style.animation = 'none';
+                    setTimeout(() => { errorBox.style.animation = 'shake 0.4s ease-in-out'; }, 10);
+                    
+                    btn.innerHTML = 'เข้าสู่ระบบ <i class="fa-solid fa-arrow-right"></i>';
                     btn.disabled = false;
                 }
             })
             .catch(() => {
-                errorMsg.textContent = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์";
-                errorMsg.classList.remove('hidden');
-                btn.innerHTML = 'เข้าสู่ระบบ';
+                errorText.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย";
+                errorBox.classList.remove('hidden');
+                btn.innerHTML = 'เข้าสู่ระบบ <i class="fa-solid fa-arrow-right"></i>';
                 btn.disabled = false;
             });
         });
