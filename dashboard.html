@@ -3,163 +3,408 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - ระบบเช็คชื่อนักเรียน</title>
+    <title>ระบบเช็คชื่อนักเรียน - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Prompt', sans-serif; } </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style> 
+        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="flex h-screen overflow-hidden text-slate-800">
 
-    <nav class="bg-blue-600 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="font-bold text-xl">📝 Check-in System</div>
-                <div class="flex items-center space-x-4">
-                    <span id="displayTeacherName" class="text-sm">ยินดีต้อนรับ, ครู...</span>
-                    <button onclick="logout()" class="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm transition">ออกจากระบบ</button>
+    <aside class="w-64 bg-blue-950 text-white flex flex-col shadow-2xl z-20 relative">
+        <div class="p-6 border-b border-blue-900/50 flex items-center space-x-3">
+            <div class="bg-teal-500 text-white p-2 rounded-lg"><i class="fa-solid fa-school"></i></div>
+            <h2 class="text-xl font-bold tracking-wide">PK School</h2>
+        </div>
+        
+        <div class="p-4">
+            <p class="text-xs text-blue-300 font-semibold uppercase tracking-wider mb-2">เมนูหลัก</p>
+            <nav class="space-y-1" id="nav-menu">
+                <button onclick="switchTab('checkin', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-blue-900/50 text-teal-300 rounded-xl transition font-medium border-l-4 border-teal-400">
+                    <i class="fa-solid fa-qrcode w-5 text-center"></i>
+                    <span>ระบบเช็คชื่อ</span>
+                </button>
+                <button onclick="switchTab('verify', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent">
+                    <i class="fa-solid fa-list-check w-5 text-center"></i>
+                    <span>ระบบตรวจสอบรายชื่อ</span>
+                </button>
+                <button onclick="switchTab('export', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent">
+                    <i class="fa-solid fa-file-export w-5 text-center"></i>
+                    <span>ระบบส่งออกเอกสาร</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="mt-auto p-4 border-t border-blue-900/50">
+            <div class="flex items-center space-x-3 mb-4 px-2">
+                <div class="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center text-blue-950 font-bold overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D9488&color=fff" alt="Profile">
+                </div>
+                <div>
+                    <p class="text-sm font-semibold" id="displayUsername">คุณครู Admin</p>
+                    <p class="text-xs text-blue-300">Administrator</p>
                 </div>
             </div>
+            <button onclick="logout()" class="w-full py-2 px-4 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition flex items-center justify-center space-x-2 text-sm font-medium">
+                <i class="fa-solid fa-right-from-bracket"></i> <span>ออกจากระบบ</span>
+            </button>
         </div>
-    </nav>
+    </aside>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-1 overflow-y-auto relative bg-slate-50">
         
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 text-center">
-            <h2 class="text-lg font-semibold text-slate-700 mb-4">สแกนหรือพิมพ์รหัสนักเรียนเพื่อเช็คชื่อ</h2>
-            <input type="text" id="studentInput" autofocus
-                class="w-full max-w-md mx-auto text-center px-4 py-3 text-xl border-2 border-blue-300 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition"
-                placeholder="กรอกรหัส 5 หลัก แล้วกด Enter">
-            <p id="checkinStatus" class="mt-3 text-green-600 font-medium h-6"></p> </div>
+        <section id="checkin" class="tab-content active p-8">
+            <div class="max-w-3xl mx-auto">
+                <h1 class="text-3xl font-bold text-blue-950 mb-2">สแกนรหัสเช็คชื่อ</h1>
+                <p class="text-slate-500 mb-8">กรอกรหัสนักเรียนแล้วกด Enter ระบบจะบันทึกเวลาและแสดงข้อมูลทันที</p>
+                
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-blue-500"></div>
+                    <i class="fa-solid fa-barcode text-5xl text-slate-300 mb-4 block"></i>
+                    <input type="text" id="studentInput" autofocus
+                        class="w-full max-w-md mx-auto text-center px-6 py-4 text-2xl font-bold border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition text-blue-950"
+                        placeholder="กรอกรหัสนักเรียน...">
+                    <div id="checkinStatus" class="mt-4 font-medium h-6 text-sm"></div>
+                </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500">
-                <div class="text-slate-500 text-sm font-medium">นักเรียนทั้งหมด (ชั้นที่รับผิดชอบ)</div>
-                <div class="text-3xl font-bold text-slate-800 mt-2">100 <span class="text-sm font-normal text-slate-500">คน</span></div>
+                <div id="studentCard" class="hidden bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden transform transition-all">
+                    <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                        <div class="w-32 h-32 rounded-full border-4 border-teal-50 shadow-md overflow-hidden bg-slate-100 flex-shrink-0">
+                            <img id="studentPhoto" src="" alt="Student" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <div class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-2">
+                                <i class="fa-solid fa-check-circle mr-1"></i> บันทึกสำเร็จ
+                            </div>
+                            <h2 id="studentName" class="text-2xl font-bold text-slate-800 mb-1">-</h2>
+                            <p class="text-slate-500 font-medium mb-4">รหัสประจำตัว: <span id="studentIdDisplay" class="text-blue-600">-</span></p>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <p class="text-slate-400 mb-1">ระดับชั้น</p>
+                                    <p id="studentGrade" class="font-bold text-slate-700">-</p>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <p class="text-slate-400 mb-1">เพศ</p>
+                                    <p id="studentGender" class="font-bold text-slate-700">-</p>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 col-span-2">
+                                    <p class="text-slate-400 mb-1">เวลาเข้าเรียน</p>
+                                    <p id="studentTime" class="font-bold text-teal-600">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-green-500">
-                <div class="text-slate-500 text-sm font-medium">มาเรียนวันนี้</div>
-                <div id="presentCount" class="text-3xl font-bold text-slate-800 mt-2">0 <span class="text-sm font-normal text-slate-500">คน</span></div>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-500">
-                <div class="text-slate-500 text-sm font-medium">ขาดเรียน</div>
-                <div id="absentCount" class="text-3xl font-bold text-slate-800 mt-2">100 <span class="text-sm font-normal text-slate-500">คน</span></div>
-            </div>
-        </div>
+        </section>
 
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 class="font-semibold text-slate-800">ประวัติการเช็คชื่อล่าสุด</h3>
-                <button class="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center transition">
-                    ⬇️ Export Excel
+        <section id="verify" class="tab-content p-8">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-950 mb-2">ตรวจสอบรายชื่อ</h1>
+                    <p class="text-slate-500">จัดการข้อมูลและลบรายการที่เช็คชื่อผิดพลาด</p>
+                </div>
+                <button onclick="loadRecords()" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-200 transition">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> รีเฟรชข้อมูล
                 </button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-600 text-sm">
-                            <th class="py-3 px-6 font-medium">เวลา</th>
-                            <th class="py-3 px-6 font-medium">รหัสนักเรียน</th>
-                            <th class="py-3 px-6 font-medium">ระดับชั้น</th>
-                            <th class="py-3 px-6 font-medium">สถานะ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="text-slate-700 text-sm divide-y divide-slate-100">
-                        </tbody>
-                </table>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center">
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-600">วันที่:</label>
+                    <input type="date" id="filterDate" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-teal-500">
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-600">เพศ:</label>
+                    <select id="filterGender" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-teal-500">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="ชาย">ชาย</option>
+                        <option value="หญิง">หญิง</option>
+                    </select>
+                </div>
+                <button onclick="applyFilter()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition ml-auto">
+                    กรองข้อมูล
+                </button>
             </div>
-        </div>
 
-    </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                                <th class="py-3 px-6 font-semibold">เวลา (Timestamp)</th>
+                                <th class="py-3 px-6 font-semibold">รหัส</th>
+                                <th class="py-3 px-6 font-semibold">ชื่อ-สกุล</th>
+                                <th class="py-3 px-6 font-semibold">เพศ</th>
+                                <th class="py-3 px-6 font-semibold">ชั้นเรียน</th>
+                                <th class="py-3 px-6 font-semibold text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordTableBody" class="text-slate-700 text-sm divide-y divide-slate-100">
+                            <tr><td colspan="6" class="text-center py-8 text-slate-400">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
-  <script>
-        // 1. ตรวจสอบสิทธิ์ก่อน ถ้ายังไม่ล็อคอินให้เด้งกลับไปหน้า index
-        if (!localStorage.getItem('isLoggedIn')) {
-            window.location.href = 'index.html';
+        <section id="export" class="tab-content p-8">
+            <h1 class="text-3xl font-bold text-blue-950 mb-2">ส่งออกเอกสาร (Export)</h1>
+            <p class="text-slate-500 mb-8">ดาวน์โหลดรายงานการเข้าเรียนในรูปแบบไฟล์ Excel</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">ดาวน์โหลดข้อมูลรายวัน</h3>
+                    <p class="text-sm text-slate-500 mb-4">ส่งออกรายชื่อนักเรียนที่เช็คชื่อทั้งหมดในวันที่เลือก</p>
+                    
+                    <input type="date" id="exportDate" class="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm mb-4 outline-none focus:border-blue-500">
+                    <button onclick="exportExcel('daily')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดแบบรวม
+                    </button>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-xl flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-venus-mars"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">ดาวน์โหลดแยกเพศ</h3>
+                    <p class="text-sm text-slate-500 mb-4">ส่งออกรายงานโดยแยกไฟล์ระหว่างนักเรียนชายและหญิง</p>
+                    
+                    <select id="exportGender" class="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm mb-4 outline-none focus:border-teal-500">
+                        <option value="ชาย">เฉพาะนักเรียนชาย</option>
+                        <option value="หญิง">เฉพาะนักเรียนหญิง</option>
+                    </select>
+                    <button onclick="exportExcel('gender')" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 rounded-lg transition flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดแยกเพศ
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // ==========================================
+        // 1. ใส่ Web App URL ของ Google Apps Script ที่นี่
+        // ==========================================
+        const scriptUrl = 'วาง_URL_ของ_APPS_SCRIPT_ที่นี่'; 
+
+        // ==========================================
+        // ตัวแปรเก็บข้อมูล (State)
+        // ==========================================
+        let allRecords = []; // เก็บข้อมูลที่ดึงมาจาก Sheet
+
+        // เช็คสถานะล็อคอิน
+        if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
+        document.getElementById('displayUsername').textContent = localStorage.getItem('teacherName') || 'Admin';
+
+        // ฟังก์ชันสลับหน้าต่าง (Tabs)
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent";
+            });
+            btnElement.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-blue-900/50 text-teal-300 rounded-xl transition font-medium border-l-4 border-teal-400";
+
+            // ถ้าเปิดหน้า verify ให้โหลดข้อมูลตารางใหม่
+            if(tabId === 'verify') loadRecords();
         }
 
-        // 2. แสดงชื่อครูบน Navbar
-        document.getElementById('displayTeacherName').textContent = 'คุณครู: ' + localStorage.getItem('teacherName');
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
-        // 3. ฟังก์ชันออกจากระบบ
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-
-        // เตรียมตัวแปรสำหรับอ้างอิงจุดต่างๆ บนหน้าเว็บ
-        let present = 0;
-        let absent = 100;
+        // ==========================================
+        // ระบบ 1: เช็คชื่อ (Check-in)
+        // ==========================================
         const inputElement = document.getElementById('studentInput');
         const statusElement = document.getElementById('checkinStatus');
-        const tableBody = document.getElementById('tableBody');
-
-        // ==========================================
-        // ส่วนที่คุณต้องนำ URL ของ Google Script มาใส่
-        // ==========================================
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbynsBBewRWvZMKmqz8hF4xW3ILXkFjLq-vfFltXwzazgm6bkllhHZh9XXW_bFVVPSvt/exec';
+        const cardElement = document.getElementById('studentCard');
 
         inputElement.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const studentId = this.value.trim();
-                if (studentId === "") return;
+                if (!studentId) return;
 
-                // แสดงข้อความว่ากำลังบันทึกระหว่างรอโหลด
-                statusElement.textContent = "กำลังบันทึก...";
-                statusElement.className = "mt-3 text-blue-600 font-medium h-6"; 
-                
-                // ยิงข้อมูลไปที่ Google Apps Script
+                statusElement.innerHTML = '<span class="text-blue-500"><i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึกและค้นหาข้อมูล...</span>';
+                cardElement.classList.add('hidden');
+
                 fetch(scriptUrl, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        action: 'checkin',
-                        studentId: studentId,
-                        teacherName: localStorage.getItem('teacherName')
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'checkin', studentId: studentId })
                 })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        // บันทึกสำเร็จ
-                        statusElement.textContent = `✅ บันทึกสำเร็จ: ${data.name} (ป.${data.grade})`;
-                        statusElement.className = "mt-3 text-green-600 font-medium h-6";
+                        statusElement.innerHTML = ''; // ลบข้อความกำลังโหลด
+                        // อัปเดตการ์ด
+                        document.getElementById('studentPhoto').src = data.photoUrl || `https://ui-avatars.com/api/?name=${data.name}&background=random`;
+                        document.getElementById('studentName').textContent = data.name;
+                        document.getElementById('studentIdDisplay').textContent = studentId;
+                        document.getElementById('studentGrade').textContent = data.grade;
+                        document.getElementById('studentGender').textContent = data.gender;
+                        document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
                         
-                        // อัปเดตตัวเลขจำลองบนหน้าจอ
-                        present++;
-                        absent--;
-                        document.getElementById('presentCount').innerHTML = `${present} <span class="text-sm font-normal text-slate-500">คน</span>`;
-                        document.getElementById('absentCount').innerHTML = `${absent} <span class="text-sm font-normal text-slate-500">คน</span>`;
-
-                        // เพิ่มข้อมูลลงตารางด้านล่างทันที
-                        const timeNow = new Date().toLocaleTimeString('th-TH');
-                        const newRow = `
-                            <tr class="hover:bg-slate-50">
-                                <td class="py-3 px-6">${timeNow}</td>
-                                <td class="py-3 px-6 font-semibold text-blue-600">${studentId}</td>
-                                <td class="py-3 px-6">ป.${data.grade}</td>
-                                <td class="py-3 px-6"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">มาเรียน</span></td>
-                            </tr>
-                        `;
-                        tableBody.insertAdjacentHTML('afterbegin', newRow);
-
+                        cardElement.classList.remove('hidden'); // โชว์การ์ด
                     } else {
-                        // กรณีหาเด็กไม่เจอ หรือเกิด Error จาก Google Script
-                        statusElement.textContent = `❌ Error: ${data.message}`;
-                        statusElement.className = "mt-3 text-red-600 font-medium h-6";
+                        statusElement.innerHTML = `<span class="text-red-500"><i class="fa-solid fa-triangle-exclamation"></i> ไม่พบข้อมูลรหัส ${studentId}</span>`;
                     }
-                    
-                    // ล้างช่องกรอกให้พร้อมยิงบาร์โค้ดหรือพิมพ์คนต่อไป
-                    inputElement.value = ''; 
-                    
-                    // ลบข้อความแจ้งเตือนหลังผ่านไป 3 วินาที
-                    setTimeout(() => statusElement.textContent = '', 3000); 
+                    inputElement.value = ''; // เคลียร์ช่องพิมพ์
                 })
-                .catch(error => {
-                    statusElement.textContent = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย`;
-                    statusElement.className = "mt-3 text-red-600 font-medium h-6";
+                .catch(() => {
+                    statusElement.innerHTML = `<span class="text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์</span>`;
                     inputElement.value = '';
                 });
             }
         });
+
+        // ==========================================
+        // ระบบ 2: ดึงและตรวจสอบรายชื่อ
+        // ==========================================
+        function loadRecords() {
+            const tbody = document.getElementById('recordTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-blue-500"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...</td></tr>';
+            
+            fetch(scriptUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'getRecords' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    allRecords = data.records; // เก็บลงตัวแปร
+                    renderTable(allRecords);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+                }
+            });
+        }
+
+        function renderTable(records) {
+            const tbody = document.getElementById('recordTableBody');
+            tbody.innerHTML = '';
+            
+            if(records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400">ไม่มีข้อมูลการเช็คชื่อ</td></tr>';
+                return;
+            }
+
+            records.reverse().forEach(row => {
+                // row: [Timestamp, ID, Name, Gender, Grade]
+                const timeStr = new Date(row[0]).toLocaleString('th-TH');
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition border-b border-slate-50 last:border-0';
+                tr.innerHTML = `
+                    <td class="py-3 px-6 text-xs text-slate-500">${timeStr}</td>
+                    <td class="py-3 px-6 font-semibold text-blue-600">${row[1]}</td>
+                    <td class="py-3 px-6">${row[2]}</td>
+                    <td class="py-3 px-6">${row[3]}</td>
+                    <td class="py-3 px-6">${row[4]}</td>
+                    <td class="py-3 px-6 text-center">
+                        <button onclick="deleteRecord('${row[0]}')" class="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg transition" title="ลบรายการนี้">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ฟังก์ชัน Filter ในหน้าตรวจสอบ
+        function applyFilter() {
+            const dateVal = document.getElementById('filterDate').value; // format YYYY-MM-DD
+            const genderVal = document.getElementById('filterGender').value;
+            
+            const filtered = allRecords.filter(row => {
+                let matchDate = true;
+                let matchGender = true;
+
+                if (dateVal) {
+                    // แปลงวันที่จาก Sheet เพื่อเทียบ
+                    const rowDateStr = new Date(row[0]).toISOString().split('T')[0];
+                    matchDate = (rowDateStr === dateVal);
+                }
+                if (genderVal !== 'all') {
+                    matchGender = (row[3] === genderVal);
+                }
+                return matchDate && matchGender;
+            });
+            renderTable(filtered);
+        }
+
+        // ลบข้อมูล (ยิง API ไปบอก Google Script ให้ลบบรรทัดที่มี Timestamp ตรงกัน)
+        function deleteRecord(timestampId) {
+            if(!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการเช็คชื่อนี้?')) return;
+
+            fetch(scriptUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'deleteRecord', timestampId: timestampId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert('ลบข้อมูลสำเร็จ');
+                    loadRecords(); // โหลดตารางใหม่
+                }
+            });
+        }
+
+        // ==========================================
+        // ระบบ 3: ส่งออกเอกสาร (Export Excel using SheetJS)
+        // ==========================================
+        function exportExcel(type) {
+            if(allRecords.length === 0) {
+                alert("กรุณาไปที่หน้า 'ระบบตรวจสอบรายชื่อ' เพื่อโหลดข้อมูลก่อนส่งออกครับ");
+                return;
+            }
+
+            let dataToExport = [];
+            let fileName = 'รายงานเช็คชื่อ_';
+
+            if (type === 'daily') {
+                const dateVal = document.getElementById('exportDate').value;
+                if(!dateVal) { alert("กรุณาเลือกวันที่ก่อนดาวน์โหลด"); return; }
+                
+                dataToExport = allRecords.filter(row => new Date(row[0]).toISOString().split('T')[0] === dateVal);
+                fileName += dateVal;
+            } 
+            else if (type === 'gender') {
+                const genderVal = document.getElementById('exportGender').value;
+                dataToExport = allRecords.filter(row => row[3] === genderVal);
+                fileName += 'แยกเพศ_' + genderVal;
+            }
+
+            if(dataToExport.length === 0) {
+                alert("ไม่พบข้อมูลตามเงื่อนไขที่เลือก");
+                return;
+            }
+
+            // เพิ่มหัวตาราง
+            const finalData = [['เวลาที่เช็ค', 'รหัสนักเรียน', 'ชื่อ-นามสกุล', 'เพศ', 'ระดับชั้น/ห้อง']];
+            dataToExport.forEach(row => {
+                // Format วันที่ให้สวยงาม
+                const formattedDate = new Date(row[0]).toLocaleString('th-TH');
+                finalData.push([formattedDate, row[1], row[2], row[3], row[4]]);
+            });
+
+            // สร้างไฟล์ Excel
+            const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+            XLSX.writeFile(workbook, `${fileName}.xlsx`);
+        }
     </script>
 </body>
 </html>
