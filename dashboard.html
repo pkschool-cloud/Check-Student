@@ -425,7 +425,7 @@
     <script>
         // ==============================================================
         // 🛑 นำ Web App URL อันใหม่ที่ Deploy เสร็จแล้ว มาวางที่นี่ครับ 🛑
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzOF8VM7toTNR_Cjd7kPVo-K2Yo5N2vz-HUz8hkdKlufixARUu1LHeY-K3FYj8pZd4/exec'; 
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxl8tmz6qTaf_M9_JxyiPN8d9Z5XQOfxeQ9kWXyN4zC8mJBt2eNkwLNpIWbFILEZt8b/exec'; 
         // ==============================================================
 
         if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
@@ -706,34 +706,7 @@
             else { lbl.textContent = 'ขาด/ลา'; lbl.className = 'ml-4 text-sm font-bold w-14 text-left inline-block transition-colors text-slate-400'; }
         }
 
-        // ระบบบันทึกแบบปุ่ม (Idempotent State Sync)
-        function saveManualSync() {
-            const dateStr = document.getElementById('manualDate').value;
-            const cbs = document.querySelectorAll('.toggle-checkbox');
-            let updates = [];
 
-            cbs.forEach(cb => {
-                updates.push({
-                    id: cb.getAttribute('data-id'),
-                    name: cb.getAttribute('data-name'),
-                    gender: cb.getAttribute('data-gender'),
-                    grade: cb.getAttribute('data-grade'),
-                    status: cb.checked ? 'present' : 'absent'
-                });
-            });
-
-            const btn = document.getElementById('btnSaveManual'), ori = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังซิงก์ข้อมูล...'; btn.disabled = true;
-
-            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, updates: updates }) })
-            .then(r => r.json()).then(data => {
-                btn.innerHTML = ori; btn.disabled = false;
-                if(data.status === 'success') {
-                    showToast('success', 'ซิงก์ข้อมูลเข้าระบบเรียบร้อยแล้ว!');
-                    loadRecords(true); // โหลดข้อมูลมาทับใหม่ทันที
-                } else { showToast('error', 'บันทึกไม่สำเร็จ'); }
-            }).catch(()=>{ btn.innerHTML = ori; btn.disabled = false; showToast('error', 'เชื่อมต่อขัดข้อง');});
-        }
 
         // --- ประวัติย้อนหลัง ---
         function renderHistory() {
