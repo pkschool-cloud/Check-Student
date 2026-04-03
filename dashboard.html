@@ -844,17 +844,40 @@ function confirmDelete() {
                     </tr>`;
             });
 
-            // สร้างไฟล์ PDF
+            // -------------------------------------------------------------
+            // ส่วนที่แก้ไขเพื่อแก้ปัญหา PDF หน้าขาว
+            // -------------------------------------------------------------
             const element = document.getElementById('pdf-container');
+            
+            // 1. ดึงเทมเพลตกลับมาบนหน้าจอ (แต่ซ่อนไว้เลเยอร์ล่างสุดด้วย z-index)
+            element.style.left = '0px';
+            element.style.top = '0px';
+            element.style.zIndex = '-100';
+
             const opt = {
                 margin:       12,
                 filename:     `รายงานเข้าเรียน_${activeGradeContext}_${new Date().getTime()}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, 
+                image:        { type: 'jpeg', quality: 1 },
+                // เพิ่ม scrollY: 0 เพื่อป้องกันหน้าขาวเวลาเราเลื่อนเมาส์ลงมาล่างๆ
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save();
+            // เปลี่ยนข้อความปุ่มเพื่อบอกผู้ใช้ว่ากำลังประมวลผล
+            const btn = document.querySelector('#export button');
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้าง PDF...';
+            btn.disabled = true;
+
+            // 2. หน่วงเวลา 0.5 วินาที เพื่อให้ Browser นำข้อมูลวาดลงหน้าจอให้เสร็จก่อนแคปเจอร์
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // 3. เมื่อดาวน์โหลดเสร็จแล้ว ให้คืนค่าทุกอย่างกลับไปเป็นเหมือนเดิม
+                    element.style.left = '-9999px';
+                    btn.innerHTML = originalBtnHtml;
+                    btn.disabled = false;
+                });
+            }, 500);
         }
     </script>
 </body>
