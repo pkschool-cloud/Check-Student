@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบเช็คชื่อนักเรียน - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style> 
@@ -13,6 +13,8 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ซ่อนคอนเทนเนอร์ PDF ไม่ให้โชว์บนหน้าเว็บ แต่ให้โปรแกรมอ่านไปทำ PDF ได้ */
+        #pdf-container { position: absolute; left: -9999px; top: -9999px; width: 800px; background: white; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-slate-800">
@@ -27,33 +29,23 @@
             <p class="text-xs text-blue-300 font-semibold uppercase tracking-wider mb-2">เมนูหลัก</p>
             <nav class="space-y-1" id="nav-menu">
                 <button onclick="switchTab('checkin', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-blue-900/50 text-teal-300 rounded-xl transition font-medium border-l-4 border-teal-400">
-                    <i class="fa-solid fa-qrcode w-5 text-center"></i>
-                    <span>ระบบเช็คชื่อ</span>
+                    <i class="fa-solid fa-qrcode w-5 text-center"></i><span>ระบบเช็คชื่อ</span>
                 </button>
                 <button onclick="switchTab('verify', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent">
-                    <i class="fa-solid fa-list-check w-5 text-center"></i>
-                    <span>ระบบตรวจสอบรายชื่อ</span>
+                    <i class="fa-solid fa-list-check w-5 text-center"></i><span>ตรวจสอบรายชื่อ</span>
                 </button>
                 <button onclick="switchTab('export', this)" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent">
-                    <i class="fa-solid fa-file-export w-5 text-center"></i>
-                    <span>ระบบส่งออกเอกสาร</span>
+                    <i class="fa-solid fa-file-pdf w-5 text-center"></i><span>ส่งออกรายงาน PDF</span>
                 </button>
             </nav>
         </div>
 
-        <div class="mt-auto p-4 border-t border-blue-900/50">
-            <div class="flex items-center space-x-3 mb-4 px-2">
-                <div class="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center text-blue-950 font-bold overflow-hidden">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D9488&color=fff" alt="Profile">
-                </div>
-                <div>
-                    <p class="text-sm font-semibold" id="displayUsername">คุณครู Admin</p>
-                    <p class="text-xs text-blue-300">Administrator</p>
-                </div>
+        <div class="mt-auto p-4 border-t border-blue-900/50 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-user-tie"></i></div>
+                <div><p class="text-sm font-semibold">แอดมิน</p></div>
             </div>
-            <button onclick="logout()" class="w-full py-2 px-4 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition flex items-center justify-center space-x-2 text-sm font-medium">
-                <i class="fa-solid fa-right-from-bracket"></i> <span>ออกจากระบบ</span>
-            </button>
+            <button onclick="logout()" class="text-red-400 hover:text-red-300 text-xl"><i class="fa-solid fa-right-from-bracket"></i></button>
         </div>
     </aside>
 
@@ -62,7 +54,7 @@
         <section id="checkin" class="tab-content active p-8">
             <div class="max-w-3xl mx-auto">
                 <h1 class="text-3xl font-bold text-blue-950 mb-2">สแกนรหัสเช็คชื่อ</h1>
-                <p class="text-slate-500 mb-8">กรอกรหัสนักเรียนแล้วกด Enter ระบบจะบันทึกเวลาและแสดงข้อมูลทันที</p>
+                <p class="text-slate-500 mb-8">กรอกรหัสนักเรียนแล้วกด Enter ระบบจะตรวจสอบการเข้าเรียนซ้ำอัตโนมัติ</p>
                 
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 text-center relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-blue-500"></div>
@@ -76,26 +68,21 @@
                 <div id="studentCard" class="hidden bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden transform transition-all">
                     <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
                         <div class="w-32 h-32 rounded-full border-4 border-teal-50 shadow-md overflow-hidden bg-slate-100 flex-shrink-0">
-                            <img id="studentPhoto" src="" alt="Student" class="w-full h-full object-cover">
+                            <img id="studentPhoto" src="" alt="Student" class="w-full h-full object-cover" 
+                                onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=St&background=0D9488&color=fff&size=128';">
                         </div>
-                        <div class="flex-1 text-center sm:text-left">
-                            <div class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-2">
+                        <div class="flex-1 text-center sm:text-left w-full">
+                            <div id="statusBadge" class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-2">
                                 <i class="fa-solid fa-check-circle mr-1"></i> บันทึกสำเร็จ
                             </div>
                             <h2 id="studentName" class="text-2xl font-bold text-slate-800 mb-1">-</h2>
-                            <p class="text-slate-500 font-medium mb-4">รหัสประจำตัว: <span id="studentIdDisplay" class="text-blue-600">-</span></p>
+                            <p class="text-slate-500 font-medium mb-4">รหัส: <span id="studentIdDisplay" class="text-blue-600">-</span></p>
                             <div class="grid grid-cols-2 gap-4 text-sm">
                                 <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                    <p class="text-slate-400 mb-1">ระดับชั้น</p>
-                                    <p id="studentGrade" class="font-bold text-slate-700">-</p>
+                                    <p class="text-slate-400 mb-1">ระดับชั้น</p><p id="studentGrade" class="font-bold text-slate-700">-</p>
                                 </div>
                                 <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                    <p class="text-slate-400 mb-1">เพศ</p>
-                                    <p id="studentGender" class="font-bold text-slate-700">-</p>
-                                </div>
-                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 col-span-2">
-                                    <p class="text-slate-400 mb-1">เวลาเข้าเรียน</p>
-                                    <p id="studentTime" class="font-bold text-teal-600">-</p>
+                                    <p class="text-slate-400 mb-1">เวลาเข้าเรียน</p><p id="studentTime" class="font-bold text-teal-600">-</p>
                                 </div>
                             </div>
                         </div>
@@ -108,302 +95,284 @@
             <div class="flex justify-between items-end mb-6">
                 <div>
                     <h1 class="text-3xl font-bold text-blue-950 mb-2">ตรวจสอบรายชื่อ</h1>
-                    <p class="text-slate-500">จัดการข้อมูลและลบรายการที่เช็คชื่อผิดพลาด</p>
+                    <p class="text-slate-500">จัดการข้อมูล (การลบต้องยืนยันด้วยรหัสผ่าน)</p>
                 </div>
                 <button onclick="loadRecords()" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-200 transition">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> รีเฟรชข้อมูล
+                    <i class="fa-solid fa-rotate-right mr-1"></i> โหลดข้อมูลล่าสุด
                 </button>
             </div>
-
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center">
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-slate-600">วันที่:</label>
-                    <input type="date" id="filterDate" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-teal-500">
-                </div>
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-slate-600">เพศ:</label>
-                    <select id="filterGender" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-teal-500">
-                        <option value="all">ทั้งหมด</option>
-                        <option value="ชาย">ชาย</option>
-                        <option value="หญิง">หญิง</option>
-                    </select>
-                </div>
-                <button onclick="applyFilter()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition ml-auto">
-                    กรองข้อมูล
-                </button>
-            </div>
-
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
-                                <th class="py-3 px-6 font-semibold">เวลา (Timestamp)</th>
-                                <th class="py-3 px-6 font-semibold">รหัส</th>
-                                <th class="py-3 px-6 font-semibold">ชื่อ-สกุล</th>
-                                <th class="py-3 px-6 font-semibold">เพศ</th>
-                                <th class="py-3 px-6 font-semibold">ชั้นเรียน</th>
-                                <th class="py-3 px-6 font-semibold text-center">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordTableBody" class="text-slate-700 text-sm divide-y divide-slate-100">
-                            <tr><td colspan="6" class="text-center py-8 text-slate-400">กำลังโหลดข้อมูล...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                            <th class="py-3 px-6 font-semibold">เวลา</th>
+                            <th class="py-3 px-6 font-semibold">รหัส</th>
+                            <th class="py-3 px-6 font-semibold">ชื่อ-สกุล</th>
+                            <th class="py-3 px-6 font-semibold">เพศ</th>
+                            <th class="py-3 px-6 font-semibold text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordTableBody" class="text-slate-700 text-sm divide-y divide-slate-100">
+                        <tr><td colspan="5" class="text-center py-8 text-slate-400">กรุณากดรีเฟรชข้อมูล</td></tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
         <section id="export" class="tab-content p-8">
-            <h1 class="text-3xl font-bold text-blue-950 mb-2">ส่งออกเอกสาร (Export)</h1>
-            <p class="text-slate-500 mb-8">ดาวน์โหลดรายงานการเข้าเรียนในรูปแบบไฟล์ Excel</p>
+            <h1 class="text-3xl font-bold text-blue-950 mb-2">ส่งออกรายงาน (PDF Format)</h1>
+            <p class="text-slate-500 mb-8">สร้างรายงานรูปแบบสวยงามพร้อมกราฟิกสำหรับการนำเสนอ</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl mb-4">
-                        <i class="fa-solid fa-file-excel"></i>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-2xl">
+                <div class="flex items-center space-x-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="w-12 h-12 bg-red-100 text-red-500 rounded-xl flex items-center justify-center text-2xl"><i class="fa-solid fa-file-pdf"></i></div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">ตั้งค่าการส่งออก</h3>
+                        <p class="text-sm text-slate-500">เลือกช่วงเวลาที่ต้องการสรุปรายงาน</p>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-1">ดาวน์โหลดข้อมูลรายวัน</h3>
-                    <p class="text-sm text-slate-500 mb-4">ส่งออกรายชื่อนักเรียนที่เช็คชื่อทั้งหมดในวันที่เลือก</p>
-                    
-                    <input type="date" id="exportDate" class="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm mb-4 outline-none focus:border-blue-500">
-                    <button onclick="exportExcel('daily')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-download"></i> ดาวน์โหลดแบบรวม
-                    </button>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-xl flex items-center justify-center text-xl mb-4">
-                        <i class="fa-solid fa-venus-mars"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-1">ดาวน์โหลดแยกเพศ</h3>
-                    <p class="text-sm text-slate-500 mb-4">ส่งออกรายงานโดยแยกไฟล์ระหว่างนักเรียนชายและหญิง</p>
-                    
-                    <select id="exportGender" class="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm mb-4 outline-none focus:border-teal-500">
-                        <option value="ชาย">เฉพาะนักเรียนชาย</option>
-                        <option value="หญิง">เฉพาะนักเรียนหญิง</option>
-                    </select>
-                    <button onclick="exportExcel('gender')" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 rounded-lg transition flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-download"></i> ดาวน์โหลดแยกเพศ
-                    </button>
+                <div class="flex gap-4 mb-6">
+                    <label class="flex-1 border border-slate-200 rounded-xl p-4 cursor-pointer hover:bg-slate-50 transition flex items-center space-x-3">
+                        <input type="radio" name="dateMode" value="single" checked onchange="toggleDateMode()" class="w-5 h-5 text-teal-600">
+                        <span class="font-medium text-slate-700">เลือกวันเดียว</span>
+                    </label>
+                    <label class="flex-1 border border-slate-200 rounded-xl p-4 cursor-pointer hover:bg-slate-50 transition flex items-center space-x-3">
+                        <input type="radio" name="dateMode" value="range" onchange="toggleDateMode()" class="w-5 h-5 text-teal-600">
+                        <span class="font-medium text-slate-700">เลือกแบบช่วงเวลา</span>
+                    </label>
                 </div>
+
+                <div id="singleDateBox" class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">เลือกวันที่ต้องการ:</label>
+                    <input type="date" id="exportDateSingle" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition">
+                </div>
+                <div id="rangeDateBox" class="mb-6 hidden grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">ตั้งแต่วันที่:</label>
+                        <input type="date" id="exportDateStart" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-teal-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">ถึงวันที่:</label>
+                        <input type="date" id="exportDateEnd" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-teal-500 transition">
+                    </div>
+                </div>
+
+                <button onclick="generatePDF()" class="w-full bg-blue-950 hover:bg-teal-700 text-white font-bold py-4 rounded-xl transition shadow-md flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-print"></i> สร้างและดาวน์โหลด PDF
+                </button>
             </div>
         </section>
-
     </main>
+
+    <div id="pdf-container" class="p-10 font-sans">
+        <div class="text-center mb-8 border-b-2 border-blue-900 pb-6">
+            <h1 class="text-4xl font-bold text-blue-950 mb-2"><i class="fa-solid fa-school text-teal-600 mr-3"></i>PK School</h1>
+            <h2 class="text-2xl font-semibold text-slate-700">รายงานการเข้าเรียนของนักเรียน</h2>
+            <p id="pdf-date-subtitle" class="text-lg text-slate-500 mt-2">ประจำวันที่...</p>
+        </div>
+        
+        <div class="flex justify-around bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8">
+            <div class="text-center"><p class="text-slate-500 font-semibold text-lg">นักเรียนทั้งหมด</p><p id="pdf-total" class="text-4xl font-bold text-blue-600 mt-1">0</p></div>
+            <div class="text-center"><p class="text-slate-500 font-semibold text-lg">ชาย</p><p id="pdf-male" class="text-4xl font-bold text-teal-600 mt-1">0</p></div>
+            <div class="text-center"><p class="text-slate-500 font-semibold text-lg">หญิง</p><p id="pdf-female" class="text-4xl font-bold text-pink-500 mt-1">0</p></div>
+        </div>
+
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-blue-950 text-white">
+                    <th class="py-3 px-4 border border-blue-950">ลำดับ</th>
+                    <th class="py-3 px-4 border border-blue-950">รหัสนักเรียน</th>
+                    <th class="py-3 px-4 border border-blue-950">ชื่อ-นามสกุล</th>
+                    <th class="py-3 px-4 border border-blue-950">ชั้นเรียน</th>
+                    <th class="py-3 px-4 border border-blue-950 text-center">เวลาเข้าเรียน</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-table-body" class="text-slate-700">
+                </tbody>
+        </table>
+        <div class="mt-12 text-right">
+            <p class="text-slate-500 text-sm">ผู้จัดทำรายงาน: Admin ระบบเช็คชื่อ</p>
+            <p class="text-slate-500 text-sm mt-1" id="pdf-print-time"></p>
+        </div>
+    </div>
 
     <script>
         // ==========================================
-        // 1. ใส่ Web App URL ของ Google Apps Script ที่นี่
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycby5ttTZReQus9b7wzOTKEueiAidS8EIhF0tngQ6J5bIUG4UFXNUAfklxeNAl-iAsGUe/exec'; 
         // ==========================================
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbw8kRO3pm8F5YCQAtWYcr17EkS_4be2cDJrlBLA4UdB1TyWjZ4UuxYEwFDUgjMiPX6l/exec'; 
 
-        // ==========================================
-        // ตัวแปรเก็บข้อมูล (State)
-        // ==========================================
-        let allRecords = []; // เก็บข้อมูลที่ดึงมาจาก Sheet
-
-        // เช็คสถานะล็อคอิน
+        let allRecords = []; 
         if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
-        document.getElementById('displayUsername').textContent = localStorage.getItem('teacherName') || 'Admin';
 
-        // ฟังก์ชันสลับหน้าต่าง (Tabs)
-        function switchTab(tabId, btnElement) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent";
-            });
-            btnElement.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-blue-900/50 text-teal-300 rounded-xl transition font-medium border-l-4 border-teal-400";
-
-            // ถ้าเปิดหน้า verify ให้โหลดข้อมูลตารางใหม่
-            if(tabId === 'verify') loadRecords();
+            document.querySelectorAll('.nav-btn').forEach(b => b.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent");
+            btn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-blue-900/50 text-teal-300 rounded-xl transition font-medium border-l-4 border-teal-400";
+            if(tabId === 'verify' || tabId === 'export') loadRecords();
         }
-
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
-        // ==========================================
-        // ระบบ 1: เช็คชื่อ (Check-in)
-        // ==========================================
-        const inputElement = document.getElementById('studentInput');
-        const statusElement = document.getElementById('checkinStatus');
-        const cardElement = document.getElementById('studentCard');
-
-        inputElement.addEventListener('keypress', function(e) {
+        // --- ระบบเช็คชื่อ ---
+        document.getElementById('studentInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                const studentId = this.value.trim();
-                if (!studentId) return;
+                const sid = this.value.trim();
+                if (!sid) return;
 
-                statusElement.innerHTML = '<span class="text-blue-500"><i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึกและค้นหาข้อมูล...</span>';
-                cardElement.classList.add('hidden');
+                document.getElementById('checkinStatus').innerHTML = '<span class="text-blue-500"><i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...</span>';
+                document.getElementById('studentCard').classList.add('hidden');
 
-                fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'checkin', studentId: studentId })
-                })
-                .then(res => res.json())
+                fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'checkin', studentId: sid}) })
+                .then(r => r.json())
                 .then(data => {
+                    const statusEl = document.getElementById('checkinStatus');
+                    const badge = document.getElementById('statusBadge');
+                    
                     if (data.status === 'success') {
-                        statusElement.innerHTML = ''; // ลบข้อความกำลังโหลด
-                        // อัปเดตการ์ด
-                        document.getElementById('studentPhoto').src = data.photoUrl || `https://ui-avatars.com/api/?name=${data.name}&background=random`;
-                        document.getElementById('studentName').textContent = data.name;
-                        document.getElementById('studentIdDisplay').textContent = studentId;
-                        document.getElementById('studentGrade').textContent = data.grade;
-                        document.getElementById('studentGender').textContent = data.gender;
-                        document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
+                        statusEl.innerHTML = ''; 
+                        badge.className = "inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-2";
+                        badge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> บันทึกเข้าเรียนสำเร็จ';
                         
-                        cardElement.classList.remove('hidden'); // โชว์การ์ด
+                        // ถ้ารูปโหลดไม่ได้ onerror ใน HTML จะทำงานอัตโนมัติ
+                        document.getElementById('studentPhoto').src = data.photoUrl || 'error-trigger'; 
+                        document.getElementById('studentName').textContent = data.name;
+                        document.getElementById('studentIdDisplay').textContent = sid;
+                        document.getElementById('studentGrade').textContent = data.grade;
+                        document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
+                        document.getElementById('studentCard').classList.remove('hidden');
+                    } 
+                    else if (data.status === 'duplicate') {
+                        statusEl.innerHTML = '';
+                        badge.className = "inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full mb-2";
+                        badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> สแกนซ้ำ!';
+                        document.getElementById('studentName').textContent = "นักเรียนคนนี้เช็คชื่อไปแล้ว";
+                        document.getElementById('studentIdDisplay').textContent = sid;
+                        document.getElementById('studentGrade').textContent = "-";
+                        document.getElementById('studentTime').textContent = "-";
+                        document.getElementById('studentCard').classList.remove('hidden');
                     } else {
-                        statusElement.innerHTML = `<span class="text-red-500"><i class="fa-solid fa-triangle-exclamation"></i> ไม่พบข้อมูลรหัส ${studentId}</span>`;
+                        statusEl.innerHTML = `<span class="text-red-500 font-bold">❌ ${data.message}</span>`;
                     }
-                    inputElement.value = ''; // เคลียร์ช่องพิมพ์
-                })
-                .catch(() => {
-                    statusElement.innerHTML = `<span class="text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์</span>`;
-                    inputElement.value = '';
+                    this.value = ''; 
                 });
             }
         });
 
-        // ==========================================
-        // ระบบ 2: ดึงและตรวจสอบรายชื่อ
-        // ==========================================
+        // --- โหลดข้อมูล ---
         function loadRecords() {
-            const tbody = document.getElementById('recordTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-blue-500"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...</td></tr>';
-            
-            fetch(scriptUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'getRecords' })
-            })
-            .then(res => res.json())
+            fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'getRecords'}) })
+            .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    allRecords = data.records; // เก็บลงตัวแปร
-                    renderTable(allRecords);
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+                    allRecords = data.records;
+                    const tbody = document.getElementById('recordTableBody');
+                    tbody.innerHTML = '';
+                    [...allRecords].reverse().slice(0, 50).forEach(row => { // โชว์แค่ 50 ล่าสุด
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 border-b border-slate-100">
+                                <td class="py-3 px-6 text-xs text-slate-500">${new Date(row[0]).toLocaleString('th-TH')}</td>
+                                <td class="py-3 px-6 font-semibold text-blue-600">${row[1]}</td>
+                                <td class="py-3 px-6">${row[2]}</td>
+                                <td class="py-3 px-6">${row[3]}</td>
+                                <td class="py-3 px-6 text-center">
+                                    <button onclick="deleteRecord('${row[0]}')" class="text-red-500 hover:text-white hover:bg-red-500 border border-red-200 p-2 rounded transition"><i class="fa-solid fa-trash-can"></i></button>
+                                </td>
+                            </tr>`;
+                    });
                 }
             });
         }
 
-        function renderTable(records) {
-            const tbody = document.getElementById('recordTableBody');
-            tbody.innerHTML = '';
-            
-            if(records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400">ไม่มีข้อมูลการเช็คชื่อ</td></tr>';
-                return;
-            }
-
-            records.reverse().forEach(row => {
-                // row: [Timestamp, ID, Name, Gender, Grade]
-                const timeStr = new Date(row[0]).toLocaleString('th-TH');
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition border-b border-slate-50 last:border-0';
-                tr.innerHTML = `
-                    <td class="py-3 px-6 text-xs text-slate-500">${timeStr}</td>
-                    <td class="py-3 px-6 font-semibold text-blue-600">${row[1]}</td>
-                    <td class="py-3 px-6">${row[2]}</td>
-                    <td class="py-3 px-6">${row[3]}</td>
-                    <td class="py-3 px-6">${row[4]}</td>
-                    <td class="py-3 px-6 text-center">
-                        <button onclick="deleteRecord('${row[0]}')" class="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg transition" title="ลบรายการนี้">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // ฟังก์ชัน Filter ในหน้าตรวจสอบ
-        function applyFilter() {
-            const dateVal = document.getElementById('filterDate').value; // format YYYY-MM-DD
-            const genderVal = document.getElementById('filterGender').value;
-            
-            const filtered = allRecords.filter(row => {
-                let matchDate = true;
-                let matchGender = true;
-
-                if (dateVal) {
-                    // แปลงวันที่จาก Sheet เพื่อเทียบ
-                    const rowDateStr = new Date(row[0]).toISOString().split('T')[0];
-                    matchDate = (rowDateStr === dateVal);
-                }
-                if (genderVal !== 'all') {
-                    matchGender = (row[3] === genderVal);
-                }
-                return matchDate && matchGender;
-            });
-            renderTable(filtered);
-        }
-
-        // ลบข้อมูล (ยิง API ไปบอก Google Script ให้ลบบรรทัดที่มี Timestamp ตรงกัน)
+        // --- ลบข้อมูล (ติดรหัสผ่าน 002304) ---
         function deleteRecord(timestampId) {
-            if(!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการเช็คชื่อนี้?')) return;
+            let pwd = prompt("⚠️ การลบข้อมูลต้องได้รับอนุญาต\n\nกรุณากรอกรหัสผ่าน Admin เพื่อยืนยันการลบ:");
+            if (pwd === null) return; // กดยกเลิก
+            if (pwd !== "002304") {
+                alert("❌ รหัสผ่านไม่ถูกต้อง ยกเลิกการลบ");
+                return;
+            }
 
-            fetch(scriptUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'deleteRecord', timestampId: timestampId })
-            })
-            .then(res => res.json())
+            fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'deleteRecord', timestampId: timestampId}) })
+            .then(r => r.json())
             .then(data => {
-                if(data.status === 'success') {
-                    alert('ลบข้อมูลสำเร็จ');
-                    loadRecords(); // โหลดตารางใหม่
-                }
+                if(data.status === 'success') { alert('ลบข้อมูลสำเร็จ'); loadRecords(); }
             });
         }
 
-        // ==========================================
-        // ระบบ 3: ส่งออกเอกสาร (Export Excel using SheetJS)
-        // ==========================================
-        function exportExcel(type) {
-            if(allRecords.length === 0) {
-                alert("กรุณาไปที่หน้า 'ระบบตรวจสอบรายชื่อ' เพื่อโหลดข้อมูลก่อนส่งออกครับ");
-                return;
+        // --- จัดการ UI หน้า PDF ---
+        function toggleDateMode() {
+            const mode = document.querySelector('input[name="dateMode"]:checked').value;
+            if(mode === 'single') {
+                document.getElementById('singleDateBox').classList.remove('hidden');
+                document.getElementById('rangeDateBox').classList.add('hidden');
+                document.getElementById('rangeDateBox').classList.remove('grid');
+            } else {
+                document.getElementById('singleDateBox').classList.add('hidden');
+                document.getElementById('rangeDateBox').classList.remove('hidden');
+                document.getElementById('rangeDateBox').classList.add('grid');
+            }
+        }
+
+        // --- สร้าง PDF ---
+        function generatePDF() {
+            if(allRecords.length === 0) { alert("ข้อมูลว่างเปล่า กรุณารอโหลดข้อมูลก่อนครับ"); return; }
+            
+            const mode = document.querySelector('input[name="dateMode"]:checked').value;
+            let filteredData = [];
+            let dateText = "";
+
+            if(mode === 'single') {
+                const d = document.getElementById('exportDateSingle').value;
+                if(!d) return alert("กรุณาเลือกวันที่");
+                filteredData = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === d);
+                dateText = "ประจำวันที่ " + new Date(d).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+            } else {
+                const ds = document.getElementById('exportDateStart').value;
+                const de = document.getElementById('exportDateEnd').value;
+                if(!ds || !de) return alert("กรุณาเลือกวันที่เริ่มต้นและสิ้นสุด");
+                filteredData = allRecords.filter(r => {
+                    const rowDate = new Date(r[0]).toISOString().split('T')[0];
+                    return rowDate >= ds && rowDate <= de;
+                });
+                dateText = `ตั้งแต่วันที่ ${new Date(ds).toLocaleDateString('th-TH')} ถึง ${new Date(de).toLocaleDateString('th-TH')}`;
             }
 
-            let dataToExport = [];
-            let fileName = 'รายงานเช็คชื่อ_';
+            if(filteredData.length === 0) return alert("ไม่พบข้อมูลในช่วงเวลาที่เลือก");
 
-            if (type === 'daily') {
-                const dateVal = document.getElementById('exportDate').value;
-                if(!dateVal) { alert("กรุณาเลือกวันที่ก่อนดาวน์โหลด"); return; }
-                
-                dataToExport = allRecords.filter(row => new Date(row[0]).toISOString().split('T')[0] === dateVal);
-                fileName += dateVal;
-            } 
-            else if (type === 'gender') {
-                const genderVal = document.getElementById('exportGender').value;
-                dataToExport = allRecords.filter(row => row[3] === genderVal);
-                fileName += 'แยกเพศ_' + genderVal;
-            }
+            // อัปเดตข้อมูลลงในเทมเพลต PDF
+            document.getElementById('pdf-date-subtitle').textContent = dateText;
+            document.getElementById('pdf-total').textContent = filteredData.length;
+            document.getElementById('pdf-male').textContent = filteredData.filter(r => r[3] === 'ชาย').length;
+            document.getElementById('pdf-female').textContent = filteredData.filter(r => r[3] === 'หญิง').length;
+            document.getElementById('pdf-print-time').textContent = "พิมพ์เมื่อ: " + new Date().toLocaleString('th-TH');
 
-            if(dataToExport.length === 0) {
-                alert("ไม่พบข้อมูลตามเงื่อนไขที่เลือก");
-                return;
-            }
-
-            // เพิ่มหัวตาราง
-            const finalData = [['เวลาที่เช็ค', 'รหัสนักเรียน', 'ชื่อ-นามสกุล', 'เพศ', 'ระดับชั้น/ห้อง']];
-            dataToExport.forEach(row => {
-                // Format วันที่ให้สวยงาม
-                const formattedDate = new Date(row[0]).toLocaleString('th-TH');
-                finalData.push([formattedDate, row[1], row[2], row[3], row[4]]);
+            const tbody = document.getElementById('pdf-table-body');
+            tbody.innerHTML = '';
+            filteredData.forEach((row, index) => {
+                tbody.innerHTML += `
+                    <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                        <td class="py-2 px-4 border border-slate-200 text-center">${index + 1}</td>
+                        <td class="py-2 px-4 border border-slate-200 font-semibold">${row[1]}</td>
+                        <td class="py-2 px-4 border border-slate-200">${row[2]}</td>
+                        <td class="py-2 px-4 border border-slate-200">${row[4]}</td>
+                        <td class="py-2 px-4 border border-slate-200 text-center">${new Date(row[0]).toLocaleTimeString('th-TH')}</td>
+                    </tr>
+                `;
             });
 
-            // สร้างไฟล์ Excel
-            const worksheet = XLSX.utils.aoa_to_sheet(finalData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-            XLSX.writeFile(workbook, `${fileName}.xlsx`);
+            // ตั้งค่าการสร้าง PDF
+            const element = document.getElementById('pdf-container');
+            const opt = {
+                margin:       10,
+                filename:     `รายงานเช็คชื่อ_${new Date().getTime()}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 }, // ความคมชัด
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // เรียกใช้ html2pdf
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
