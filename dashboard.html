@@ -382,8 +382,8 @@
 
     <script>
         // ==============================================================
-        // 🛑 สำคัญมาก: ใส่ Web App URL ของ Google Apps Script ของคุณที่นี่ 🛑
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbw8kRO3pm8F5YCQAtWYcr17EkS_4be2cDJrlBLA4UdB1TyWjZ4UuxYEwFDUgjMiPX6l/exec'; 
+        // 🛑 นำ Web App URL อันใหม่ที่ Deploy เสร็จแล้ว มาวางที่นี่ 🛑
+        const scriptUrl = 'วาง_URL_APPS_SCRIPT_ที่อัปเดตใหม่ตรงนี้ครับ'; 
         // ==============================================================
 
         // --- เช็คสถานะการล็อกอิน ---
@@ -402,54 +402,43 @@
         let todayChartObj = null;
         let historyChartObj = null;
 
-        // --- ตั้งค่าหน้าจอตอนโหลด (Window Onload) ---
         window.onload = () => {
-            // เซ็ตข้อมูลโปรไฟล์
             document.getElementById('sidebarName').textContent = tName;
             document.getElementById('sidebarRole').textContent = tRole === 'Admin' ? 'Administrator' : `ครูประจำชั้น ${tGrade}`;
             document.getElementById('sidebarPhoto').src = tPhoto;
             
-            // เปิดฟิลเตอร์แอดมิน
             if(tRole === 'Admin') {
                 document.getElementById('adminFilterContainer').classList.remove('hidden');
                 document.getElementById('adminGradeSelect').value = 'All';
             }
 
-            // อัปเดตข้อความ UI และโหลดข้อมูลตาราง
             updateContextUI();
             
-            // ตั้งค่าวันที่เริ่มต้นในปฏิทินเป็นวันนี้
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('exportDateSingle').value = todayStr;
             document.getElementById('historyDate').value = todayStr;
             
-            // โหลดข้อมูลเบื้องหลังเตรียมไว้
             loadRecords(true);
         }
 
-        // --- อัปเดตข้อความตามระดับชั้นที่เลือก ---
         function updateContextUI() {
             const contextText = activeGradeContext === 'All' ? 'ทุกระดับชั้น' : activeGradeContext;
             document.getElementById('checkinContextBadge').innerHTML = `<i class="fa-solid fa-layer-group mr-1"></i> ${contextText}`;
             document.getElementById('navVerifyText').textContent = `ตรวจสอบวันนี้ (${contextText})`;
         }
 
-        // --- การเปลี่ยนมุมมองของ Admin ---
         function changeAdminView() {
             activeGradeContext = document.getElementById('adminGradeSelect').value;
             updateContextUI();
-            // ถ้าอยู่ในหน้าที่มีตาราง ให้โหลดตารางใหม่
             if(document.getElementById('verify').classList.contains('active') || document.getElementById('history').classList.contains('active')) {
                 loadRecords();
             }
         }
 
-        // --- ฟังก์ชันสลับเมนู (Tab Switching) ---
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             
-            // รีเซ็ตปุ่มใน Sidebar
             document.querySelectorAll('.nav-btn').forEach(b => {
                 if(b.textContent.includes('สุ่ม')) {
                     b.className = "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-400/70 hover:bg-orange-500/10 hover:text-orange-400 rounded-xl transition font-medium border-l-4 border-transparent";
@@ -458,51 +447,49 @@
                 }
             });
             
-            // ไฮไลต์ปุ่มที่คลิก
             if(tabId === 'random') {
                 btnElement.className = "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-orange-500/10 text-orange-400 rounded-xl transition font-bold border-l-4 border-orange-400 shadow-sm";
             } else {
                 btnElement.className = "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-teal-500/10 text-teal-300 rounded-xl transition font-bold border-l-4 border-teal-400 shadow-sm";
             }
 
-            // ถ้าเปิดหน้าตรวจสอบ หรือ ส่งออก ให้ดึงข้อมูลล่าสุด
-            if(tabId === 'verify' || tabId === 'export') {
-                loadRecords();
-            }
-            if(tabId === 'history' && document.getElementById('historyDate').value) {
-                renderHistory();
-            }
+            if(tabId === 'verify' || tabId === 'export') { loadRecords(); }
+            if(tabId === 'history' && document.getElementById('historyDate').value) { renderHistory(); }
         }
 
-        // --- ออกจากระบบ ---
-        function logout() { 
-            localStorage.clear(); 
-            window.location.href = 'index.html'; 
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+        // --- ฟังก์ชันช่วยเหลือ: หาจำนวนเด็กรวม (รองรับหลายชั้น) ---
+        function getTotalContextStudents() {
+            let total = 0;
+            if (activeGradeContext === 'All') {
+                total = rawGradeTotals['All'] || 0;
+            } else {
+                const allowedList = activeGradeContext.split(',').map(g => g.trim());
+                allowedList.forEach(g => { total += (rawGradeTotals[g] || 0); });
+            }
+            return total;
         }
 
-        // --- คำนวณยอด มาเรียน / ขาดเรียน ---
         function calculateStats(recordsList, targetDateStr) {
             const present = recordsList.filter(r => new Date(r[0]).toISOString().split('T')[0] === targetDateStr).length;
             let absent = 0;
             const now = new Date();
             const targetDate = new Date(targetDateStr);
-            const dayOfWeek = targetDate.getDay(); // 0=อาทิตย์, 1=จันทร์ ... 6=เสาร์
+            const dayOfWeek = targetDate.getDay(); 
             
-            let totalInContext = rawGradeTotals[activeGradeContext] || 0;
+            const totalInContext = getTotalContextStudents(); // เรียกใช้ฟังก์ชันรวมยอด
 
-            if (dayOfWeek >= 1 && dayOfWeek <= 5) { // เฉพาะจันทร์-ศุกร์
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) { 
                 if (now.toISOString().split('T')[0] === targetDateStr) {
-                    // วันนี้: ต้องเลย 10 โมงเช้า ถึงจะเริ่มนับว่าขาด/ป่วย
                     if (now.getHours() >= 10) absent = Math.max(0, totalInContext - present);
                 } else if (targetDate < now) {
-                    // วันในอดีต: นับขาดได้เลย
                     absent = Math.max(0, totalInContext - present);
                 }
             }
             return { present, absent, total: totalInContext };
         }
 
-        // --- วาดกราฟวงกลม ---
         function createChart(canvasId, present, absent) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             if(canvasId === 'todayChart' && todayChartObj) todayChartObj.destroy();
@@ -513,7 +500,7 @@
                 data: {
                     labels: ['มาเรียน', 'ขาด/ป่วย'],
                     datasets: [{
-                        data: [present, absent === 0 && present === 0 ? 1 : absent], // ป้องกันกราฟเปล่า
+                        data: [present, absent === 0 && present === 0 ? 1 : absent], 
                         backgroundColor: absent === 0 && present === 0 ? ['#e2e8f0', '#e2e8f0'] : ['#0d9488', '#f97316'],
                         borderWidth: 0,
                         hoverOffset: 4
@@ -530,7 +517,6 @@
             if(canvasId === 'historyChart') historyChartObj = chart;
         }
 
-        // --- ระบบเช็คชื่อ (รับค่าจาก Barcode/พิมพ์รหัส) ---
         document.getElementById('studentInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const sid = this.value.trim();
@@ -560,7 +546,7 @@
                         document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
                         document.getElementById('studentCard').classList.remove('hidden');
                         
-                        loadRecords(true); // โหลดข้อมูลอัปเดตเบื้องหลัง
+                        loadRecords(true); 
                     } 
                     else if (data.status === 'unauthorized') {
                         badge.className = "inline-flex items-center px-4 py-1.5 bg-red-100 text-red-700 text-sm font-bold rounded-full mb-3 shadow-sm";
@@ -594,7 +580,6 @@
             }
         });
 
-        // --- โหลดข้อมูลตารางและกราฟ ---
         function loadRecords(silent = false) {
             const statusEl = document.getElementById('verifyStatus');
             if(!silent) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-blue-500 mr-2"></i> โหลดข้อมูลล่าสุด...';
@@ -603,15 +588,17 @@
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    // กรองข้อมูลตามบริบท (Admin/Teacher)
+                    // 📌 กรองข้อมูลตารางแบบรองรับหลายระดับชั้น
                     let filteredRecords = data.records;
                     if(activeGradeContext !== 'All') {
-                        filteredRecords = data.records.filter(r => r[4].startsWith(activeGradeContext));
+                        const allowedList = activeGradeContext.split(',').map(g => g.trim());
+                        filteredRecords = data.records.filter(r => {
+                            return allowedList.some(g => r[4].startsWith(g));
+                        });
                     }
                     allRecords = filteredRecords; 
                     rawGradeTotals = data.gradeTotals || {};
 
-                    // ข้อมูลหน้า "วันนี้"
                     const todayStr = new Date().toISOString().split('T')[0];
                     const stats = calculateStats(allRecords, todayStr);
                     
@@ -620,7 +607,6 @@
                     document.getElementById('todayAbsent').textContent = stats.absent;
                     createChart('todayChart', stats.present, stats.absent);
 
-                    // สร้างตารางวันนี้
                     const tbody = document.getElementById('todayTableBody');
                     tbody.innerHTML = '';
                     const todayRecords = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === todayStr).reverse();
@@ -646,17 +632,13 @@
                         statusEl.innerHTML = `<i class="fa-solid fa-check text-green-500 mr-2"></i> อัปเดตเมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
                     }
                     
-                    // ถ้าอยู่หน้าประวัติย้อนหลัง ให้เรนเดอร์ใหม่ด้วย
-                    if(document.getElementById('history').classList.contains('active')) {
-                        renderHistory();
-                    }
+                    if(document.getElementById('history').classList.contains('active')) { renderHistory(); }
                 } else {
                     if(!silent) statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500 mr-2"></i> โหลดข้อมูลล้มเหลว';
                 }
             });
         }
 
-        // --- ดูประวัติย้อนหลัง ---
         function renderHistory() {
             const dateStr = document.getElementById('historyDate').value;
             if(!dateStr) return;
@@ -690,16 +672,12 @@
             }
         }
 
-        // --- ระบบสุ่มชื่อนักเรียน ---
         let randomInterval;
         function startRandomizer() {
             const todayStr = new Date().toISOString().split('T')[0];
             const todayRecords = allRecords.filter(r => new Date(r[0]).toISOString().split('T')[0] === todayStr);
             
-            if(todayRecords.length === 0) {
-                alert("ยังไม่มีนักเรียนมาเรียนในวันนี้เลยครับ!");
-                return;
-            }
+            if(todayRecords.length === 0) { alert("ยังไม่มีนักเรียนมาเรียนในวันนี้เลยครับ!"); return; }
 
             const btn = document.getElementById('randomBtn');
             btn.disabled = true;
@@ -714,19 +692,17 @@
                 document.getElementById('randomId').textContent = "รหัส: " + rand[1];
                 counter++;
                 
-                if(counter >= 25) { // หมุน 25 รอบ
+                if(counter >= 25) { 
                     clearInterval(randomInterval);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-shuffle mr-3"></i> สุ่มใหม่อีกครั้ง';
                     
-                    // อัปเดตรูป
                     const iconBox = document.querySelector('#randomResult div');
                     iconBox.innerHTML = `<img src="https://ui-avatars.com/api/?name=${rand[2]}&background=f97316&color=fff&size=200" class="w-full h-full rounded-full object-cover">`;
                 }
             }, 80);
         }
 
-        // --- ระบบ Modal ลบข้อมูลด้วยรหัส ---
         function openDeleteModal(timestampId) {
             targetDeleteId = timestampId;
             document.getElementById('deletePassword').value = '';
@@ -751,14 +727,12 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-function confirmDelete() {
+        function confirmDelete() {
             const pwdInput = document.getElementById('deletePassword');
-            const correctPassword = localStorage.getItem('tPassword'); // 👈 ดึงรหัสผ่านจริงของคนที่ใช้งานอยู่
+            const correctPassword = localStorage.getItem('tPassword'); 
 
-            // เช็คว่ารหัสที่พิมพ์ ตรงกับรหัสที่ล็อคอินเข้ามาหรือไม่
             if (pwdInput.value !== correctPassword) {
                 document.getElementById('deleteErrorMsg').classList.remove('hidden');
-                // เอฟเฟกต์เขย่ากล่อง Input
                 pwdInput.classList.add('-translate-x-2');
                 setTimeout(() => pwdInput.classList.remove('-translate-x-2'), 100);
                 setTimeout(() => pwdInput.classList.add('translate-x-2'), 200);
@@ -776,16 +750,11 @@ function confirmDelete() {
             .then(data => {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-                if(data.status === 'success') { 
-                    closeDeleteModal(); 
-                    loadRecords(); 
-                } else {
-                    alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-                }
+                if(data.status === 'success') { closeDeleteModal(); loadRecords(); } 
+                else { alert('เกิดข้อผิดพลาดในการลบข้อมูล'); }
             });
         }
 
-        // --- ระบบ PDF Export ---
         function toggleDateMode() {
             const mode = document.querySelector('input[name="dateMode"]:checked').value;
             document.getElementById('singleDateBox').classList.toggle('hidden', mode !== 'single');
@@ -818,12 +787,9 @@ function confirmDelete() {
 
             if(filteredData.length === 0) return alert("ไม่พบข้อมูลในช่วงเวลาที่เลือก");
 
-            // อัปเดตข้อมูลลง PDF
             document.getElementById('pdf-date-subtitle').textContent = dateText;
             
-            // ใช้ค่าจาก rawGradeTotals ที่ดึงมาจาก Backend
-            let totalContextStudents = rawGradeTotals[activeGradeContext] || 0;
-            
+            const totalContextStudents = getTotalContextStudents();
             document.getElementById('pdf-total').textContent = totalContextStudents;
             document.getElementById('pdf-present').textContent = filteredData.length;
             document.getElementById('pdf-absent').textContent = Math.max(0, totalContextStudents - filteredData.length);
@@ -844,12 +810,7 @@ function confirmDelete() {
                     </tr>`;
             });
 
-            // -------------------------------------------------------------
-            // ส่วนที่แก้ไขเพื่อแก้ปัญหา PDF หน้าขาว
-            // -------------------------------------------------------------
             const element = document.getElementById('pdf-container');
-            
-            // 1. ดึงเทมเพลตกลับมาบนหน้าจอ (แต่ซ่อนไว้เลเยอร์ล่างสุดด้วย z-index)
             element.style.left = '0px';
             element.style.top = '0px';
             element.style.zIndex = '-100';
@@ -858,27 +819,24 @@ function confirmDelete() {
                 margin:       12,
                 filename:     `รายงานเข้าเรียน_${activeGradeContext}_${new Date().getTime()}.pdf`,
                 image:        { type: 'jpeg', quality: 1 },
-                // เพิ่ม scrollY: 0 เพื่อป้องกันหน้าขาวเวลาเราเลื่อนเมาส์ลงมาล่างๆ
                 html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // เปลี่ยนข้อความปุ่มเพื่อบอกผู้ใช้ว่ากำลังประมวลผล
             const btn = document.querySelector('#export button');
             const originalBtnHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้าง PDF...';
             btn.disabled = true;
 
-            // 2. หน่วงเวลา 0.5 วินาที เพื่อให้ Browser นำข้อมูลวาดลงหน้าจอให้เสร็จก่อนแคปเจอร์
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // 3. เมื่อดาวน์โหลดเสร็จแล้ว ให้คืนค่าทุกอย่างกลับไปเป็นเหมือนเดิม
                     element.style.left = '-9999px';
                     btn.innerHTML = originalBtnHtml;
                     btn.disabled = false;
                 });
             }, 500);
         }
+    </script>
     </script>
 </body>
 </html>
