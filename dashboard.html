@@ -78,7 +78,7 @@
                     <i class="fa-solid fa-wand-magic-sparkles w-5 text-xl"></i><span>สแกนเช็คชื่อ</span>
                 </button>
                 <button onclick="switchTab('manual', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-user-check w-5 text-lg"></i><span>ครูเช็คชื่อแทน</span>
+                    <i class="fa-solid fa-user-check w-5 text-lg"></i><span>ระบบเช็คชื่อ(ครูประจำชั้น)/span>
                 </button>
                 <button onclick="switchTab('verify', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
                     <i class="fa-solid fa-chart-pie w-5 text-lg"></i><span id="navVerifyText">ตรวจสอบวันนี้</span>
@@ -581,7 +581,7 @@
             XLSX.writeFile(wb, `รายชื่อนักเรียน_${activeGradeContext}.xlsx`);
         }
 
-        // --- 📌 1.5 ครูเช็คชื่อแทน ---
+        // --- 📌 1.5 ระบบเช็คชื่อ(ครูประจำชั้น) ---
         let manualSyncTimer = null; let pendingUpdates = {};
         function renderManualTable() {
             const dateStr = document.getElementById('manualDate').value; if(!dateStr) return;
