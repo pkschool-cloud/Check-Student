@@ -40,24 +40,68 @@
         </form>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.undefined; // ป้องกันการรีเฟรชหน้า
-            
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+  <script>
+        // ==========================================
+        // นำ URL ของ Google Script มาใส่ (ใช้ URL เดียวกับหน้า Dashboard)
+        // ==========================================
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzVtMYAzdaW30TrG5Y0kHoMedOI7kIxSB21xfisYqwmVdRt5tA3RboKf8hXFxqgHlZx/exec';
 
-            // จำลองการตรวจสอบ Login (เมื่อต่อ Backend จะต้องยิง fetch ไปที่ Google Script แทน)
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // ป้องกันการรีเฟรชหน้า
+            
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const errorMsg = document.getElementById('errorMessage');
+
             if (user !== "" && pass !== "") {
-                // เก็บข้อมูลการล็อคอินจำลองไว้ในเบราว์เซอร์
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('teacherName', user);
-                localStorage.setItem('allowedGrades', 'ป.1-ป.6'); // สมมติว่าเป็น Admin ดูได้หมด
-                
-                // เปลี่ยนหน้าไปที่ Dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                document.getElementById('errorMessage').classList.remove('hidden');
+                // เปลี่ยนข้อความปุ่มเพื่อบอกผู้ใช้ว่ากำลังโหลดข้อมูล
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.textContent = 'กำลังตรวจสอบ...';
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+                errorMsg.classList.add('hidden');
+
+                // ส่งข้อมูลไปตรวจสอบที่ Google Script (Backend)
+                fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'login',
+                        username: user,
+                        password: pass
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // ล็อคอินสำเร็จ: เก็บข้อมูล "ของจริง" จาก Sheet ไว้ในเบราว์เซอร์
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('teacherName', data.username); 
+                        localStorage.setItem('role', data.role); // เก็บสิทธิ์ว่าเป็น Admin หรือ Teacher
+                        localStorage.setItem('allowedGrades', data.allowedGrades); // เก็บชั้นที่ได้รับอนุญาต
+                        
+                        // เปลี่ยนหน้าไปที่ Dashboard
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        // ล็อคอินไม่สำเร็จ: แสดงข้อความแจ้งเตือนที่ได้จาก Backend
+                        errorMsg.textContent = data.message || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง!';
+                        errorMsg.classList.remove('hidden');
+                        
+                        // คืนสภาพปุ่มกลับมาให้กดใหม่ได้
+                        submitBtn.textContent = originalBtnText;
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                    }
+                })
+                .catch(error => {
+                    // กรณีเน็ตหลุด หรือยิง URL ผิด
+                    errorMsg.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย ตรวจสอบ URL หรืออินเทอร์เน็ตของคุณ';
+                    errorMsg.classList.remove('hidden');
+                    
+                    submitBtn.textContent = originalBtnText;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                });
             }
         });
     </script>
