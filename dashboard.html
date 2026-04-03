@@ -13,11 +13,10 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* ซ่อนคอนเทนเนอร์ PDF ไม่ให้โชว์บนหน้าเว็บ แต่ให้โปรแกรมอ่านไปทำ PDF ได้ */
         #pdf-container { position: absolute; left: -9999px; top: -9999px; width: 800px; background: white; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden text-slate-800">
+<body class="flex h-screen overflow-hidden text-slate-800 relative">
 
     <aside class="w-64 bg-blue-950 text-white flex flex-col shadow-2xl z-20 relative">
         <div class="p-6 border-b border-blue-900/50 flex items-center space-x-3">
@@ -67,7 +66,7 @@
 
                 <div id="studentCard" class="hidden bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden transform transition-all">
                     <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                        <div class="w-32 h-32 rounded-full border-4 border-teal-50 shadow-md overflow-hidden bg-slate-100 flex-shrink-0">
+                        <div class="w-32 h-32 rounded-full border-4 border-teal-50 shadow-md overflow-hidden bg-slate-100 flex-shrink-0 flex items-center justify-center">
                             <img id="studentPhoto" src="" alt="Student" class="w-full h-full object-cover" 
                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=St&background=0D9488&color=fff&size=128';">
                         </div>
@@ -97,9 +96,7 @@
                     <h1 class="text-3xl font-bold text-blue-950 mb-2">ตรวจสอบรายชื่อ</h1>
                     <p class="text-slate-500">จัดการข้อมูล (การลบต้องยืนยันด้วยรหัสผ่าน)</p>
                 </div>
-                <button onclick="loadRecords()" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-200 transition">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> โหลดข้อมูลล่าสุด
-                </button>
+                <div id="verifyStatus" class="text-sm font-medium text-teal-600"></div>
             </div>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <table class="w-full text-left border-collapse">
@@ -113,14 +110,14 @@
                         </tr>
                     </thead>
                     <tbody id="recordTableBody" class="text-slate-700 text-sm divide-y divide-slate-100">
-                        <tr><td colspan="5" class="text-center py-8 text-slate-400">กรุณากดรีเฟรชข้อมูล</td></tr>
+                        <tr><td colspan="5" class="text-center py-8 text-slate-400">กำลังโหลดข้อมูล...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
         <section id="export" class="tab-content p-8">
-            <h1 class="text-3xl font-bold text-blue-950 mb-2">ส่งออกรายงาน (PDF Format)</h1>
+             <h1 class="text-3xl font-bold text-blue-950 mb-2">ส่งออกรายงาน (PDF Format)</h1>
             <p class="text-slate-500 mb-8">สร้างรายงานรูปแบบสวยงามพร้อมกราฟิกสำหรับการนำเสนอ</p>
 
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-2xl">
@@ -165,6 +162,26 @@
         </section>
     </main>
 
+    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-all">
+            <div class="text-center mb-6">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-500 mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">ยืนยันการลบข้อมูล</h3>
+                <p class="text-sm text-slate-500 mt-2">กรุณากรอกรหัสผ่าน (Admin) เพื่อลบรายการนี้</p>
+            </div>
+            
+            <input type="password" id="deletePassword" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-400 focus:border-red-500 outline-none transition text-center font-medium mb-4" placeholder="รหัสผ่าน Admin (002304)">
+            <p id="deleteErrorMsg" class="text-red-500 text-xs text-center mb-4 hidden">❌ รหัสผ่านไม่ถูกต้อง</p>
+            
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">ยกเลิก</button>
+                <button onclick="confirmDelete()" class="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition shadow-md">ยืนยันลบ</button>
+            </div>
+        </div>
+    </div>
+
     <div id="pdf-container" class="p-10 font-sans">
         <div class="text-center mb-8 border-b-2 border-blue-900 pb-6">
             <h1 class="text-4xl font-bold text-blue-950 mb-2"><i class="fa-solid fa-school text-teal-600 mr-3"></i>PK School</h1>
@@ -188,8 +205,7 @@
                     <th class="py-3 px-4 border border-blue-950 text-center">เวลาเข้าเรียน</th>
                 </tr>
             </thead>
-            <tbody id="pdf-table-body" class="text-slate-700">
-                </tbody>
+            <tbody id="pdf-table-body" class="text-slate-700"></tbody>
         </table>
         <div class="mt-12 text-right">
             <p class="text-slate-500 text-sm">ผู้จัดทำรายงาน: Admin ระบบเช็คชื่อ</p>
@@ -199,18 +215,25 @@
 
     <script>
         // ==========================================
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycby5ttTZReQus9b7wzOTKEueiAidS8EIhF0tngQ6J5bIUG4UFXNUAfklxeNAl-iAsGUe/exec'; 
+        const scriptUrl = 'วาง_URL_APPS_SCRIPT_ที่อัปเดตแล้วที่นี่'; 
         // ==========================================
 
         let allRecords = []; 
+        let targetDeleteId = null; // เก็บ timestamp ของแถวที่จะลบ
+
         if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
 
+        // --- ระบบสลับหน้าต่าง พร้อม Auto-Refresh ---
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-blue-900/30 hover:text-white rounded-xl transition font-medium border-l-4 border-transparent");
             btn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-blue-900/50 text-teal-300 rounded-xl transition font-medium border-l-4 border-teal-400";
-            if(tabId === 'verify' || tabId === 'export') loadRecords();
+            
+            // รีเฟรชข้อมูลอัตโนมัติเมื่อเข้าหน้าตรวจสอบ หรือ ส่งออก
+            if(tabId === 'verify' || tabId === 'export') {
+                loadRecords();
+            }
         }
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
@@ -234,18 +257,29 @@
                         badge.className = "inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-2";
                         badge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> บันทึกเข้าเรียนสำเร็จ';
                         
-                        // ถ้ารูปโหลดไม่ได้ onerror ใน HTML จะทำงานอัตโนมัติ
-                        document.getElementById('studentPhoto').src = data.photoUrl || 'error-trigger'; 
+                        // ถ้ารูปโหลดไม่ได้ onerror จะทำงาน (ไม่ต้องแก้ตรงนี้แล้วเพราะแก้ใน HTML ให้แล้ว)
+                        if (data.photoUrl && data.photoUrl.trim() !== '') {
+                             document.getElementById('studentPhoto').src = data.photoUrl;
+                        } else {
+                             // ถ้ารหัสไม่มีรูปให้ใช้รูป Avatar
+                             document.getElementById('studentPhoto').src = `https://ui-avatars.com/api/?name=${data.name}&background=0D9488&color=fff&size=128`;
+                        }
+
                         document.getElementById('studentName').textContent = data.name;
                         document.getElementById('studentIdDisplay').textContent = sid;
                         document.getElementById('studentGrade').textContent = data.grade;
                         document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
                         document.getElementById('studentCard').classList.remove('hidden');
+
+                        // รีเฟรชข้อมูลเบื้องหลังเตรียมไว้สำหรับหน้าอื่นๆ
+                        loadRecords(true);
+
                     } 
                     else if (data.status === 'duplicate') {
                         statusEl.innerHTML = '';
                         badge.className = "inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full mb-2";
                         badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> สแกนซ้ำ!';
+                        document.getElementById('studentPhoto').src = `https://ui-avatars.com/api/?name=St&background=f97316&color=fff&size=128`; // รูปสีส้ม
                         document.getElementById('studentName').textContent = "นักเรียนคนนี้เช็คชื่อไปแล้ว";
                         document.getElementById('studentIdDisplay').textContent = sid;
                         document.getElementById('studentGrade').textContent = "-";
@@ -259,8 +293,11 @@
             }
         });
 
-        // --- โหลดข้อมูล ---
-        function loadRecords() {
+        // --- โหลดข้อมูล (มีพารามิเตอร์ silent เพื่อไม่ให้กวน UI ตอนอัปเดตเบื้องหลัง) ---
+        function loadRecords(silent = false) {
+            const statusEl = document.getElementById('verifyStatus');
+            if(!silent) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังอัปเดตข้อมูล...';
+
             fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'getRecords'}) })
             .then(r => r.json())
             .then(data => {
@@ -268,35 +305,72 @@
                     allRecords = data.records;
                     const tbody = document.getElementById('recordTableBody');
                     tbody.innerHTML = '';
-                    [...allRecords].reverse().slice(0, 50).forEach(row => { // โชว์แค่ 50 ล่าสุด
+                    [...allRecords].reverse().slice(0, 50).forEach(row => { 
                         tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 border-b border-slate-100">
+                            <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
                                 <td class="py-3 px-6 text-xs text-slate-500">${new Date(row[0]).toLocaleString('th-TH')}</td>
                                 <td class="py-3 px-6 font-semibold text-blue-600">${row[1]}</td>
                                 <td class="py-3 px-6">${row[2]}</td>
                                 <td class="py-3 px-6">${row[3]}</td>
                                 <td class="py-3 px-6 text-center">
-                                    <button onclick="deleteRecord('${row[0]}')" class="text-red-500 hover:text-white hover:bg-red-500 border border-red-200 p-2 rounded transition"><i class="fa-solid fa-trash-can"></i></button>
+                                    <button onclick="openDeleteModal('${row[0]}')" class="text-slate-400 hover:text-red-500 transition-colors p-2" title="ลบข้อมูล">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
                                 </td>
                             </tr>`;
                     });
+                    if(!silent) {
+                        statusEl.innerHTML = '<i class="fa-solid fa-check text-green-500 mr-1"></i> อัปเดตล่าสุด: ' + new Date().toLocaleTimeString('th-TH');
+                        setTimeout(() => statusEl.innerHTML = '', 3000); // เคลียร์ข้อความหลัง 3 วิ
+                    }
                 }
             });
         }
 
-        // --- ลบข้อมูล (ติดรหัสผ่าน 002304) ---
-        function deleteRecord(timestampId) {
-            let pwd = prompt("⚠️ การลบข้อมูลต้องได้รับอนุญาต\n\nกรุณากรอกรหัสผ่าน Admin เพื่อยืนยันการลบ:");
-            if (pwd === null) return; // กดยกเลิก
+        // --- ระบบจัดการ Modal ลบข้อมูล ---
+        function openDeleteModal(timestampId) {
+            targetDeleteId = timestampId;
+            document.getElementById('deletePassword').value = '';
+            document.getElementById('deleteErrorMsg').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('hidden');
+            // ทำ animation กล่องเด้ง
+            setTimeout(() => document.querySelector('#deleteModal > div').classList.remove('scale-95'), 10);
+            document.getElementById('deletePassword').focus();
+        }
+
+        function closeDeleteModal() {
+            targetDeleteId = null;
+            document.querySelector('#deleteModal > div').classList.add('scale-95');
+            setTimeout(() => document.getElementById('deleteModal').classList.add('hidden'), 200);
+        }
+
+        function confirmDelete() {
+            const pwd = document.getElementById('deletePassword').value;
+            const errorMsg = document.getElementById('deleteErrorMsg');
+
             if (pwd !== "002304") {
-                alert("❌ รหัสผ่านไม่ถูกต้อง ยกเลิกการลบ");
+                errorMsg.classList.remove('hidden');
+                // เขย่ากล่องใส่รหัส
+                document.getElementById('deletePassword').classList.add('animate-bounce');
+                setTimeout(() => document.getElementById('deletePassword').classList.remove('animate-bounce'), 500);
                 return;
             }
 
-            fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'deleteRecord', timestampId: timestampId}) })
+            // ถ้ารหัสถูก เปลี่ยนข้อความปุ่มและเริ่มส่งข้อมูลลบ
+            const btn = document.querySelector('#deleteModal button.bg-red-500');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            fetch(scriptUrl, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify({action: 'deleteRecord', timestampId: targetDeleteId}) })
             .then(r => r.json())
             .then(data => {
-                if(data.status === 'success') { alert('ลบข้อมูลสำเร็จ'); loadRecords(); }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                if(data.status === 'success') { 
+                    closeDeleteModal();
+                    loadRecords(); // โหลดข้อมูลใหม่ทันที
+                }
             });
         }
 
@@ -340,7 +414,6 @@
 
             if(filteredData.length === 0) return alert("ไม่พบข้อมูลในช่วงเวลาที่เลือก");
 
-            // อัปเดตข้อมูลลงในเทมเพลต PDF
             document.getElementById('pdf-date-subtitle').textContent = dateText;
             document.getElementById('pdf-total').textContent = filteredData.length;
             document.getElementById('pdf-male').textContent = filteredData.filter(r => r[3] === 'ชาย').length;
@@ -361,17 +434,15 @@
                 `;
             });
 
-            // ตั้งค่าการสร้าง PDF
             const element = document.getElementById('pdf-container');
             const opt = {
                 margin:       10,
                 filename:     `รายงานเช็คชื่อ_${new Date().getTime()}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 }, // ความคมชัด
+                html2canvas:  { scale: 2 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // เรียกใช้ html2pdf
             html2pdf().set(opt).from(element).save();
         }
     </script>
