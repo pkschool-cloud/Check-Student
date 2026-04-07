@@ -366,7 +366,162 @@
 
     <script>
         // ==============================================================
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzX-pUFGJuI4SBDAiojW64GJNCfR2hCrcA3U4XUwKkClcnisvnNcQRWxtiGCQsr-u5j/exec'; 
+        const scriptUrl = 'const SS = SpreadsheetApp.getActiveSpreadsheet();
+
+function doPost(e) {
+  let data;
+  try { data = JSON.parse(e.postData.contents); } catch(err) { data = JSON.parse(e.parameter); }
+  const action = data.action;
+  
+  try {
+    if (action === 'login') return response(handleLogin(data.username, data.password));
+    if (action === 'checkin') return response(handleCheckin(data.studentId, data.allowedGrade));
+    if (action === 'getRecords') return response(getRecords());
+    if (action === 'deleteRecord') return response(deleteRecord(data.timestampId));
+    if (action === 'changePassword') return response(changePassword(data.username, data.oldPwd, data.newPwd));
+    if (action === 'syncManual') return response(syncManual(data.dateStr, data.updates));
+    if (action === 'addStudent') return response(addStudent(data.student));
+    if (action === 'deleteStudent') return response(deleteStudent(data.studentId));
+    
+    return response({status: 'error', message: 'Unknown action'});
+  } catch (err) {
+    return response({status: 'error', message: err.toString()});
+  }
+}
+
+function response(res) { return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON); }
+
+function handleLogin(username, password) {
+  const sheet = SS.getSheetByName('Users'); const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { if (String(data[i][0]) === String(username) && String(data[i][1]) === String(password)) return { status: 'success', name: data[i][2], role: data[i][3], grade: data[i][4], photoUrl: data[i][5] || '' }; }
+  return { status: 'error', message: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
+}
+
+function changePassword(username, oldPwd, newPwd) {
+  const sheet = SS.getSheetByName('Users'); const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { if (String(data[i][0]) === String(username) && String(data[i][1]) === String(oldPwd)) { sheet.getRange(i + 1, 2).setValue(newPwd); return { status: 'success' }; } }
+  return { status: 'error', message: 'รหัสผ่านเดิมไม่ถูกต้อง' };
+}
+
+// 🔥 อัปเกรด: เช็คชื่อด้วยรหัส หรือ ชื่อบางส่วน (>= 4 ตัวอักษร)
+function handleCheckin(studentInput, allowedGrade) {
+  const studentSheet = SS.getSheetByName('Students'); const attendanceSheet = SS.getSheetByName('Attendance');
+  const students = studentSheet.getDataRange().getValues(); 
+  
+  let studentInfo = null;
+  let matchedId = null;
+  let matchCount = 0;
+  const inputStr = String(studentInput).trim();
+  
+  for (let i = 1; i < students.length; i++) { 
+    let sId = String(students[i][0]);
+    let sName = String(students[i][1]);
+
+    // 1. ถ้ารหัสตรงเป๊ะ ให้หยุดหาเลย
+    if (sId === inputStr) { 
+      studentInfo = { name: sName, grade: String(students[i][2] || ''), gender: students[i][3], photoUrl: students[i][4] || '' }; 
+      matchedId = sId;
+      matchCount = 1;
+      break; 
+    }
+    // 2. ถ้าค้นหาด้วยชื่อ และยาว 4 ตัวอักษรขึ้นไป
+    if (inputStr.length >= 4 && sName.includes(inputStr)) {
+      studentInfo = { name: sName, grade: String(students[i][2] || ''), gender: students[i][3], photoUrl: students[i][4] || '' }; 
+      matchedId = sId;
+      matchCount++;
+    }
+  }
+
+  // ถ้าเจอคนชื่อคล้ายกันหลายคน ให้แจ้งเตือน
+  if (matchCount > 1) {
+    return { status: 'error', message: 'พบชื่อนักเรียนคล้ายกันหลายคน กรุณาพิมพ์ให้ยาวกว่านี้' };
+  }
+  
+  if (studentInfo && matchCount === 1) {
+    let isAllowed = (allowedGrade === 'All');
+    if (!isAllowed) { 
+      const allowedList = String(allowedGrade).split(',').map(g => g.trim()); 
+      for (let g of allowedList) { if (studentInfo.grade.startsWith(g)) { isAllowed = true; break; } } 
+    }
+    if (!isAllowed) return { status: 'unauthorized', message: `คุณรับผิดชอบเฉพาะชั้น ${allowedGrade}` };
+
+    const todayStr = Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd");
+    const logs = attendanceSheet.getDataRange().getValues();
+    
+    for (let i = 1; i < logs.length; i++) {
+      let rawTime = logs[i][0];
+      if (!rawTime) continue;
+      let rDate = new Date(rawTime);
+      if (!isNaN(rDate.getTime())) {
+        let rDateStr = Utilities.formatDate(rDate, "Asia/Bangkok", "yyyy-MM-dd");
+        if (rDateStr === todayStr && String(logs[i][1]) === matchedId) {
+           return { status: 'duplicate', message: 'นักเรียนได้ลงชื่อเข้าเรียนเรียบร้อยแล้ว', name: studentInfo.name, grade: studentInfo.grade, photoUrl: studentInfo.photoUrl };
+        }
+      }
+    }
+
+    attendanceSheet.appendRow([new Date(), matchedId, studentInfo.name, studentInfo.gender, studentInfo.grade]);
+    return { status: 'success', name: studentInfo.name, grade: studentInfo.grade, gender: studentInfo.gender, photoUrl: studentInfo.photoUrl };
+  } else {
+    return { status: 'error', message: 'ไม่พบข้อมูลนักเรียนนี้ในระบบ' };
+  }
+}
+
+function getRecords() {
+  const attendanceData = SS.getSheetByName('Attendance').getDataRange().getValues(); 
+  const studentData = SS.getSheetByName('Students').getDataRange().getValues();
+  let gradeTotals = { 'All': 0 }; let allStudents = [];
+  for(let i = 1; i < studentData.length; i++){ let stGrade = String(studentData[i][2] || ''); let mainGrade = stGrade.split('/')[0]; gradeTotals['All']++; gradeTotals[mainGrade] = (gradeTotals[mainGrade] || 0) + 1; allStudents.push({ id: String(studentData[i][0]), name: studentData[i][1], grade: stGrade, gender: studentData[i][3] }); }
+  return { status: 'success', records: attendanceData.length > 1 ? attendanceData.slice(1) : [], gradeTotals: gradeTotals, students: allStudents };
+}
+
+function syncManual(dateStr, updates) {
+  try {
+    const sheet = SS.getSheetByName('Attendance'); const data = sheet.getDataRange().getValues();
+    const students = SS.getSheetByName('Students').getDataRange().getValues();
+    let absentIds = updates.filter(u => u.status === 'absent').map(u => String(u.id)); let rowsToDelete = [];
+    for (let i = data.length - 1; i >= 1; i--) {
+      if (!data[i][0]) continue; let d = new Date(data[i][0]); if(isNaN(d.getTime())) continue;
+      let rDateStr = Utilities.formatDate(d, "Asia/Bangkok", "yyyy-MM-dd"); let rId = String(data[i][1]);
+      if (rDateStr === dateStr && absentIds.includes(rId)) rowsToDelete.push(i + 1);
+    }
+    rowsToDelete.sort((a,b) => b - a).forEach(idx => sheet.deleteRow(idx));
+
+    const freshData = sheet.getDataRange().getValues(); let presentIds = updates.filter(u => u.status === 'present').map(u => String(u.id)); let existingPresentIds = [];
+    for (let i = 1; i < freshData.length; i++) {
+      if (!freshData[i][0]) continue; let d = new Date(freshData[i][0]); if(isNaN(d.getTime())) continue;
+      let rDateStr = Utilities.formatDate(d, "Asia/Bangkok", "yyyy-MM-dd"); if (rDateStr === dateStr) existingPresentIds.push(String(freshData[i][1]));
+    }
+
+    let todayStr = Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd");
+    updates.forEach(u => {
+      if (u.status === 'present' && !existingPresentIds.includes(String(u.id))) {
+        let st = students.find(s => String(s[0]) === String(u.id));
+        if (st) { let recordTime = (dateStr === todayStr) ? new Date() : new Date(dateStr + "T08:00:00+07:00"); sheet.appendRow([recordTime, String(st[0]), st[1], st[3], String(st[2]||'')]); }
+      }
+    });
+    return { status: 'success' };
+  } catch (err) { return { status: 'error', message: err.toString() }; }
+}
+
+function deleteRecord(timestampId) {
+  const attendanceSheet = SS.getSheetByName('Attendance'); const data = attendanceSheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) { if (new Date(data[i][0]).toString() === new Date(timestampId).toString()) { attendanceSheet.deleteRow(i + 1); return { status: 'success' }; } }
+  return { status: 'error', message: 'ไม่พบรายการ' };
+}
+
+function addStudent(student) {
+  const sheet = SS.getSheetByName('Students'); const data = sheet.getDataRange().getValues();
+  for(let i = 1; i < data.length; i++) { if(String(data[i][0]) === String(student.id)) return { status: 'error', message: 'รหัสประจำตัวนี้มีอยู่ในระบบแล้ว!' }; }
+  sheet.appendRow([String(student.id), student.name, student.grade, student.gender, '']);
+  return { status: 'success' };
+}
+
+function deleteStudent(studentId) {
+  const sheet = SS.getSheetByName('Students'); const data = sheet.getDataRange().getValues();
+  for(let i = 1; i < data.length; i++) { if(String(data[i][0]) === String(studentId)) { sheet.deleteRow(i + 1); return { status: 'success' }; } }
+  return { status: 'error', message: 'ไม่พบรหัสประจำตัวนี้ในระบบ' };
+}'; 
         // ==============================================================
 
         if (!localStorage.getItem('isLoggedIn')) { window.location.href = 'index.html'; }
