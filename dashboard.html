@@ -20,7 +20,9 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-2deg); } 75% { transform: translateX(5px) rotate(2deg); } }
         
-        /* สแกนเนอร์แอนิเมชัน */
+        @keyframes rollDice { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
+        .animate-roll { animation: rollDice 1s infinite ease-in-out; }
+
         .scanner-line { width: 100%; height: 4px; background: #3b82f6; position: absolute; box-shadow: 0 0 10px #3b82f6; animation: scan 2s infinite linear; border-radius: 50%; opacity: 0.8; }
         @keyframes scan { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }
 
@@ -28,22 +30,27 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f4f7fe; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
+        
         .toast-enter { animation: slideUp 0.3s ease-out forwards; }
         .toast-leave { animation: slideUp 0.3s ease-in reverse forwards; }
         
-        /* ซ่อนคอนเทนเนอร์ PDF จากหน้าจอปกติ แต่ให้ html2pdf ดึงไปพิมพ์ได้ */
-        #pdf-monthly-container { position: absolute; left: -9999px; top: 0; width: 1122px; background: white; padding: 40px; font-family: 'Sarabun', 'Prompt', sans-serif; }
-        .pdf-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
-        .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 4px 2px; }
-        .pdf-table th { background-color: #f3f4f6; font-weight: bold; }
-        .bg-weekend { background-color: #fecdd3 !important; }
+        /* สไตล์สำหรับปุ่มเลือกโหมด PDF */
+        .pdf-mode-radio:checked + div {
+            border-color: #ef4444; /* rose-500 */
+            background-color: #fff1f2; /* rose-50 */
+            color: #be123c;
+        }
+        .pdf-mode-radio:checked + div .icon-box {
+            background-color: #ef4444;
+            color: white;
+        }
     </style>
 </head>
 <body class="flex h-screen w-full text-slate-700">
 
     <div id="toastContainer" class="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
+    <!-- SIDEBAR -->
     <aside class="w-[280px] bg-white border-r border-slate-200 flex flex-col h-full flex-shrink-0 z-30 shadow-lg">
         <div class="p-8 pb-6 flex flex-col items-center relative border-b border-slate-50">
             <button onclick="openPwdModal()" class="absolute top-4 left-4 text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="เปลี่ยนรหัสผ่าน">
@@ -89,8 +96,11 @@
                 <button onclick="switchTab('history', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
                     <i class="fa-solid fa-clock-rotate-left w-5 text-lg"></i><span>ประวัติย้อนหลัง</span>
                 </button>
-                <button onclick="switchTab('export', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-file-pdf w-5 text-lg"></i><span>ส่งออกเอกสาร PDF</span>
+                <button onclick="switchTab('random', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-2xl transition-all font-bold">
+                    <i class="fa-solid fa-dice w-5 text-lg"></i><span>สุ่มนักเรียน</span>
+                </button>
+                <button onclick="switchTab('export', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-2xl transition-all font-bold mt-4 border border-rose-100">
+                    <i class="fa-solid fa-file-pdf w-5 text-lg text-rose-500"></i><span>ส่งออกเอกสาร PDF</span>
                 </button>
             </nav>
         </div>
@@ -101,6 +111,7 @@
         </div>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#f8fafc]">
         
         <header class="h-20 bg-white/80 backdrop-blur-xl border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0 z-20">
@@ -127,17 +138,13 @@
                     
                     <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 mb-10 text-center relative overflow-hidden">
                         <div class="absolute inset-0 bg-slate-50 pointer-events-none"></div>
-                        
-                        <!-- กรอบสแกนเนอร์ -->
                         <div class="relative w-48 h-40 mx-auto mb-8 border-4 border-dashed border-blue-300 rounded-2xl bg-white flex items-center justify-center overflow-hidden">
                             <i class="fa-solid fa-qrcode text-7xl text-slate-200"></i>
                             <div class="scanner-line"></div>
                         </div>
-
                         <input type="text" id="studentInput" autofocus autocomplete="off"
                             class="w-full max-w-md mx-auto text-center px-6 py-5 text-3xl font-black bg-white border-2 border-blue-400 rounded-2xl focus:border-blue-600 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-blue-700 placeholder:text-slate-300 placeholder:text-lg shadow-inner tracking-widest relative z-10"
                             placeholder="รอรับรหัสสแกน...">
-                        
                         <div id="checkinStatus" class="mt-4 font-bold h-8 text-lg flex items-center justify-center transition-all text-slate-500">
                             <i class="fa-solid fa-keyboard mr-2"></i> พร้อมใช้งาน
                         </div>
@@ -170,7 +177,7 @@
                     </div>
                 </section>
 
-                <!-- 2. หน้าค้นหา/สรุปสถานะรายวัน (โชว์ข้อมูลทันที) -->
+                <!-- 2. หน้าสรุปสถานะรายวัน -->
                 <section id="search" class="tab-content">
                     <div class="mb-8 flex flex-col md:flex-row justify-between md:items-end gap-4">
                         <div>
@@ -184,7 +191,6 @@
                     </div>
 
                     <div class="flex flex-col lg:flex-row gap-6 items-start">
-                        <!-- ฝั่งมาเรียน -->
                         <div class="w-full lg:w-1/2">
                             <div class="bg-emerald-500 rounded-t-2xl p-4 flex items-center justify-between shadow-sm">
                                 <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-check-circle mr-2"></i>มาเรียนแล้ว</h3>
@@ -195,7 +201,6 @@
                             </div>
                         </div>
 
-                        <!-- ฝั่งขาดเรียน -->
                         <div class="w-full lg:w-1/2">
                             <div class="bg-rose-500 rounded-t-2xl p-4 flex items-center justify-between shadow-sm">
                                 <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-xmark-circle mr-2"></i>ยังไม่มา / ขาด</h3>
@@ -208,7 +213,7 @@
                     </div>
                 </section>
 
-                <!-- 3. หน้าครูเช็คชื่อแทน (UI ใหม่ ปุ่มซิงก์ทันที) -->
+                <!-- 3. หน้าครูเช็คชื่อแทน -->
                 <section id="manual" class="tab-content relative">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                         <div>
@@ -243,58 +248,191 @@
                     </div>
                 </section>
 
-                <!-- 4. หน้าส่งออก PDF แบบฟอร์มโรงเรียน -->
+                <!-- 4. หน้าตรวจสอบวันนี้ -->
+                <section id="verify" class="tab-content">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                        <div><h2 class="text-3xl font-extrabold text-slate-800 mb-2">สรุปการเข้าเรียน (วันนี้)</h2><p class="text-slate-500 font-medium">ระบบประมวลผลยอดขาด/ป่วยอัตโนมัติ</p></div>
+                        <button onclick="loadRecords()" class="bg-white border border-slate-200 hover:bg-slate-50 px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 shadow-sm transition-all"><i class="fa-solid fa-rotate-right text-blue-500 mr-2"></i> โหลดข้อมูลล่าสุด</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 flex justify-center relative"><div class="w-40 h-40"><canvas id="todayChart"></canvas></div></div>
+                        <div class="lg:col-span-2 grid grid-cols-2 gap-4">
+                            <div class="bg-slate-800 p-8 rounded-[2.5rem] shadow-sm text-white flex flex-col justify-center"><p class="text-slate-400 font-bold mb-1 text-sm">นักเรียนทั้งหมด</p><p id="todayTotal" class="text-5xl font-black mt-2">0</p></div>
+                            <div class="bg-emerald-500 p-8 rounded-[2.5rem] shadow-sm text-white flex flex-col justify-center"><p class="text-emerald-100 font-bold mb-1 text-sm">มาเรียนแล้ว</p><p id="todayPresent" class="text-5xl font-black mt-2">0</p></div>
+                            <div class="bg-orange-500 p-8 rounded-[2.5rem] shadow-sm text-white flex flex-col justify-center col-span-2"><p class="text-orange-100 font-bold mb-1 text-sm">ขาด / ป่วย</p><p id="todayAbsent" class="text-5xl font-black mt-2">0</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden"><div class="overflow-x-auto p-2"><table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead><tr class="text-slate-400 text-xs uppercase border-b border-slate-100"><th class="py-5 px-6 font-bold">เวลาที่สแกน</th><th class="py-5 px-6 font-bold">รหัส</th><th class="py-5 px-6 font-bold">ชื่อ</th><th class="py-5 px-6 font-bold">ชั้น</th><th class="py-5 px-6 font-bold text-center">จัดการ</th></tr></thead>
+                        <tbody id="todayTableBody" class="text-slate-600 font-bold divide-y divide-slate-50"></tbody>
+                    </table></div></div>
+                </section>
+
+                <!-- 5. หน้าจัดการรายชื่อ -->
+                <section id="students" class="tab-content">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-800 mb-2">จัดการรายชื่อนักเรียน</h2>
+                            <p class="text-slate-500 font-medium">เพิ่ม/ลบรายชื่อนักเรียน และส่งออกเป็น Excel</p>
+                        </div>
+                        <button onclick="exportToExcel()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-colors flex items-center">
+                            <i class="fa-solid fa-file-excel mr-2"></i> ดาวน์โหลด Excel
+                        </button>
+                    </div>
+
+                    <div class="bg-emerald-50 p-8 rounded-[2rem] border border-emerald-100 mb-8">
+                        <h3 class="text-emerald-800 font-bold mb-4"><i class="fa-solid fa-user-plus mr-2"></i>เพิ่มนักเรียนใหม่เข้าสู่ระบบ</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <input type="text" id="addStId" placeholder="รหัสประจำตัว (เช่น 00123)" class="bg-white px-4 py-3 rounded-xl border border-emerald-200 outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                            <input type="text" id="addStName" placeholder="ชื่อ-นามสกุล" class="bg-white px-4 py-3 rounded-xl border border-emerald-200 outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                            <select id="addStGender" class="bg-white px-4 py-3 rounded-xl border border-emerald-200 outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-600 cursor-pointer">
+                                <option value="ชาย">ชาย</option>
+                                <option value="หญิง">หญิง</option>
+                            </select>
+                            <div class="flex gap-2">
+                                <input type="text" id="addStGrade" placeholder="ชั้น (เช่น ป.1/1)" class="w-full bg-white px-4 py-3 rounded-xl border border-emerald-200 outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                                <button onclick="addNewStudent()" class="bg-emerald-600 hover:bg-emerald-700 text-white w-14 rounded-xl flex items-center justify-center transition-colors shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="overflow-x-auto p-2">
+                            <table class="w-full text-left border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr class="text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100">
+                                        <th class="py-5 px-6 font-bold text-center">ลำดับ</th>
+                                        <th class="py-5 px-6 font-bold">รหัส</th>
+                                        <th class="py-5 px-6 font-bold">ชื่อ-นามสกุล</th>
+                                        <th class="py-5 px-6 font-bold">เพศ</th>
+                                        <th class="py-5 px-6 font-bold">ชั้นเรียน</th>
+                                        <th class="py-5 px-6 font-bold text-center">ลบ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentManagerBody" class="text-slate-600 font-bold divide-y divide-slate-50"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. หน้าประวัติย้อนหลัง -->
+                <section id="history" class="tab-content">
+                    <h2 class="text-3xl font-black text-slate-800 mb-2">ประวัติย้อนหลัง</h2><p class="text-slate-500 font-medium mb-8">ค้นหาและดูสถิติการเข้าเรียนในอดีต</p>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-1 w-full"><label class="block text-sm font-bold text-slate-600 mb-2">เลือกวันที่ต้องการดู:</label><input type="date" id="historyDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700"></div>
+                        <button onclick="renderHistory()" class="w-full md:w-auto mt-6 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold shadow-md transition-all">ค้นหาประวัติ</button>
+                    </div>
+                    <div id="historyStats" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 hidden">
+                        <div class="bg-white p-6 rounded-[2.5rem] flex items-center justify-center shadow-sm border border-slate-200"><div class="w-32 h-32"><canvas id="historyChart"></canvas></div></div>
+                        <div class="md:col-span-2 grid grid-cols-2 gap-4">
+                             <div class="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 flex flex-col items-center"><p class="text-emerald-600 font-bold">มาเรียน</p><p id="historyPresent" class="text-5xl font-black text-emerald-700">0</p></div>
+                             <div class="bg-orange-50 p-8 rounded-[2.5rem] border border-orange-100 flex flex-col items-center"><p class="text-orange-600 font-bold">ขาด/ป่วย</p><p id="historyAbsent" class="text-5xl font-black text-orange-700">0</p></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden"><div class="overflow-x-auto p-2"><table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead><tr class="text-slate-400 text-xs uppercase border-b border-slate-100"><th class="py-5 px-6 font-bold">เวลา</th><th class="py-5 px-6 font-bold">รหัส</th><th class="py-5 px-6 font-bold">ชื่อ</th><th class="py-5 px-6 font-bold">ชั้น</th><th class="py-5 px-6 font-bold text-center">ลบ</th></tr></thead>
+                        <tbody id="historyTableBody" class="text-slate-600 font-bold divide-y divide-slate-50"></tbody>
+                    </table></div></div>
+                </section>
+
+                <!-- 7. หน้าสุ่มนักเรียน -->
+                <section id="random" class="tab-content">
+                    <div class="text-center mb-10"><h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-500 mb-3">สุ่มผู้โชคดีประจำวัน</h2><p class="text-slate-500 text-lg font-medium">สุ่มเลือกจากนักเรียนที่ "มาเรียน" ในวันนี้</p></div>
+                    <div class="max-w-2xl mx-auto text-center">
+                        <div class="bg-white rounded-[3rem] shadow-2xl border-[6px] border-orange-50 p-12 relative overflow-hidden">
+                            <div id="randomResult" class="min-h-[200px] flex flex-col items-center justify-center relative z-10">
+                                <div id="randomIcon" class="w-40 h-40 mx-auto bg-gradient-to-tr from-orange-100 to-rose-100 rounded-full flex items-center justify-center text-orange-500 text-6xl mb-8 shadow-inner border-[6px] border-white transition-all"><i class="fa-solid fa-face-smile-beam"></i></div>
+                                <h3 id="randomName" class="text-4xl font-black text-slate-800 mb-4">กดปุ่มเพื่อเริ่ม!</h3>
+                                <p id="randomId" class="text-xl text-orange-600 font-bold h-8 bg-orange-50 px-6 py-1 rounded-full"></p>
+                            </div>
+                            <button id="randomBtn" onclick="startRandomizer()" class="mt-10 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 text-white font-black text-xl py-5 px-14 rounded-full shadow-lg transition-transform hover:scale-105"><i class="fa-solid fa-dice mr-3"></i> เริ่มสุ่มเลย</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 8. หน้าส่งออก PDF (สุดยอดเวอร์ชัน เลือกโหมดได้) -->
                 <section id="export" class="tab-content">
                     <h2 class="text-3xl font-extrabold text-slate-800 mb-2">พิมพ์แบบบันทึกการมาเรียน (PDF)</h2>
-                    <p class="text-slate-500 font-medium mb-8">ส่งออกตารางเช็คชื่อรายเดือน ตามรูปแบบฟอร์มมาตรฐานของโรงเรียน</p>
+                    <p class="text-slate-500 font-medium mb-8">เลือกรูปแบบที่ต้องการส่งออก และระบบจะสร้างไฟล์ PDF พร้อมพิมพ์ให้ทันที (หน้าไม่ขาวแน่นอน)</p>
                     
-                    <div class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 max-w-xl">
-                        <div class="mb-8">
-                            <label class="block text-sm font-bold text-slate-500 mb-3">เลือกเดือนที่ต้องการส่งออก</label>
-                            <input type="month" id="exportMonth" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-lg text-slate-700 cursor-pointer">
+                    <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-slate-100 max-w-4xl">
+                        
+                        <!-- เลือกโหมด -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="pdfMode" value="daily" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()" checked>
+                                <div class="border-2 border-slate-100 rounded-2xl p-4 text-center transition-all hover:bg-slate-50">
+                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-calendar-day text-xl"></i></div>
+                                    <p class="font-bold text-sm">รายวัน</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="pdfMode" value="range" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()">
+                                <div class="border-2 border-slate-100 rounded-2xl p-4 text-center transition-all hover:bg-slate-50">
+                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-calendar-week text-xl"></i></div>
+                                    <p class="font-bold text-sm">ช่วงเวลา / สัปดาห์</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="pdfMode" value="monthly" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()">
+                                <div class="border-2 border-slate-100 rounded-2xl p-4 text-center transition-all hover:bg-slate-50">
+                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-calendar-days text-xl"></i></div>
+                                    <p class="font-bold text-sm">รายเดือน</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="pdfMode" value="yearly" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()">
+                                <div class="border-2 border-slate-100 rounded-2xl p-4 text-center transition-all hover:bg-slate-50">
+                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-layer-group text-xl"></i></div>
+                                    <p class="font-bold text-sm">สรุปรายปี</p>
+                                </div>
+                            </label>
                         </div>
-                        <button onclick="generateMonthlyPDF()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold text-lg py-5 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 flex items-center justify-center gap-3">
-                            <i class="fa-solid fa-print text-xl"></i> สร้างไฟล์ PDF รายเดือน
+
+                        <!-- ตัวเลือกตามโหมด -->
+                        <div id="pdfOptDaily" class="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                            <label class="block text-sm font-bold text-slate-500 mb-2">เลือกวันที่ต้องการ</label>
+                            <input type="date" id="expDate" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 outline-none focus:border-rose-500 font-bold">
+                        </div>
+
+                        <div id="pdfOptRange" class="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100 hidden">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-bold text-slate-500 mb-2">ตั้งแต่วันที่</label><input type="date" id="expStart" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 outline-none focus:border-rose-500 font-bold"></div>
+                                <div><label class="block text-sm font-bold text-slate-500 mb-2">ถึงวันที่</label><input type="date" id="expEnd" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 outline-none focus:border-rose-500 font-bold"></div>
+                            </div>
+                            <p class="text-xs text-rose-500 mt-3 font-bold">* รองรับการดึงข้อมูลสูงสุด 31 วัน ต่อ 1 การส่งออก เพื่อให้พอดีกับหน้ากระดาษ A4</p>
+                        </div>
+
+                        <div id="pdfOptMonthly" class="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100 hidden">
+                            <label class="block text-sm font-bold text-slate-500 mb-2">เลือกเดือน</label>
+                            <input type="month" id="expMonth" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 outline-none focus:border-rose-500 font-bold text-lg">
+                        </div>
+
+                        <div id="pdfOptYearly" class="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100 hidden">
+                            <label class="block text-sm font-bold text-slate-500 mb-2">เลือกปีการศึกษา (ค.ศ.)</label>
+                            <select id="expYear" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 outline-none focus:border-rose-500 font-bold text-lg cursor-pointer">
+                                <!-- JS จะเติมปีให้ -->
+                            </select>
+                            <p class="text-xs text-slate-400 mt-3 font-medium">* จะสรุปจำนวนวันที่มาเรียน แบ่งเป็น 12 เดือน (ม.ค. - ธ.ค.)</p>
+                        </div>
+
+                        <button onclick="generateMasterPDF()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold text-lg py-5 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-file-pdf text-2xl"></i> สร้างเอกสารและดาวน์โหลด
                         </button>
                     </div>
                 </section>
 
-                <!-- Sections อื่นๆ ที่ไม่ได้ปรับโครงสร้างใหญ่ ยังคงไว้เหมือนเดิม -->
-                <section id="verify" class="tab-content">...</section>
-                <section id="students" class="tab-content">...</section>
-                <section id="history" class="tab-content">...</section>
             </div>
         </div>
     </main>
 
-    <!-- Hidden Template สำหรับสร้าง PDF แบบฟอร์มรายเดือน -->
-    <div id="pdf-monthly-container">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="font-size: 18px; font-weight: bold; margin: 0;">แบบบันทึกการมาเรียนของนักเรียน ชั้น <span id="pdf-grade-text">________</span> ปีการศึกษา <span id="pdf-year-text">________</span></h2>
-            <h3 style="font-size: 16px; font-weight: bold; margin: 5px 0 15px 0;">โรงเรียนป่าก้าง</h3>
-        </div>
-        
-        <table class="pdf-table">
-            <thead>
-                <tr>
-                    <th rowspan="2" style="width: 30px;">ที่</th>
-                    <th rowspan="2" style="width: 150px; text-align: left; padding-left: 10px;">ชื่อ - นามสกุล</th>
-                    <th colspan="31" id="pdf-month-header">เดือน ________________ พ.ศ. ________</th>
-                    <th colspan="4">รวม</th>
-                </tr>
-                <tr id="pdf-days-row">
-                    <!-- วันที่ 1-31 จะถูกสร้างด้วย JS -->
-                </tr>
-            </thead>
-            <tbody id="pdf-monthly-body">
-                <!-- ข้อมูลนักเรียนจะถูกสร้างด้วย JS -->
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Modals (ยังคงไว้เหมือนเดิม) -->
+    <!-- Modals (เปลี่ยนรหัส/ลบข้อมูล ยังอยู่ครบ) -->
     <div id="pwdModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center opacity-0 transition-opacity"><div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all relative" id="pwdModalCard"><button onclick="closePwdModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-800"><i class="fa-solid fa-xmark text-xl"></i></button><h3 class="text-2xl font-black text-center mb-6">เปลี่ยนรหัสผ่าน</h3><div class="space-y-4"><input type="password" id="oldPwd" placeholder="รหัสผ่านเดิม" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold"><input type="password" id="newPwd" placeholder="รหัสใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold"><input type="password" id="confirmNewPwd" placeholder="ยืนยันรหัสใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold"></div><button id="btnSavePwd" onclick="savePassword()" class="w-full mt-8 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg">บันทึก</button></div></div>
     
+    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center opacity-0 transition-opacity"><div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all text-center" id="deleteModalCard"><i class="fa-solid fa-trash-can text-5xl text-red-500 mb-4"></i><h3 class="text-2xl font-black mb-6">ยืนยันลบประวัติ?</h3><input type="password" id="deletePassword" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold mb-6" placeholder="รหัสผ่านของคุณ"><div class="flex gap-4"><button onclick="closeDeleteModal()" class="flex-1 py-4 bg-slate-100 font-bold rounded-xl">ยกเลิก</button><button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-xl">ยืนยันลบ</button></div></div></div>
+
     <script>
         // 🔴 🔴 🔴 วาง URL ของ Google Apps Script ของคุณตรงนี้ 🔴 🔴 🔴
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbxkLkpxWeWQpN7L2gZ-eKbBV64HRrwMomBbE2COIgZlVZNCank-oPAwGqR1-6K-50KP/exec';
@@ -310,8 +448,9 @@
         let allRecords = [], globalStudents = [], rawGradeTotals = {};
         let activeGradeContext = tRole === 'Admin' ? 'All' : tGrade; 
         let targetDeleteId = null;
+        let todayChartObj, historyChartObj;
 
-        // Utility: Toast
+        // Utility
         function showToast(type, message) {
             const container = document.getElementById('toastContainer'); const toast = document.createElement('div');
             const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500 text-2xl"></i>' : '<i class="fa-solid fa-circle-exclamation text-rose-500 text-2xl"></i>';
@@ -327,13 +466,19 @@
             document.getElementById('sidebarPhoto').src = tPhoto;
             if(tRole === 'Admin') { document.getElementById('adminFilterContainer').classList.remove('hidden'); document.getElementById('adminGradeSelect').value = 'All'; }
             
-            const now = new Date();
-            const todayStr = getLocalYYYYMMDD(now);
-            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            
+            // Set Default Dates
+            const now = new Date(); const todayStr = getLocalYYYYMMDD(now); const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('manualDate').value = todayStr;
-            document.getElementById('exportMonth').value = currentMonthStr;
+            document.getElementById('historyDate').value = todayStr;
+            if(tRole !== 'Admin') document.getElementById('addStGrade').value = tGrade;
             
+            // PDF Defaults
+            document.getElementById('expDate').value = todayStr;
+            document.getElementById('expStart').value = todayStr; document.getElementById('expEnd').value = todayStr;
+            document.getElementById('expMonth').value = currentMonthStr;
+            const ySelect = document.getElementById('expYear');
+            for(let y = now.getFullYear()-2; y <= now.getFullYear()+1; y++){ ySelect.innerHTML += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>${y} (พ.ศ. ${y+543})</option>`; }
+
             updateContextUI();
             loadRecords(true);
         }
@@ -341,8 +486,8 @@
         function updateContextUI() {
             const ctxText = activeGradeContext === 'All' ? 'ทุกระดับชั้น' : activeGradeContext;
             document.getElementById('checkinContextBadge').innerHTML = `<i class="fa-solid fa-layer-group mr-2 text-indigo-400"></i> ${ctxText}`;
+            document.getElementById('navVerifyText').textContent = `ตรวจสอบ (${ctxText})`;
         }
-        
         function changeAdminView() { activeGradeContext = document.getElementById('adminGradeSelect').value; updateContextUI(); loadRecords(true); }
 
         function switchTab(tabId, btnElement) {
@@ -350,332 +495,445 @@
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.className = b.textContent.includes('สุ่ม') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-2xl transition-all font-bold"
                 : b.textContent.includes('จัดการรายชื่อ') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-2xl transition-all font-bold mt-4 border border-emerald-100"
+                : b.textContent.includes('ส่งออก') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-2xl transition-all font-bold mt-4 border border-rose-100"
                 : b.textContent.includes('รายวัน') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-all font-bold mt-2"
                 : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold";
             });
             btnElement.className = tabId === 'students' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-emerald-600 text-white rounded-2xl transition-all shadow-md font-bold mt-4"
             : tabId === 'search' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-indigo-600 text-white rounded-2xl transition-all shadow-md font-bold mt-2"
             : tabId === 'checkin' ? "nav-btn w-full flex items-center space-x-4 px-5 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl transition-all shadow-md font-bold"
+            : tabId === 'random' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-orange-100 text-orange-600 rounded-2xl transition-all font-bold shadow-sm"
+            : tabId === 'export' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-rose-600 text-white rounded-2xl transition-all shadow-md font-bold mt-4"
             : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-slate-800 text-white rounded-2xl transition-all shadow-md font-bold";
 
+            if(['verify','students','history','export'].includes(tabId)) loadRecords();
             if(tabId === 'search') renderDailyOverview();
             if(tabId === 'manual') renderManualTable();
+            if(tabId === 'history' && document.getElementById('historyDate').value) renderHistory();
             if(tabId === 'checkin') document.getElementById('studentInput').focus();
         }
-
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
+        // --- รหัสผ่าน ---
+        function openPwdModal() { ['oldPwd','newPwd','confirmNewPwd'].forEach(id => document.getElementById(id).value = ''); const m = document.getElementById('pwdModal'); m.classList.remove('hidden'); setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10); }
+        function closePwdModal() { const m = document.getElementById('pwdModal'); m.classList.add('opacity-0'); m.querySelector('div').classList.add('scale-95'); setTimeout(() => { m.classList.add('hidden'); }, 300); }
+        function savePassword() {
+            const o = document.getElementById('oldPwd').value, n = document.getElementById('newPwd').value, c = document.getElementById('confirmNewPwd').value, btn = document.getElementById('btnSavePwd');
+            if(!o || !n || !c) return showToast('error', 'กรอกข้อมูลไม่ครบ'); if(n !== c) return showToast('error', 'รหัสใหม่ไม่ตรงกัน'); if(o !== localStorage.getItem('tPassword')) return showToast('error', 'รหัสเดิมไม่ถูกต้อง');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({action: 'changePassword', username: tUsername, oldPwd: o, newPwd: n}) }).then(r => r.json()).then(data => {
+                btn.innerHTML = 'บันทึก'; btn.disabled = false;
+                if(data.status === 'success') { localStorage.setItem('tPassword', n); showToast('success', 'เปลี่ยนรหัสสำเร็จ'); closePwdModal(); } else showToast('error', data.message);
+            }).catch(()=> { showToast('error', 'ขัดข้อง'); btn.innerHTML = 'บันทึก'; btn.disabled = false;});
+        }
+
         // ==========================================
-        // 1. ระบบสแกนเช็คชื่อ (ปรับให้ไวขึ้นผ่าน Local Check)
+        // 1. สแกนเช็คชื่อ
         // ==========================================
         document.getElementById('studentInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const sid = this.value.trim(); if (!sid) return;
-                const statusEl = document.getElementById('checkinStatus');
-                const card = document.getElementById('studentCard');
+                const statusEl = document.getElementById('checkinStatus'); const card = document.getElementById('studentCard');
                 
-                // 1.1 ตรวจสอบข้อมูลเบื้องต้นจากข้อมูลในเครื่อง (Local) เพื่อความรวดเร็ว
-                let isAuthorized = true;
                 let foundStudent = globalStudents.find(s => s.id === sid);
-                
                 if (foundStudent) {
-                    if (activeGradeContext !== 'All' && !foundStudent.grade.startsWith(activeGradeContext)) {
-                        showToast('error', `คุณรับผิดชอบเฉพาะชั้น ${activeGradeContext}`);
-                        this.value = ''; return;
-                    }
-                    
-                    // โชว์ UI ล่วงหน้า (Optimistic UI)
+                    if (activeGradeContext !== 'All' && !foundStudent.grade.startsWith(activeGradeContext)) { showToast('error', `รับผิดชอบเฉพาะชั้น ${activeGradeContext}`); this.value = ''; return; }
                     document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
                     document.getElementById('statusBadge').className = "inline-flex items-center px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 text-sm font-bold rounded-full mb-3";
                     document.getElementById('studentPhotoCard').src = `https://ui-avatars.com/api/?name=${foundStudent.name}&background=f8fafc&color=333`;
-                    document.getElementById('studentName').textContent = foundStudent.name;
-                    document.getElementById('studentIdDisplay').textContent = sid;
-                    document.getElementById('studentGrade').textContent = foundStudent.grade;
-                    document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
-                    
-                    card.classList.remove('hidden', 'border-rose-500');
-                    card.classList.add('border-blue-500');
-                } else {
-                    statusEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-blue-500 mr-2"></i> ค้นหาฐานข้อมูล...';
-                }
+                    document.getElementById('studentName').textContent = foundStudent.name; document.getElementById('studentIdDisplay').textContent = sid;
+                    document.getElementById('studentGrade').textContent = foundStudent.grade; document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
+                    card.classList.remove('hidden', 'border-rose-500'); card.classList.add('border-blue-500');
+                } else { statusEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-blue-500 mr-2"></i> ค้นหาฐานข้อมูล...'; }
 
-                // 1.2 ส่งคำสั่งไป Google Script ยืนยันผล
                 fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'checkin', studentId: sid, allowedGrade: activeGradeContext }) })
                 .then(r => r.json()).then(data => {
                     statusEl.innerHTML = '<i class="fa-solid fa-keyboard mr-2"></i> พร้อมใช้งาน';
-                    
                     if (data.status === 'success') {
                         document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> เข้าเรียนสำเร็จ';
                         document.getElementById('statusBadge').className = "inline-flex items-center px-4 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 text-sm font-bold rounded-full mb-3";
                         card.classList.replace('border-blue-500', 'border-emerald-500');
-                        
                         if(!foundStudent) {
-                            document.getElementById('studentName').textContent = data.name;
-                            document.getElementById('studentIdDisplay').textContent = sid;
-                            document.getElementById('studentGrade').textContent = data.grade;
-                            document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
+                            document.getElementById('studentName').textContent = data.name; document.getElementById('studentIdDisplay').textContent = sid;
+                            document.getElementById('studentGrade').textContent = data.grade; document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
                             card.classList.remove('hidden');
                         }
-                        showToast('success', `บันทึกเวลาเรียน ${data.name}`);
-                        loadRecords(true); 
-                    } 
-                    else if (data.status === 'duplicate') {
+                        showToast('success', `บันทึกเวลา ${data.name}`); loadRecords(true); 
+                    } else if (data.status === 'duplicate') {
                         document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> สแกนซ้ำ';
                         document.getElementById('statusBadge').className = "inline-flex items-center px-4 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 text-sm font-bold rounded-full mb-3";
-                        card.classList.replace('border-blue-500', 'border-rose-500');
-                        card.classList.replace('border-emerald-500', 'border-rose-500');
+                        card.classList.replace('border-blue-500', 'border-rose-500'); card.classList.replace('border-emerald-500', 'border-rose-500');
                         document.getElementById('studentTime').innerHTML = `<span class="text-rose-500 text-sm">${data.message}</span>`;
                         card.style.animation = 'none'; setTimeout(() => card.style.animation = 'shake 0.4s ease-in-out', 10);
-                    }
-                    else { 
-                        showToast('error', data.message); 
-                        if(foundStudent) card.classList.add('hidden'); // ซ่อนถ้าแอบโชว์ไปแล้วแต่มี error
-                    }
+                    } else { showToast('error', data.message); if(foundStudent) card.classList.add('hidden'); }
                     this.value = ''; 
-                }).catch(()=> { 
-                    showToast('error', 'การเชื่อมต่อขัดข้อง'); this.value = ''; 
-                    statusEl.innerHTML = '<i class="fa-solid fa-keyboard mr-2"></i> พร้อมใช้งาน';
-                });
+                }).catch(()=> { showToast('error', 'การเชื่อมต่อขัดข้อง'); this.value = ''; statusEl.innerHTML = '<i class="fa-solid fa-keyboard mr-2"></i> พร้อมใช้งาน'; });
             }
         });
 
         // ==========================================
-        // 2. สรุปสถานะรายวัน (แสดงทันที ไม่ต้องรอค้นหา)
+        // 2. สรุปสถานะรายวัน
         // ==========================================
         function renderDailyOverview() {
             const query = document.getElementById('liveSearchInput').value.trim().toLowerCase();
-            const pList = document.getElementById('livePresentList');
-            const aList = document.getElementById('liveAbsentList');
-            
+            const pList = document.getElementById('livePresentList'); const aList = document.getElementById('liveAbsentList');
             let filteredSt = globalStudents;
-            if (activeGradeContext !== 'All') {
-                const allowed = activeGradeContext.split(',').map(g => g.trim());
-                filteredSt = globalStudents.filter(s => allowed.some(g => s.grade.startsWith(g)));
-            }
-
-            // ถ้ามีพิมพ์ค้นหา ให้กรองเพิ่มเติม
+            if (activeGradeContext !== 'All') { const allowed = activeGradeContext.split(',').map(g => g.trim()); filteredSt = globalStudents.filter(s => allowed.some(g => s.grade.startsWith(g))); }
             if (query) { filteredSt = filteredSt.filter(s => s.id.toLowerCase().includes(query) || s.name.toLowerCase().includes(query)); }
 
-            const todayStr = getLocalYYYYMMDD(new Date());
-            const todayRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === todayStr);
-
-            pList.innerHTML = ''; aList.innerHTML = '';
-            let pC = 0, aC = 0;
+            const todayStr = getLocalYYYYMMDD(new Date()); const todayRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === todayStr);
+            pList.innerHTML = ''; aList.innerHTML = ''; let pC = 0, aC = 0;
 
             filteredSt.forEach(st => {
-                const rec = todayRecs.find(r => String(r[1]) === String(st.id));
-                const isPresent = !!rec;
+                const rec = todayRecs.find(r => String(r[1]) === String(st.id)); const isPresent = !!rec;
                 const timeStr = isPresent ? new Date(rec[0]).toLocaleTimeString('th-TH') : '-';
-                
-                const card = `
-                    <div class="px-5 py-3 hover:bg-slate-50 transition-colors flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-800 text-sm">${st.name}</span>
-                            <span class="text-[11px] text-slate-500 font-medium">${st.id} • ${st.grade}</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs font-black ${isPresent ? 'text-emerald-500' : 'text-slate-300'}">${timeStr}</span>
-                        </div>
-                    </div>`;
-                    
+                const card = `<div class="px-5 py-3 hover:bg-slate-50 transition-colors flex items-center justify-between"><div class="flex flex-col"><span class="font-bold text-slate-800 text-sm">${st.name}</span><span class="text-[11px] text-slate-500 font-medium">${st.id} • ${st.grade}</span></div><div class="text-right"><span class="text-xs font-black ${isPresent ? 'text-emerald-500' : 'text-slate-300'}">${timeStr}</span></div></div>`;
                 if (isPresent) { pList.innerHTML += card; pC++; } else { aList.innerHTML += card; aC++; }
             });
-
             if(pC === 0) pList.innerHTML = '<div class="text-center py-10 text-slate-400 font-medium">ไม่มีรายการ</div>';
             if(aC === 0) aList.innerHTML = '<div class="text-center py-10 text-slate-400 font-medium">ไม่มีรายการ</div>';
-
-            document.getElementById('livePresentCount').textContent = pC;
-            document.getElementById('liveAbsentCount').textContent = aC;
+            document.getElementById('livePresentCount').textContent = pC; document.getElementById('liveAbsentCount').textContent = aC;
         }
-
         function filterDailyList() { renderDailyOverview(); }
 
         // ==========================================
-        // 3. หน้าครูเช็คชื่อแทน (ปุ่ม Pill แบบซิงก์ทันที)
+        // 3. ครูเช็คชื่อแทน
         // ==========================================
         function renderManualTable() {
             const dateStr = document.getElementById('manualDate').value; if(!dateStr) return;
             const tbody = document.getElementById('manualTableBody');
-            
             let filteredSt = globalStudents;
             if(activeGradeContext !== 'All') { const allowedList = activeGradeContext.split(',').map(g => g.trim()); filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g))); }
             if(filteredSt.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-slate-400">ไม่พบรายชื่อนักเรียนในชั้นนี้</td></tr>'; return; }
             
-            const dateRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === dateStr);
-            tbody.innerHTML = '';
-            
+            const dateRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === dateStr); tbody.innerHTML = '';
             filteredSt.forEach((st, idx) => {
                 const isPresent = dateRecs.some(r => String(r[1]) === String(st.id));
-                
-                // ปุ่มสไตล์ Pill แบ่ง 2 ฝั่ง
-                const btnHTML = `
-                    <div class="flex items-center bg-slate-100 rounded-lg p-1 w-fit mx-auto" id="btn-group-${st.id}">
-                        <button onclick="instantManualCheckin('${st.id}', '${dateStr}', 'present')" id="btn-p-${st.id}" class="px-4 py-1.5 rounded-md text-sm font-bold transition-all ${isPresent ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200'}">มาเรียน</button>
-                        <button onclick="instantManualCheckin('${st.id}', '${dateStr}', 'absent')" id="btn-a-${st.id}" class="px-4 py-1.5 rounded-md text-sm font-bold transition-all ${!isPresent ? 'bg-rose-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200'}">ขาด/ลา</button>
-                    </div>
-                `;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-4 px-6 text-center text-sm font-bold text-slate-400">${idx + 1}</td>
-                        <td class="py-4 px-6 font-bold text-blue-600">${st.id}</td>
-                        <td class="py-4 px-6 font-bold text-slate-700">${st.name}</td>
-                        <td class="py-4 px-6 text-center">${btnHTML}</td>
-                    </tr>`;
+                const btnHTML = `<div class="flex items-center bg-slate-100 rounded-lg p-1 w-fit mx-auto" id="btn-group-${st.id}"><button onclick="instantManualCheckin('${st.id}', '${dateStr}', 'present')" class="px-4 py-1.5 rounded-md text-sm font-bold transition-all ${isPresent ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200'}">มาเรียน</button><button onclick="instantManualCheckin('${st.id}', '${dateStr}', 'absent')" class="px-4 py-1.5 rounded-md text-sm font-bold transition-all ${!isPresent ? 'bg-rose-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200'}">ขาด/ลา</button></div>`;
+                tbody.innerHTML += `<tr class="hover:bg-slate-50/80 transition-colors"><td class="py-4 px-6 text-center text-sm font-bold text-slate-400">${idx + 1}</td><td class="py-4 px-6 font-bold text-blue-600">${st.id}</td><td class="py-4 px-6 font-bold text-slate-700">${st.name}</td><td class="py-4 px-6 text-center">${btnHTML}</td></tr>`;
             });
         }
-
-        // ฟังก์ชันอัปเดตสถานะรายบุคคลส่งขึ้น Server ทันที
         function instantManualCheckin(studentId, dateStr, status) {
             const btnGroup = document.getElementById(`btn-group-${studentId}`);
-            
-            // เปลี่ยนหน้าตา UI ชั่วคราวเป็นสถานะกำลังโหลด
             btnGroup.innerHTML = `<div class="px-6 py-1.5 text-sm font-bold text-blue-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> บันทึก...</div>`;
-            
-            fetch(scriptUrl, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, updates: [{id: studentId, status: status}] }) 
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.status === 'success') { 
-                    loadRecords(true); // โหลดข้อมูลใหม่เบื้องหลังเพื่ออัปเดต allRecords
-                    setTimeout(() => renderManualTable(), 300); // รีเรนเดอร์แถวกลับมาใหม่
-                } else { showToast('error', 'บันทึกไม่สำเร็จ'); renderManualTable(); }
+            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, updates: [{id: studentId, status: status}] }) })
+            .then(r => r.json()).then(data => {
+                if(data.status === 'success') { loadRecords(true); setTimeout(() => renderManualTable(), 300); } else { showToast('error', 'บันทึกไม่สำเร็จ'); renderManualTable(); }
             }).catch(()=> { showToast('error', 'การเชื่อมต่อขัดข้อง'); renderManualTable(); });
         }
 
-
         // ==========================================
-        // 4. ระบบส่งออก PDF (ตารางเช็คชื่อรายเดือน)
+        // 4-7. ฟังก์ชันทั่วไป (ตรวจสอบ, จัดการนร., ประวัติ, สุ่ม)
         // ==========================================
-        function generateMonthlyPDF() {
-            const monthVal = document.getElementById('exportMonth').value; // format: "YYYY-MM"
-            if (!monthVal) return showToast("error", "กรุณาเลือกเดือน");
-            
-            const [year, month] = monthVal.split('-');
-            const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-            const thMonthName = thMonths[parseInt(month) - 1];
-            const thYear = parseInt(year) + 543;
-            
-            // หานักเรียนในชั้นที่เลือก
-            let filteredSt = globalStudents;
-            if (activeGradeContext !== 'All') {
-                const allowed = activeGradeContext.split(',').map(g => g.trim());
-                filteredSt = globalStudents.filter(s => allowed.some(g => s.grade.startsWith(g)));
-            }
-            if (filteredSt.length === 0) return showToast("error", "ไม่มีข้อมูลนักเรียนในชั้นนี้");
-
-            // ดึงข้อมูลเช็คชื่อเฉพาะเดือนนั้น
-            const recordsInMonth = allRecords.filter(r => {
-                const dateStr = getLocalYYYYMMDD(r[0]);
-                return dateStr.startsWith(monthVal); // matching "YYYY-MM"
-            });
-
-            const daysInMonth = new Date(year, month, 0).getDate();
-
-            // 4.1 อัปเดตส่วนหัวตาราง PDF
-            document.getElementById('pdf-grade-text').textContent = activeGradeContext;
-            document.getElementById('pdf-year-text').textContent = thYear;
-            document.getElementById('pdf-month-header').textContent = `เดือน ${thMonthName} พ.ศ. ${thYear}`;
-
-            // 4.2 สร้างหัวคอลัมน์วันที่ 1-31 (พร้อมเช็ควันหยุดเสาร์-อาทิตย์เพื่อใส่สี)
-            let daysHtml = '';
-            for (let d = 1; d <= 31; d++) {
-                if (d <= daysInMonth) {
-                    const currentLoopDate = new Date(year, parseInt(month)-1, d);
-                    const isWeekend = (currentLoopDate.getDay() === 0 || currentLoopDate.getDay() === 6);
-                    daysHtml += `<th style="width: 20px;" class="${isWeekend ? 'bg-weekend' : ''}">${d}</th>`;
-                } else {
-                    daysHtml += `<th style="width: 20px; background-color: #eee;"></th>`; // วันที่ไม่มีในเดือนนั้น
-                }
-            }
-            // หัวสรุป
-            daysHtml += `<th style="width: 25px;">ป</th><th style="width: 25px;">ล</th><th style="width: 25px;">ข</th><th style="width: 25px;">ส</th>`;
-            document.getElementById('pdf-days-row').innerHTML = daysHtml;
-
-            // 4.3 สร้างแถวรายชื่อนักเรียนและการเช็คชื่อ
-            let bodyHtml = '';
-            filteredSt.forEach((st, index) => {
-                let rowHtml = `<tr><td>${index + 1}</td><td style="text-align: left; padding-left: 10px; font-size: 12px;">${st.name}</td>`;
-                let presentCount = 0;
-                
-                for (let d = 1; d <= 31; d++) {
-                    if (d <= daysInMonth) {
-                        const checkDateStr = `${year}-${month}-${String(d).padStart(2, '0')}`;
-                        const isPresent = recordsInMonth.some(r => String(r[1]) === String(st.id) && getLocalYYYYMMDD(r[0]) === checkDateStr);
-                        
-                        const currentLoopDate = new Date(year, parseInt(month)-1, d);
-                        const isWeekend = (currentLoopDate.getDay() === 0 || currentLoopDate.getDay() === 6);
-
-                        if (isPresent) {
-                            rowHtml += `<td class="${isWeekend ? 'bg-weekend' : ''}"><span style="color: green; font-weight: bold;">/</span></td>`;
-                            presentCount++;
-                        } else {
-                            rowHtml += `<td class="${isWeekend ? 'bg-weekend' : ''}"></td>`;
-                        }
-                    } else {
-                        rowHtml += `<td style="background-color: #eee;"></td>`;
-                    }
-                }
-                
-                // สรุป (ระบบเรามีแค่ มา/ขาด จะใช้ช่อง "ข" ขาดเป็นหลัก ส่วน ป.ล.ส. ปล่อยว่างไว้ให้ครูเขียนเพิ่มได้)
-                // วันทำงานทั้งหมด = หาวันจันทร์-ศุกร์ ในเดือน
-                let workingDays = 0;
-                for(let d = 1; d <= daysInMonth; d++){
-                    let testDate = new Date(year, parseInt(month)-1, d);
-                    if(testDate.getDay() > 0 && testDate.getDay() < 6) workingDays++;
-                }
-                const absentCount = Math.max(0, workingDays - presentCount);
-
-                rowHtml += `<td></td><td></td><td style="color: red;">${absentCount > 0 ? absentCount : ''}</td><td></td></tr>`;
-                bodyHtml += rowHtml;
-            });
-            
-            document.getElementById('pdf-monthly-body').innerHTML = bodyHtml;
-
-            // 4.4 สั่งพิมพ์เป็น PDF ด้วย html2pdf แบบแนวนอน (Landscape)
-            showToast('success', 'กำลังเตรียมไฟล์ PDF กรุณารอสักครู่...');
-            const element = document.getElementById('pdf-monthly-container');
-            
-            // ดึง Element ออกมาจากจุดที่ซ่อนอยู่เพื่อเตรียมถ่ายภาพ
-            element.style.left = '0px'; 
-            element.style.top = '0px'; 
-            element.style.zIndex = '-100';
-
-            const opt = {
-                margin:       5,
-                filename:     `ใบเช็คชื่อ_${activeGradeContext}_${thMonthName}${thYear}.pdf`,
-                image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // แนวนอน
-            };
-
-            setTimeout(() => { 
-                html2pdf().set(opt).from(element).save().then(() => { 
-                    element.style.left = '-9999px'; // ซ่อนกลับไปที่เดิมเมื่อเสร็จ
-                }); 
-            }, 800); // รอให้ Browser เรนเดอร์ DOM เสร็จสมบูรณ์
+        function getTotalContextStudents() {
+            if (activeGradeContext === 'All') return rawGradeTotals['All'] || 0;
+            let t = 0; activeGradeContext.split(',').forEach(g => { t += (rawGradeTotals[g.trim()] || 0); }); return t;
+        }
+        function calculateStats(recordsList, targetDateStr) {
+            const present = recordsList.filter(r => getLocalYYYYMMDD(r[0]) === targetDateStr).length; let absent = 0; const now = new Date(), targetDate = new Date(targetDateStr); const total = getTotalContextStudents();
+            if (targetDate.getDay() >= 1 && targetDate.getDay() <= 5) { if (getLocalYYYYMMDD(now) === targetDateStr) { if (now.getHours() >= 10) absent = Math.max(0, total - present); } else if (targetDate < now) { absent = Math.max(0, total - present); } }
+            return { present, absent, total };
+        }
+        function createChart(canvasId, present, absent) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if(canvasId === 'todayChart' && todayChartObj) todayChartObj.destroy(); if(canvasId === 'historyChart' && historyChartObj) historyChartObj.destroy();
+            const chart = new Chart(ctx, { type: 'doughnut', data: { labels: ['มาเรียน', 'ขาด'], datasets: [{ data: [present, (absent===0&&present===0)?1:absent], backgroundColor: (absent===0&&present===0)?['#f8fafc','#f8fafc']:['#10b981', '#f97316'], borderWidth: 0 }] }, options: { cutout: '80%', plugins: { legend: { display: false }, tooltip: { enabled: (present>0 || absent>0) } } } });
+            if(canvasId === 'todayChart') todayChartObj = chart; if(canvasId === 'historyChart') historyChartObj = chart;
         }
 
-
-        // ==========================================
-        // ฟังก์ชันพื้นฐานอื่นๆ (ดึงข้อมูล/โหลดประวัติ)
-        // ==========================================
         function loadRecords(silent = false) {
             fetch(scriptUrl, { method: 'POST', body: JSON.stringify({action: 'getRecords'}) })
             .then(r => r.json()).then(data => {
                 if(data.status === 'success') {
                     globalStudents = data.students || []; 
-                    allRecords = data.records;
-                    
-                    if(document.getElementById('search').classList.contains('active')) renderDailyOverview();
+                    let filtered = data.records;
+                    if(activeGradeContext !== 'All') { const allowedList = activeGradeContext.split(',').map(g => g.trim()); filtered = data.records.filter(r => allowedList.some(g => r[4].startsWith(g))); }
+                    allRecords = filtered; rawGradeTotals = data.gradeTotals || {};
+
+                    // อัปเดตหน้าตรวจสอบวันนี้
+                    const todayStr = getLocalYYYYMMDD(new Date()); const stats = calculateStats(allRecords, todayStr);
+                    document.getElementById('todayTotal').textContent = stats.total; document.getElementById('todayPresent').textContent = stats.present; document.getElementById('todayAbsent').textContent = stats.absent;
+                    createChart('todayChart', stats.present, stats.absent);
+
+                    const tbody = document.getElementById('todayTableBody'); tbody.innerHTML = '';
+                    const todayRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === todayStr).reverse();
+                    if(todayRecs.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-16 text-slate-400">ยังไม่มีข้อมูลการเข้าเรียน</td></tr>'; }
+                    else { todayRecs.forEach((row, i) => { tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors group"><td class="py-5 px-6 text-sm font-bold text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td><td class="py-5 px-6 font-bold text-blue-600">${row[1]}</td><td class="py-5 px-6 font-bold text-slate-700">${row[2]}</td><td class="py-5 px-6 text-sm font-bold text-slate-500">${row[4]}</td><td class="py-5 px-6 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button></td></tr>`; });}
+
+                    if(document.getElementById('students').classList.contains('active')) renderStudentManager();
+                    if(document.getElementById('history').classList.contains('active')) renderHistory();
                     if(document.getElementById('manual').classList.contains('active')) renderManualTable();
-                    // โหลดข้อมูลให้หน้าอื่นๆ ที่ไม่ต้องการ Real-time ขนาดนั้น
+                    if(document.getElementById('search').classList.contains('active')) renderDailyOverview();
                 } else { if(!silent) showToast('error', 'โหลดข้อมูลล้มเหลว'); }
             }).catch(()=> { if(!silent) showToast('error', 'เชื่อมต่อหลังบ้านขัดข้อง'); });
         }
-        
+
+        function renderStudentManager() {
+            const tbody = document.getElementById('studentManagerBody');
+            let filteredSt = globalStudents;
+            if(activeGradeContext !== 'All') { const allowedList = activeGradeContext.split(',').map(g => g.trim()); filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g))); }
+            if(filteredSt.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-12 text-slate-400">ไม่พบรายชื่อในชั้นเรียนนี้</td></tr>'; return; }
+            tbody.innerHTML = '';
+            filteredSt.forEach((st, i) => { tbody.innerHTML += `<tr class="hover:bg-emerald-50/50 transition-colors group"><td class="py-4 px-6 text-center text-sm font-bold text-slate-400">${i + 1}</td><td class="py-4 px-6 font-black text-emerald-600">${st.id}</td><td class="py-4 px-6 font-bold text-slate-700">${st.name}</td><td class="py-4 px-6 text-sm font-bold text-slate-500">${st.gender}</td><td class="py-4 px-6 text-sm font-bold text-slate-500">${st.grade}</td><td class="py-4 px-6 text-center"><button onclick="deleteStudent('${st.id}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-user-minus"></i></button></td></tr>`; });
+        }
+        function addNewStudent() {
+            const id = document.getElementById('addStId').value.trim(); const name = document.getElementById('addStName').value.trim(); const gender = document.getElementById('addStGender').value; const grade = document.getElementById('addStGrade').value.trim();
+            if(!id || !name || !grade) { showToast('error', 'กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
+            const btn = document.querySelector('#students button.bg-emerald-600'), ori = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'addStudent', student: { id, name, gender, grade } }) })
+            .then(r => r.json()).then(data => { btn.innerHTML = ori; btn.disabled = false; if(data.status === 'success') { showToast('success', 'เพิ่มรายชื่อเรียบร้อย!'); ['addStId','addStName'].forEach(x => document.getElementById(x).value = ''); loadRecords(true); } else { showToast('error', data.message); } }).catch(() => { btn.innerHTML = ori; btn.disabled = false; showToast('error', 'ขัดข้อง'); });
+        }
+        function deleteStudent(id) {
+            if(!confirm(`ยืนยันลบนักเรียนรหัส ${id}?`)) return; showToast('success', 'กำลังลบ...');
+            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'deleteStudent', studentId: id }) }).then(r => r.json()).then(data => { if(data.status === 'success') { showToast('success', 'ลบสำเร็จ!'); loadRecords(true); } else showToast('error', data.message); });
+        }
+        function exportToExcel() {
+            let filteredSt = globalStudents; if(activeGradeContext !== 'All') { const allowedList = activeGradeContext.split(',').map(g => g.trim()); filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g))); }
+            if(filteredSt.length === 0) return showToast('error', 'ไม่มีข้อมูลให้ดาวน์โหลด');
+            const dataToExport = [['รหัสประจำตัว', 'ชื่อ-นามสกุล', 'เพศ', 'ชั้นเรียน']];
+            filteredSt.forEach(st => dataToExport.push([st.id, st.name, st.gender, st.grade]));
+            const ws = XLSX.utils.aoa_to_sheet(dataToExport); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "รายชื่อนักเรียน"); XLSX.writeFile(wb, `รายชื่อนักเรียน_${activeGradeContext}.xlsx`);
+        }
+
+        function renderHistory() {
+            const d = document.getElementById('historyDate').value; if(!d) return;
+            document.getElementById('historyStats').classList.remove('hidden');
+            const stats = calculateStats(allRecords, d); document.getElementById('historyPresent').textContent = stats.present; document.getElementById('historyAbsent').textContent = stats.absent; createChart('historyChart', stats.present, stats.absent);
+            const tbody = document.getElementById('historyTableBody'); tbody.innerHTML = '';
+            const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d).reverse();
+            if(recs.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-16 text-slate-400">ไม่มีข้อมูล</td></tr>';
+            else recs.forEach(row => { tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors group"><td class="py-5 px-6 text-sm font-bold text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td><td class="py-5 px-6 font-bold text-blue-600">${row[1]}</td><td class="py-5 px-6 font-bold text-slate-700">${row[2]}</td><td class="py-5 px-6 text-sm font-bold text-slate-500">${row[4]}</td><td class="py-5 px-6 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button></td></tr>`; });
+        }
+
+        let randomInterval;
+        function startRandomizer() {
+            const d = getLocalYYYYMMDD(new Date()); const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
+            if(recs.length === 0) { showToast("error", "ไม่มีนักเรียนมาเรียนวันนี้"); return; }
+            const btn = document.getElementById('randomBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> กำลังสุ่ม...'; document.getElementById('randomIcon').innerHTML = '<i class="fa-solid fa-dice animate-roll"></i>';
+            let count = 0; if(randomInterval) clearInterval(randomInterval);
+            randomInterval = setInterval(() => {
+                const rand = recs[Math.floor(Math.random() * recs.length)];
+                document.getElementById('randomName').textContent = rand[2]; document.getElementById('randomId').textContent = "รหัส: " + rand[1]; count++;
+                if(count >= 20) { clearInterval(randomInterval); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-shuffle mr-3"></i> สุ่มใหม่อีกครั้ง'; document.getElementById('randomIcon').innerHTML = `<img src="https://ui-avatars.com/api/?name=${rand[2]}&background=f43f5e&color=fff" class="w-full h-full rounded-full">`; }
+            }, 80);
+        }
+
+        function openDeleteModal(id) { targetDeleteId = id; document.getElementById('deletePassword').value = ''; const m = document.getElementById('deleteModal'), c = document.getElementById('deleteModalCard'); m.classList.remove('hidden'); setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10); document.getElementById('deletePassword').focus(); }
+        function closeDeleteModal() { targetDeleteId = null; const m = document.getElementById('deleteModal'), c = document.getElementById('deleteModalCard'); m.classList.add('opacity-0'); c.classList.add('scale-95'); setTimeout(() => { m.classList.add('hidden'); }, 300); }
+        function confirmDelete() {
+            const p = document.getElementById('deletePassword'); if (p.value !== localStorage.getItem('tPassword')) return showToast('error', 'รหัสผ่านไม่ถูกต้อง');
+            const btn = document.getElementById('confirmDeleteBtn'), ori = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
+            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({action: 'deleteRecord', timestampId: targetDeleteId}) }).then(r => r.json()).then(data => { btn.innerHTML = ori; btn.disabled = false; if(data.status === 'success') { closeDeleteModal(); loadRecords(); showToast('success', 'ลบสำเร็จ');} else showToast('error', 'ผิดพลาด'); }).catch(()=>{ btn.innerHTML = ori; btn.disabled = false; showToast('error', 'ขัดข้อง');});
+        }
+
+        // ==========================================
+        // 8. สุดยอดระบบส่งออก PDF แบบไม่พัง 100%
+        // ==========================================
+        function togglePDFOptions() {
+            const mode = document.querySelector('input[name="pdfMode"]:checked').value;
+            document.getElementById('pdfOptDaily').classList.toggle('hidden', mode !== 'daily');
+            document.getElementById('pdfOptRange').classList.toggle('hidden', mode !== 'range');
+            document.getElementById('pdfOptMonthly').classList.toggle('hidden', mode !== 'monthly');
+            document.getElementById('pdfOptYearly').classList.toggle('hidden', mode !== 'yearly');
+        }
+
+        function generateMasterPDF() {
+            // หานักเรียนที่จะออกรายงาน
+            let filteredSt = globalStudents;
+            if (activeGradeContext !== 'All') {
+                const allowed = activeGradeContext.split(',').map(g => g.trim());
+                filteredSt = globalStudents.filter(s => allowed.some(g => s.grade.startsWith(g)));
+            }
+            if (filteredSt.length === 0) return showToast("error", "ไม่พบข้อมูลนักเรียนในชั้นเรียนที่เลือก");
+
+            const mode = document.querySelector('input[name="pdfMode"]:checked').value;
+            let htmlString = '';
+            const cssStyle = `
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+                    .pdf-wrap { font-family: 'Sarabun', sans-serif; color: #000; padding: 20px; box-sizing: border-box; }
+                    .pdf-head { text-align: center; margin-bottom: 20px; }
+                    .pdf-head h2 { font-size: 20px; margin: 0 0 5px 0; font-weight: bold; }
+                    .pdf-head h3 { font-size: 16px; margin: 0; font-weight: normal; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+                    th, td { border: 1px solid #000; padding: 6px 4px; text-align: center; }
+                    th { background-color: #f3f4f6; font-weight: bold; }
+                    .text-left { text-align: left; padding-left: 8px; }
+                    .bg-weekend { background-color: #fecdd3; }
+                    .text-green { color: #166534; font-weight: bold; }
+                    .text-red { color: #9f1239; font-weight: bold; }
+                </style>
+            `;
+
+            // ----- สร้างเนื้อหา PDF ตามโหมด -----
+            if (mode === 'daily') {
+                const d = document.getElementById('expDate').value; if(!d) return showToast("error", "เลือกวันที่");
+                const thaiDate = new Date(d).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+                const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
+
+                htmlString = `
+                    <div class="pdf-wrap">
+                        <div class="pdf-head">
+                            <h2>รายงานบันทึกการเข้าเรียนประจำวัน</h2>
+                            <h3>โรงเรียนป่าก้าง | ชั้น ${activeGradeContext} | ประจำวันที่ ${thaiDate}</h3>
+                        </div>
+                        <table>
+                            <thead><tr><th style="width:50px;">ลำดับ</th><th style="width:100px;">รหัส</th><th class="text-left">ชื่อ - นามสกุล</th><th style="width:100px;">เวลาสแกน</th><th style="width:100px;">สถานะ</th></tr></thead>
+                            <tbody>
+                `;
+                filteredSt.forEach((st, i) => {
+                    const record = recs.find(r => String(r[1]) === String(st.id));
+                    const isPresent = !!record;
+                    const timeStr = isPresent ? new Date(record[0]).toLocaleTimeString('th-TH') : '-';
+                    const statusStr = isPresent ? '<span class="text-green">มาเรียน</span>' : '<span class="text-red">ขาด</span>';
+                    htmlString += `<tr><td>${i+1}</td><td>${st.id}</td><td class="text-left">${st.name}</td><td>${timeStr}</td><td>${statusStr}</td></tr>`;
+                });
+                htmlString += `</tbody></table></div>`;
+            } 
+            else if (mode === 'range') {
+                const start = document.getElementById('expStart').value; const end = document.getElementById('expEnd').value;
+                if(!start || !end) return showToast("error", "เลือกวันที่ให้ครบถ้วน");
+                const dStart = new Date(start); const dEnd = new Date(end);
+                const diffTime = Math.abs(dEnd - dStart); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                if(diffDays > 31) return showToast("error", "เลือกช่วงเวลาได้ไม่เกิน 31 วัน");
+
+                const thaiStart = dStart.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' });
+                const thaiEnd = dEnd.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                htmlString = `
+                    <div class="pdf-wrap">
+                        <div class="pdf-head">
+                            <h2>แบบบันทึกการมาเรียน (ช่วงเวลา)</h2>
+                            <h3>โรงเรียนป่าก้าง | ชั้น ${activeGradeContext} | ระหว่างวันที่ ${thaiStart} - ${thaiEnd}</h3>
+                        </div>
+                        <table style="font-size: 11px;">
+                            <thead><tr><th rowspan="2" style="width:30px;">ที่</th><th rowspan="2" class="text-left" style="width:160px;">ชื่อ - นามสกุล</th><th colspan="${diffDays}">วันที่</th><th colspan="2">รวม</th></tr><tr>
+                `;
+                
+                // Header วันที่
+                let currentD = new Date(dStart);
+                for(let i=0; i<diffDays; i++) {
+                    const isWeekend = (currentD.getDay() === 0 || currentD.getDay() === 6);
+                    htmlString += `<th class="${isWeekend ? 'bg-weekend' : ''}">${currentD.getDate()}</th>`;
+                    currentD.setDate(currentD.getDate() + 1);
+                }
+                htmlString += `<th style="width:40px;">มา</th><th style="width:40px;">ขาด</th></tr></thead><tbody>`;
+
+                // Data นักเรียน
+                const rangeRecs = allRecords.filter(r => { const rd = getLocalYYYYMMDD(r[0]); return rd >= start && rd <= end; });
+                filteredSt.forEach((st, idx) => {
+                    htmlString += `<tr><td>${idx+1}</td><td class="text-left">${st.name}</td>`;
+                    let presentCount = 0; let workingDays = 0;
+                    let loopD = new Date(dStart);
+                    
+                    for(let i=0; i<diffDays; i++) {
+                        const checkDateStr = getLocalYYYYMMDD(loopD);
+                        const isWeekend = (loopD.getDay() === 0 || loopD.getDay() === 6);
+                        if(!isWeekend) workingDays++;
+
+                        const isPresent = rangeRecs.some(r => String(r[1]) === String(st.id) && getLocalYYYYMMDD(r[0]) === checkDateStr);
+                        if(isPresent) { htmlString += `<td class="${isWeekend ? 'bg-weekend' : ''}"><span class="text-green">/</span></td>`; presentCount++; }
+                        else { htmlString += `<td class="${isWeekend ? 'bg-weekend' : ''}"></td>`; }
+                        
+                        loopD.setDate(loopD.getDate() + 1);
+                    }
+                    const absentCount = Math.max(0, workingDays - presentCount);
+                    htmlString += `<td>${presentCount}</td><td class="text-red">${absentCount > 0 ? absentCount : ''}</td></tr>`;
+                });
+                htmlString += `</tbody></table></div>`;
+            }
+            else if (mode === 'monthly') {
+                const monthVal = document.getElementById('expMonth').value; if(!monthVal) return showToast("error", "เลือกเดือน");
+                const [year, month] = monthVal.split('-'); const daysInMonth = new Date(year, month, 0).getDate();
+                const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                const thMonthName = thMonths[parseInt(month) - 1]; const thYear = parseInt(year) + 543;
+
+                htmlString = `
+                    <div class="pdf-wrap">
+                        <div class="pdf-head">
+                            <h2>แบบบันทึกการมาเรียนของนักเรียน ชั้น ${activeGradeContext} ปีการศึกษา ${thYear}</h2>
+                            <h3>โรงเรียนป่าก้าง</h3>
+                        </div>
+                        <table style="font-size: 11px;">
+                            <thead><tr><th rowspan="2" style="width:30px;">ที่</th><th rowspan="2" class="text-left" style="width:160px;">ชื่อ - นามสกุล</th><th colspan="31">เดือน ${thMonthName} พ.ศ. ${thYear}</th><th colspan="4">รวม</th></tr><tr>
+                `;
+                
+                for(let d=1; d<=31; d++) {
+                    if(d <= daysInMonth) {
+                        const curD = new Date(year, parseInt(month)-1, d); const isWeekend = (curD.getDay() === 0 || curD.getDay() === 6);
+                        htmlString += `<th class="${isWeekend ? 'bg-weekend' : ''}">${d}</th>`;
+                    } else { htmlString += `<th style="background-color: #eee;"></th>`; }
+                }
+                htmlString += `<th style="width:25px;">ป</th><th style="width:25px;">ล</th><th style="width:25px;">ข</th><th style="width:25px;">ส</th></tr></thead><tbody>`;
+
+                const mRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]).startsWith(monthVal));
+                filteredSt.forEach((st, idx) => {
+                    htmlString += `<tr><td>${idx+1}</td><td class="text-left">${st.name}</td>`;
+                    let presentCount = 0; let workingDays = 0;
+                    
+                    for(let d=1; d<=31; d++) {
+                        if(d <= daysInMonth) {
+                            const checkDateStr = `${year}-${month}-${String(d).padStart(2, '0')}`;
+                            const isPresent = mRecs.some(r => String(r[1]) === String(st.id) && getLocalYYYYMMDD(r[0]) === checkDateStr);
+                            const curD = new Date(year, parseInt(month)-1, d); const isWeekend = (curD.getDay() === 0 || curD.getDay() === 6);
+                            if(!isWeekend) workingDays++;
+                            htmlString += `<td class="${isWeekend ? 'bg-weekend' : ''}">${isPresent ? '<span class="text-green">/</span>' : ''}</td>`;
+                            if(isPresent) presentCount++;
+                        } else { htmlString += `<td style="background-color: #eee;"></td>`; }
+                    }
+                    const absentCount = Math.max(0, workingDays - presentCount);
+                    htmlString += `<td></td><td></td><td class="text-red">${absentCount > 0 ? absentCount : ''}</td><td></td></tr>`;
+                });
+                htmlString += `</tbody></table></div>`;
+            }
+            else if (mode === 'yearly') {
+                const yearVal = document.getElementById('expYear').value;
+                const thYear = parseInt(yearVal) + 543;
+                
+                htmlString = `
+                    <div class="pdf-wrap">
+                        <div class="pdf-head">
+                            <h2>สรุปภาพรวมการมาเรียนรายปี</h2>
+                            <h3>โรงเรียนป่าก้าง | ชั้น ${activeGradeContext} | ปีการศึกษา ${thYear} (ค.ศ. ${yearVal})</h3>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr><th rowspan="2" style="width:40px;">ลำดับ</th><th rowspan="2" class="text-left" style="width:180px;">ชื่อ - นามสกุล</th><th colspan="12">จำนวนวันที่มาเรียน (ครั้ง)</th></tr>
+                                <tr><th>ม.ค.</th><th>ก.พ.</th><th>มี.ค.</th><th>เม.ย.</th><th>พ.ค.</th><th>มิ.ย.</th><th>ก.ค.</th><th>ส.ค.</th><th>ก.ย.</th><th>ต.ค.</th><th>พ.ย.</th><th>ธ.ค.</th></tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                const yRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]).startsWith(yearVal));
+                filteredSt.forEach((st, idx) => {
+                    htmlString += `<tr><td>${idx+1}</td><td class="text-left">${st.name}</td>`;
+                    for(let m=1; m<=12; m++) {
+                        const monthPrefix = `${yearVal}-${String(m).padStart(2, '0')}`;
+                        const countInMonth = yRecs.filter(r => String(r[1]) === String(st.id) && getLocalYYYYMMDD(r[0]).startsWith(monthPrefix)).length;
+                        htmlString += `<td>${countInMonth > 0 ? countInMonth : '-'}</td>`;
+                    }
+                    htmlString += `</tr>`;
+                });
+                htmlString += `</tbody></table></div>`;
+            }
+
+            // นำ HTML ที่สร้างเสร็จมารวมกับ CSS
+            const finalPDFContent = cssStyle + htmlString;
+
+            // กำหนดการแคปเจอร์
+            const opt = {
+                margin:       10,
+                filename:     `รายงานเช็คชื่อ_${activeGradeContext}_${mode}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: (mode==='daily' ? 'portrait' : 'landscape') } // รายวันแนวตั้ง นอกนั้นแนวนอน
+            };
+
+            showToast('success', 'กำลังเรนเดอร์เอกสาร รอสักครู่...');
+            
+            // 🔥 ส่งให้ html2pdf ประมวลผลจาก String ตรงๆ (วิธีนี้ 100% ไม่ขาว)
+            html2pdf().set(opt).from(finalPDFContent).save();
+        }
     </script>
 </body>
 </html>
