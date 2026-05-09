@@ -468,7 +468,29 @@
         </div>
     </main>
 
-    <div id="pwdModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity"><div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all relative" id="pwdModalCard"><button onclick="closePwdModal()" class="absolute top-5 right-5 text-slate-300 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button><h3 class="text-2xl font-black text-center mb-6">เปลี่ยนรหัสผ่าน</h3><div class="space-y-4"><input type="password" id="oldPwd" placeholder="รหัสผ่านเดิม" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400"><input type="password" id="newPwd" placeholder="รหัสใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400"><input type="password" id="confirmNewPwd" placeholder="ยืนยันรหัสใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400"></div><button id="btnSavePwd" onclick="savePassword()" class="w-full mt-8 py-4 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-xl shadow-md">บันทึก</button></div></div>
+    <div id="pwdModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all relative" id="pwdModalCard">
+            <button onclick="closePwdModal()" class="absolute top-5 right-5 text-slate-300 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-2xl font-black text-center mb-6">เปลี่ยนรหัสผ่าน</h3>
+            <div class="space-y-4">
+                <input type="password" id="oldPwd" placeholder="รหัสผ่านเดิม" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400">
+                <input type="password" id="newPwd" placeholder="รหัสใหม่ (4-6 ตัว)" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400" maxlength="6">
+                <input type="password" id="confirmNewPwd" placeholder="ยืนยันรหัสใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400" maxlength="6">
+            </div>
+
+            <div class="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-left">
+                <p class="text-[11px] text-amber-800 font-medium leading-relaxed">
+                    <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i> 
+                    <span class="font-bold">คำแนะนำ:</span> กรุณาตั้งรหัสผ่านความยาว 4-6 ตัวอักษรหรือตัวเลข<br><br>
+                    <span class="font-bold text-rose-600">ข้อควรระวัง:</span> รหัสผ่านนี้ผู้ดูแลระบบสามารถมองเห็นได้เพื่อใช้ในการจัดการฐานข้อมูลหลังบ้าน <b>โปรดหลีกเลี่ยงการใช้รหัสผ่านที่เกี่ยวข้องกับการทำธุรกรรมทางการเงิน หรือข้อมูลความลับส่วนตัวอื่นๆ</b>
+                </p>
+            </div>
+
+            <button id="btnSavePwd" onclick="savePassword()" class="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-xl shadow-md">บันทึก</button>
+        </div>
+    </div>
     <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity"><div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all text-center" id="deleteModalCard"><div class="w-20 h-20 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-trash-can text-3xl"></i></div><h3 class="text-2xl font-black mb-6 text-slate-800">ยืนยันลบประวัติ?</h3><input type="password" id="deletePassword" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold mb-6 outline-none focus:border-rose-400" placeholder="รหัสผ่านของคุณ"><div class="flex gap-4"><button onclick="closeDeleteModal()" class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors font-bold rounded-xl">ยกเลิก</button><button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 py-4 bg-rose-500 hover:bg-rose-600 transition-colors text-white font-bold rounded-xl shadow-md shadow-rose-500/20">ยืนยันลบ</button></div></div></div>
 
     <script>
