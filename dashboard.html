@@ -34,18 +34,18 @@
 
         /* การสลับแท็บแบบนุ่มนวล */
         .tab-content { display: none; opacity: 0; position: relative; z-index: 10; }
-        .tab-content.active { display: block; opacity: 1; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes slideUpFade { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content.active { display: block; opacity: 1; animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* แอนิเมชันสำหรับแถวในตาราง (โหลดเรียงทีละบรรทัด) */
-        .stagger-row { opacity: 0; transform: translateY(10px); animation: rowFadeIn 0.4s ease-out forwards; }
+        /* แอนิเมชันสำหรับแถวในตาราง */
+        .stagger-row { opacity: 0; transform: translateY(10px); animation: rowFadeIn 0.3s ease-out forwards; }
         @keyframes rowFadeIn { to { opacity: 1; transform: translateY(0); } }
         
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-2deg); } 75% { transform: translateX(5px) rotate(2deg); } }
         @keyframes rollDice { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
         .animate-roll { animation: rollDice 1s infinite ease-in-out; }
 
-        .scanner-line { width: 100%; height: 4px; background: #3b82f6; position: absolute; box-shadow: 0 0 15px 2px #3b82f6; animation: scan 2s infinite cubic-bezier(0.4, 0, 0.2, 1); border-radius: 50%; opacity: 0.8; }
+        .scanner-line { width: 100%; height: 3px; background: #3b82f6; position: absolute; box-shadow: 0 0 10px 1px #3b82f6; animation: scan 2s infinite cubic-bezier(0.4, 0, 0.2, 1); border-radius: 50%; opacity: 0.8; }
         @keyframes scan { 0% { top: 5%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -56,49 +56,54 @@
         .toast-enter { animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .toast-leave { animation: slideUp 0.3s ease-in reverse forwards; }
         
-        /* สไตล์สำหรับปุ่มเลือกโหมด PDF */
-        .pdf-mode-radio:checked + div { border-color: #ef4444; background-color: #fff1f2; color: #be123c; transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.1); }
+        .pdf-mode-radio:checked + div { border-color: #ef4444; background-color: #fff1f2; color: #be123c; transform: scale(1.02); box-shadow: 0 4px 10px -2px rgba(225, 29, 72, 0.1); }
         .pdf-mode-radio:checked + div .icon-box { background-color: #ef4444; color: white; transform: scale(1.1); }
 
-        #pdf-monthly-container { position: absolute; left: -9999px; top: 0; width: 1122px; background: white; padding: 40px; font-family: 'Sarabun', sans-serif; }
-        .pdf-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
-        .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 4px 2px; }
-        .pdf-table th { background-color: #f3f4f6; font-weight: bold; }
-        .bg-weekend { background-color: #fecdd3 !important; }
+        /* ========== Sidebar Collapsible CSS ========== */
+        #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        body:not(.sidebar-closed) #sidebar { width: 260px; }
+        body.sidebar-closed #sidebar { width: 84px; }
+        
+        body.sidebar-closed .hide-on-collapse { display: none !important; opacity: 0; }
+        body.sidebar-closed .center-on-collapse { justify-content: center !important; padding-left: 0 !important; padding-right: 0 !important; }
+        body.sidebar-closed .center-on-collapse i { margin-right: 0 !important; font-size: 1.25rem; }
+        
+        body.sidebar-closed #sidebarProfilePic { width: 44px; height: 44px; border-width: 2px; margin-bottom: 0; }
+        body.sidebar-closed .pwd-btn { position: relative; top: auto; left: auto; margin-bottom: 12px; margin-top: -10px; }
+        body.sidebar-closed .nav-btn span { display: none; }
+        body.sidebar-closed .nav-btn { justify-content: center; padding: 12px 0; }
+        body.sidebar-closed .nav-btn i { font-size: 20px; }
 
-        /* ========== Academic Report (paper-preview + print-zone) inspired by dashboard 19 ========== */
+        /* ========== Academic Report (paper-preview) ========== */
         .paper-preview {
-            background: white; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08);
-            border: 1px solid #e2e8f0; padding: 40px 50px; transition: all 0.3s ease;
+            background: white; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0; padding: 30px 40px; transition: all 0.3s ease;
             position: relative; overflow: hidden; border-radius: 12px;
-            font-family: 'Sarabun', sans-serif; /* บังคับใช้ Sarabun ที่ส่วนของรายงานเพื่อให้เสถียรที่สุด */
+            font-family: 'Sarabun', sans-serif;
         }
         .paper-portrait { width: 100%; max-width: 210mm; min-height: 297mm; }
         .paper-landscape { width: 100%; max-width: 297mm; min-height: 210mm; }
         .report-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 14px; page-break-inside: auto; }
-        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 10px 12px; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 8px 10px; }
         .report-table th { background-color: #1e293b; color: white; text-align: center; font-weight: 600; white-space: nowrap; }
         .report-table tr { page-break-inside: avoid; page-break-after: auto; }
-        .report-table tbody.data-body tr { transition: background-color 0.3s ease; }
         .report-table tbody.data-body tr:nth-child(even) { background-color: #f8fafc; }
-        .report-table tbody.data-body tr:hover { background-color: #f1f5f9; }
-
-        /* Sticky save bar for manual checkin */
+        
         .save-bar-sticky {
             position: sticky; bottom: 0; left: 0; right: 0;
             background: linear-gradient(to top, rgba(255,255,255,0.98) 70%, rgba(255,255,255,0));
-            padding: 20px 24px 16px; backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(226,232,240,0.6); margin-top: 24px;
+            padding: 16px 20px 12px; backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(226,232,240,0.6); margin-top: 20px;
             z-index: 30;
         }
 
-        /* Print rules — when printing, show ONLY the print-zone */
+        /* Print rules */
         @media print {
             html, body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; height: auto !important; }
             body * { visibility: hidden; }
             .print-zone, .print-zone * { visibility: visible; }
             .print-zone { position: absolute !important; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; display: block !important; font-family: 'Sarabun', sans-serif !important; }
-            .paper-preview { padding: 20px !important; max-width: 100% !important; box-shadow: none !important; border: none !important; }
+            .paper-preview { padding: 15px !important; max-width: 100% !important; box-shadow: none !important; border: none !important; }
             .no-print, aside, header { display: none !important; }
             .report-table th { background-color: #f1f5f9 !important; color: #000 !important; }
             .report-table tbody.data-body tr:nth-child(even) { background-color: #f8fafc !important; }
@@ -112,55 +117,57 @@
 <body class="flex h-screen w-full text-slate-700 font-sans">
 
     <div id="quickLoginOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[9999] flex items-center justify-center transition-opacity duration-300">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-sm w-full p-10 text-center relative overflow-hidden border border-white/20">
-            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500 shadow-inner">
-                <i class="fa-solid fa-lock text-3xl"></i>
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 text-center relative overflow-hidden border border-white/20">
+            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5 text-blue-500 shadow-inner">
+                <i class="fa-solid fa-lock text-2xl"></i>
             </div>
-            <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">เข้าสู่ระบบ</h2>
-            <p class="text-slate-500 font-medium mb-8">กรอกรหัสประจำตัวของคุณครู</p>
+            <h2 class="text-2xl font-black text-slate-800 mb-2 tracking-tight">เข้าสู่ระบบ</h2>
+            <p class="text-slate-500 text-sm font-medium mb-6">กรอกรหัสประจำตัวของคุณครู</p>
             
             <input type="password" id="pinInput" autofocus autocomplete="off"
-                class="w-full text-center px-6 py-4 text-2xl font-black bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-slate-800 placeholder:text-slate-300 tracking-[0.2em] shadow-inner mb-2"
+                class="w-full text-center px-5 py-3 text-xl font-black bg-slate-50 border-2 border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-slate-800 placeholder:text-slate-300 tracking-[0.2em] shadow-inner mb-2"
                 placeholder="••••••">
             
-            <p id="loginErrorMsg" class="text-rose-500 text-sm font-bold mb-6 opacity-0 transition-opacity h-5 flex justify-center items-center">
+            <p id="loginErrorMsg" class="text-rose-500 text-[13px] font-bold mb-5 opacity-0 transition-opacity h-5 flex justify-center items-center">
                 <i class="fa-solid fa-circle-exclamation mr-1"></i> รบกวนคุณครูกรอกรหัสให้ถูกต้อง
             </p>
             
-            <button id="loginBtn" onclick="handleQuickLogin()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg shadow-blue-500/30 transition-transform hover:-translate-y-1 flex justify-center items-center">
+            <button id="loginBtn" onclick="handleQuickLogin()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-transform hover:-translate-y-0.5 flex justify-center items-center">
                 ยืนยันการเข้าใช้งาน
             </button>
 
-            <button onclick="window.location.href='https://pkschool-cloud.github.io/All-School-Services/'" class="mt-5 w-full text-slate-400 hover:text-slate-600 text-sm font-bold transition-colors flex justify-center items-center">
+            <button onclick="window.location.href='https://pkschool-cloud.github.io/All-School-Services/'" class="mt-4 w-full text-slate-400 hover:text-slate-600 text-[13px] font-bold transition-colors flex justify-center items-center">
                 <i class="fa-solid fa-arrow-left mr-2"></i> กลับหน้าศูนย์รวมบริการ
             </button>
         </div>
     </div>
 
-    <div id="toastContainer" class="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] flex flex-col gap-2.5 pointer-events-none"></div>
 
-    <aside class="w-[280px] bg-white border-r border-slate-100 flex flex-col h-full flex-shrink-0 z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative">
+    <aside id="sidebar" class="bg-white border-r border-slate-100 flex flex-col h-full flex-shrink-0 z-30 shadow-[4px_0_20px_rgba(0,0,0,0.02)] relative">
         
-        <button onclick="goBackToPortal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center space-x-2 py-3 px-4 text-[13px] font-bold transition-all z-10 relative">
+        <button onclick="goBackToPortal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center space-x-2 py-3 px-3 text-[12px] font-bold transition-all z-10 relative center-on-collapse">
             <i class="fa-solid fa-arrow-left"></i>
-            <span>กลับศูนย์รวมบริการ โรงเรียนบ้านป่าก้าง</span>
+            <span class="hide-on-collapse">กลับศูนย์รวมบริการ โรงเรียนบ้านป่าก้าง</span>
         </button>
 
-        <div class="p-8 pb-6 flex flex-col items-center relative border-b border-slate-50">
-            <button onclick="openPwdModal()" class="absolute top-4 left-4 text-slate-300 hover:text-blue-500 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="เปลี่ยนรหัสผ่าน">
-                <i class="fa-solid fa-key"></i>
+        <div class="p-5 pb-4 flex flex-col items-center relative border-b border-slate-50 transition-all">
+            <button id="pwdModalBtn" onclick="openPwdModal()" class="pwd-btn absolute top-3 left-3 text-slate-400 hover:text-blue-500 hover:bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center transition-all" title="เปลี่ยนรหัสผ่าน">
+                <i class="fa-solid fa-key text-sm"></i>
             </button>
-            <div class="w-24 h-24 rounded-full border-4 border-blue-50 p-1 mb-4 shadow-[0_0_20px_rgba(59,130,246,0.15)] relative group cursor-pointer">
+            <div id="sidebarProfilePic" class="w-16 h-16 rounded-full border-4 border-blue-50 p-1 mb-2 shadow-[0_0_15px_rgba(59,130,246,0.15)] relative group cursor-pointer transition-all">
                 <img id="sidebarPhoto" src="" class="w-full h-full object-cover rounded-full shadow-inner transition-transform duration-500 group-hover:scale-105">
                 <div class="absolute inset-0 rounded-full border-2 border-blue-400 opacity-0 group-hover:opacity-100 group-hover:animate-ping"></div>
             </div>
-            <h2 class="text-xl font-black text-slate-800 tracking-tight" id="sidebarName">...</h2>
-            <p class="text-xs text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mt-2 font-bold tracking-wide border border-blue-100 shadow-sm" id="sidebarRole">...</p>
+            <div class="hide-on-collapse flex flex-col items-center w-full px-2">
+                <h2 class="text-base font-black text-slate-800 tracking-tight truncate w-full text-center" id="sidebarName">...</h2>
+                <p class="text-[11px] text-blue-600 bg-blue-50 px-3 py-1 rounded-full mt-1 font-bold tracking-wide border border-blue-100 shadow-sm truncate max-w-full" id="sidebarRole">...</p>
+            </div>
         </div>
 
-        <div id="adminFilterContainer" class="p-4 border-b border-slate-50 hidden bg-slate-50/50">
-            <label class="text-xs text-slate-500 font-bold mb-2 block uppercase tracking-wider"><i class="fa-solid fa-filter mr-1 text-blue-400"></i> มุมมองแอดมิน</label>
-            <select id="adminGradeSelect" onchange="changeAdminView()" class="w-full bg-white border border-slate-200 text-blue-600 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-400 shadow-sm cursor-pointer transition-all hover:border-blue-300">
+        <div id="adminFilterContainer" class="p-3 border-b border-slate-50 hidden bg-slate-50/50 hide-on-collapse">
+            <label class="text-[10px] text-slate-500 font-bold mb-1.5 block uppercase tracking-wider"><i class="fa-solid fa-filter mr-1 text-blue-400"></i> มุมมองแอดมิน</label>
+            <select id="adminGradeSelect" onchange="changeAdminView()" class="w-full bg-white border border-slate-200 text-blue-600 rounded-lg p-2.5 text-[13px] font-bold outline-none focus:border-blue-400 shadow-sm cursor-pointer transition-all hover:border-blue-300">
                 <option value="All">ดูทุกระดับชั้น</option>
                 <option value="ป.1">เฉพาะ ป.1</option>
                 <option value="ป.2">เฉพาะ ป.2</option>
@@ -171,43 +178,53 @@
             </select>
         </div>
         
-        <div class="p-4 overflow-y-auto flex-1 custom-scroll">
-            <nav class="space-y-1.5" id="nav-menu">
-                <button onclick="switchTab('checkin', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl transition-all shadow-md shadow-blue-500/20 font-bold hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5">
-                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-xl"></i><span>สแกนเช็คชื่อ</span>
+        <div class="p-3 overflow-y-auto flex-1 custom-scroll">
+            <nav class="space-y-1" id="nav-menu">
+                <button onclick="switchTab('checkin', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl transition-all shadow-sm font-bold text-[13px]">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-center text-lg"></i>
+                    <span class="hide-on-collapse">สแกนเช็คชื่อ</span>
                 </button>
-                <button onclick="switchTab('search', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-all font-bold mt-3">
-                    <i class="fa-solid fa-clipboard-list w-5 text-lg"></i><span>สรุปสถานะรายวัน</span>
+                <button onclick="switchTab('search', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all font-bold text-[13px] mt-2">
+                    <i class="fa-solid fa-clipboard-list w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse">สรุปสถานะรายวัน</span>
                 </button>
-                <button onclick="switchTab('manual', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-user-check w-5 text-lg"></i><span>ครูเช็คชื่อแทน</span>
+                <button onclick="switchTab('manual', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-xl transition-all font-bold text-[13px]">
+                    <i class="fa-solid fa-user-check w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse">ครูเช็คชื่อแทน</span>
                 </button>
-                <button onclick="switchTab('verify', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-chart-pie w-5 text-lg"></i><span id="navVerifyText">ตรวจสอบวันนี้</span>
+                <button onclick="switchTab('verify', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-xl transition-all font-bold text-[13px]">
+                    <i class="fa-solid fa-chart-pie w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse" id="navVerifyText">ตรวจสอบวันนี้</span>
                 </button>
                 
-                <div class="h-px bg-slate-100 my-3 mx-2"></div>
+                <div class="h-px bg-slate-100 my-2.5 mx-2 hide-on-collapse"></div>
 
-                <button onclick="switchTab('students', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-users-gear w-5 text-lg"></i><span>จัดการรายชื่อ</span>
+                <button onclick="switchTab('students', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all font-bold text-[13px]">
+                    <i class="fa-solid fa-users-gear w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse">จัดการรายชื่อ</span>
                 </button>
-                <button onclick="switchTab('history', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-clock-rotate-left w-5 text-lg"></i><span>ประวัติย้อนหลัง</span>
+                <button onclick="switchTab('history', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-xl transition-all font-bold text-[13px]">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse">ประวัติย้อนหลัง</span>
                 </button>
-                <button onclick="switchTab('random', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-dice w-5 text-lg"></i><span>สุ่มนักเรียน</span>
+                <button onclick="switchTab('random', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all font-bold text-[13px]">
+                    <i class="fa-solid fa-dice w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse">สุ่มนักเรียน</span>
                 </button>
-                <button onclick="switchTab('export', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-file-pdf w-5 text-lg"></i><span>ส่งออกเอกสาร PDF</span>
+                <button onclick="switchTab('export', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all font-bold text-[13px]">
+                    <i class="fa-solid fa-file-pdf w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse">ส่งออกเอกสาร PDF</span>
                 </button>
-                <button onclick="switchTab('academicReport', this)" class="nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-purple-500 hover:bg-purple-50 hover:text-purple-600 rounded-2xl transition-all font-bold">
-                    <i class="fa-solid fa-graduation-cap w-5 text-lg"></i><span>ส่งออกรายงาน-วิชาการ</span>
+                <button onclick="switchTab('academicReport', this)" class="nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-purple-500 hover:bg-purple-50 hover:text-purple-600 rounded-xl transition-all font-bold text-[13px]">
+                    <i class="fa-solid fa-graduation-cap w-5 text-center text-base"></i>
+                    <span class="hide-on-collapse">ส่งออกรายงาน-วิชาการ</span>
                 </button>
             </nav>
         </div>
-        <div class="p-5 bg-slate-50/50">
-            <button onclick="logout()" class="w-full bg-white border border-rose-100 hover:border-rose-300 hover:bg-rose-50 text-rose-500 py-3.5 rounded-2xl transition-all font-bold flex items-center justify-center space-x-2 shadow-sm">
-                <i class="fa-solid fa-power-off"></i><span>ออกจากระบบ</span>
+        <div class="p-4 bg-slate-50/50">
+            <button onclick="logout()" class="w-full bg-white border border-rose-100 hover:border-rose-300 hover:bg-rose-50 text-rose-500 py-2.5 rounded-xl transition-all font-bold flex items-center justify-center space-x-2 shadow-sm text-[13px] center-on-collapse">
+                <i class="fa-solid fa-power-off text-base w-5 text-center"></i>
+                <span class="hide-on-collapse">ออกจากระบบ</span>
             </button>
         </div>
     </aside>
@@ -216,63 +233,66 @@
         <div class="glow-blob"></div>
         <div class="glow-blob pink"></div>
         
-        <header class="h-20 bg-white/70 backdrop-blur-xl border-b border-white/50 px-8 flex items-center justify-between flex-shrink-0 z-20 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
-            <div class="flex items-center space-x-4">
-                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                    <i class="fa-solid fa-school text-xl"></i>
+        <header class="h-16 bg-white/70 backdrop-blur-xl border-b border-white/50 px-6 flex items-center justify-between flex-shrink-0 z-20 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleSidebar()" class="text-slate-400 hover:text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-lg flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white w-9 h-9 rounded-lg flex items-center justify-center shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-school text-base"></i>
                 </div>
-                <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600 tracking-tight">Pakang School</h1>
+                <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600 tracking-tight hidden sm:block">Pakang School</h1>
             </div>
-            <div id="checkinContextBadge" class="bg-white/80 text-indigo-600 border border-indigo-100 px-5 py-2.5 rounded-2xl text-sm font-bold flex items-center shadow-sm backdrop-blur-sm transition-all hover:shadow-md">
+            <div id="checkinContextBadge" class="bg-white/80 text-indigo-600 border border-indigo-100 px-4 py-1.5 rounded-xl text-[13px] font-bold flex items-center shadow-sm backdrop-blur-sm transition-all hover:shadow-md">
                 <i class="fa-solid fa-layer-group mr-2 text-indigo-400"></i> <span>กำลังโหลด...</span>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6 md:p-10 custom-scroll pb-32 relative z-10">
-            <div class="max-w-6xl mx-auto">
+        <div class="flex-1 overflow-y-auto p-5 md:p-8 custom-scroll pb-24 relative z-10">
+            <div class="max-w-5xl mx-auto">
                 
-                <section id="checkin" class="tab-content active max-w-2xl mx-auto">
-                    <div class="text-center mb-10">
-                        <h2 class="text-4xl font-black text-slate-800 mb-3 tracking-tight drop-shadow-sm">สวัสดีตอนเช้า! ☀️</h2>
-                        <p class="text-slate-500 text-lg font-medium">ยิงบาร์โค้ด หรือพิมพ์รหัส เพื่อเช็คชื่อเข้าเรียน</p>
+                <section id="checkin" class="tab-content active max-w-xl mx-auto">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight drop-shadow-sm">สวัสดีตอนเช้า! ☀️</h2>
+                        <p class="text-slate-500 text-base font-medium">ยิงบาร์โค้ด หรือพิมพ์รหัส เพื่อเช็คชื่อเข้าเรียน</p>
                     </div>
                     
-                    <div class="bg-white/90 backdrop-blur-xl p-12 rounded-[3rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] border border-white mb-10 text-center relative overflow-hidden group">
+                    <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] shadow-[0_15px_40px_-10px_rgba(0,0,0,0.08)] border border-white mb-8 text-center relative overflow-hidden group">
                         
-                        <div class="relative w-48 h-40 mx-auto mb-10 border-4 border-dashed border-blue-200 rounded-3xl bg-white/50 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:border-blue-400 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)]">
-                            <i class="fa-solid fa-qrcode text-7xl text-blue-100 transition-colors group-hover:text-blue-200"></i>
+                        <div class="relative w-36 h-32 mx-auto mb-6 border-4 border-dashed border-blue-200 rounded-2xl bg-white/50 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:border-blue-400 group-hover:shadow-[0_0_25px_rgba(59,130,246,0.1)]">
+                            <i class="fa-solid fa-qrcode text-6xl text-blue-100 transition-colors group-hover:text-blue-200"></i>
                             <div class="scanner-line"></div>
                         </div>
 
                         <input type="text" id="studentInput" autofocus autocomplete="off"
-                            class="w-full max-w-sm mx-auto text-center px-6 py-5 text-3xl font-black bg-slate-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:text-lg placeholder:font-medium shadow-inner tracking-widest relative z-10"
+                            class="w-full max-w-xs mx-auto text-center px-5 py-4 text-2xl font-black bg-slate-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-slate-800 placeholder:text-slate-300 placeholder:text-base placeholder:font-medium shadow-inner tracking-widest relative z-10"
                             placeholder="รอรับรหัสสแกน...">
                         
-                        <div id="checkinStatus" class="mt-6 font-bold h-8 text-lg flex items-center justify-center transition-all text-slate-400">
+                        <div id="checkinStatus" class="mt-5 font-bold h-6 text-base flex items-center justify-center transition-all text-slate-400">
                             <i class="fa-solid fa-keyboard mr-2"></i> ระบบพร้อมใช้งาน
                         </div>
                     </div>
 
-                    <div id="studentCard" class="hidden bg-white/95 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden transform transition-all duration-500 border-b-8 border-emerald-500 p-8 sm:p-10 relative">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-bl-full -z-10"></div>
-                        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-8 relative z-10">
-                            <div class="w-36 h-36 rounded-[2rem] shadow-xl overflow-hidden bg-white flex-shrink-0 relative border-4 border-white p-1">
-                                <img id="studentPhotoCard" src="" class="w-full h-full object-cover rounded-[1.5rem]">
+                    <div id="studentCard" class="hidden bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] overflow-hidden transform transition-all duration-500 border-b-8 border-emerald-500 p-6 sm:p-8 relative">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -z-10"></div>
+                        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
+                            <div class="w-28 h-28 rounded-2xl shadow-lg overflow-hidden bg-white flex-shrink-0 relative border-4 border-white p-1">
+                                <img id="studentPhotoCard" src="" class="w-full h-full object-cover rounded-xl">
                             </div>
-                            <div class="flex-1 text-center sm:text-left w-full mt-2">
-                                <div id="statusBadge" class="inline-flex items-center px-4 py-1.5 bg-emerald-50 text-emerald-600 text-sm font-bold rounded-full mb-4 shadow-sm border border-emerald-100">
-                                    <i class="fa-solid fa-check-circle mr-2"></i> เข้าเรียนสำเร็จ
+                            <div class="flex-1 text-center sm:text-left w-full mt-1">
+                                <div id="statusBadge" class="inline-flex items-center px-3 py-1 bg-emerald-50 text-emerald-600 text-[13px] font-bold rounded-full mb-3 shadow-sm border border-emerald-100">
+                                    <i class="fa-solid fa-check-circle mr-1.5"></i> เข้าเรียนสำเร็จ
                                 </div>
-                                <h3 id="studentName" class="text-3xl font-black mb-2 tracking-tight text-slate-800">-</h3>
-                                <p class="text-slate-500 font-medium mb-8 text-lg">รหัสประจำตัว: <span id="studentIdDisplay" class="font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg">-</span></p>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">ระดับชั้น</p>
-                                        <p id="studentGrade" class="text-xl font-black text-slate-700">-</p>
+                                <h3 id="studentName" class="text-2xl font-black mb-1.5 tracking-tight text-slate-800">-</h3>
+                                <p class="text-slate-500 font-medium mb-5 text-sm">รหัสประจำตัว: <span id="studentIdDisplay" class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">-</span></p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">ระดับชั้น</p>
+                                        <p id="studentGrade" class="text-lg font-black text-slate-700">-</p>
                                     </div>
-                                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">เวลาสแกน</p>
-                                        <p id="studentTime" class="text-xl font-black text-emerald-600">-</p>
+                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">เวลาสแกน</p>
+                                        <p id="studentTime" class="text-lg font-black text-emerald-600">-</p>
                                     </div>
                                 </div>
                             </div>
@@ -281,95 +301,95 @@
                 </section>
 
                 <section id="search" class="tab-content">
-                    <div class="mb-8 flex flex-col md:flex-row justify-between md:items-end gap-4">
+                    <div class="mb-6 flex flex-col md:flex-row justify-between md:items-end gap-4">
                         <div>
-                            <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">สรุปสถานะรายวัน</h2>
-                            <p class="text-slate-500 font-medium">ดูรายชื่อนักเรียนที่มาเรียนและขาดเรียนของวันนี้ได้ทันที</p>
+                            <h2 class="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">สรุปสถานะรายวัน</h2>
+                            <p class="text-slate-500 text-[13px] font-medium">ดูรายชื่อนักเรียนที่มาเรียนและขาดเรียนของวันนี้ได้ทันที</p>
                         </div>
-                        <div class="w-full md:w-80 relative group">
-                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 transition-colors group-focus-within:text-indigo-500"></i>
-                            <input type="text" id="liveSearchInput" onkeyup="filterDailyList()" class="w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm transition-all" placeholder="ค้นหาจากรายชื่อด้านล่าง...">
+                        <div class="w-full md:w-72 relative group">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 transition-colors group-focus-within:text-indigo-500"></i>
+                            <input type="text" id="liveSearchInput" onkeyup="filterDailyList()" class="w-full bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl py-2.5 pl-10 pr-3 text-[13px] font-bold text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 shadow-sm transition-all" placeholder="ค้นหาจากรายชื่อด้านล่าง...">
                         </div>
                     </div>
 
-                    <div class="flex flex-col lg:flex-row gap-6 items-start">
+                    <div class="flex flex-col lg:flex-row gap-5 items-start">
                         <div class="w-full lg:w-1/2">
-                            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-t-3xl p-5 flex items-center justify-between shadow-lg shadow-emerald-500/20">
-                                <h3 class="font-black text-white text-lg"><i class="fa-solid fa-check-circle mr-2 opacity-80"></i>มาเรียนแล้ว</h3>
-                                <span class="bg-white text-emerald-600 px-5 py-1.5 rounded-full text-sm font-black shadow-inner" id="livePresentCount">0</span>
+                            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-t-2xl p-4 flex items-center justify-between shadow-sm">
+                                <h3 class="font-black text-white text-base"><i class="fa-solid fa-check-circle mr-2 opacity-80"></i>มาเรียนแล้ว</h3>
+                                <span class="bg-white text-emerald-600 px-4 py-1 rounded-full text-xs font-black shadow-inner" id="livePresentCount">0</span>
                             </div>
-                            <div id="livePresentList" class="flex flex-col gap-0 bg-white/80 backdrop-blur-md border border-white border-t-0 rounded-b-3xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.05)] max-h-[600px] overflow-y-auto custom-scroll divide-y divide-slate-50 p-2">
-                                <div class="text-center py-12 text-slate-400 font-medium">กำลังโหลดข้อมูล...</div>
+                            <div id="livePresentList" class="flex flex-col gap-0 bg-white/80 backdrop-blur-md border border-white border-t-0 rounded-b-2xl overflow-hidden shadow-sm max-h-[500px] overflow-y-auto custom-scroll divide-y divide-slate-50 p-1.5">
+                                <div class="text-center py-10 text-slate-400 text-sm font-medium">กำลังโหลดข้อมูล...</div>
                             </div>
                         </div>
 
                         <div class="w-full lg:w-1/2">
-                            <div class="bg-gradient-to-r from-rose-500 to-rose-400 rounded-t-3xl p-5 flex items-center justify-between shadow-lg shadow-rose-500/20">
-                                <h3 class="font-black text-white text-lg"><i class="fa-solid fa-xmark-circle mr-2 opacity-80"></i>ยังไม่มา / ขาด</h3>
-                                <span class="bg-white text-rose-600 px-5 py-1.5 rounded-full text-sm font-black shadow-inner" id="liveAbsentCount">0</span>
+                            <div class="bg-gradient-to-r from-rose-500 to-rose-400 rounded-t-2xl p-4 flex items-center justify-between shadow-sm">
+                                <h3 class="font-black text-white text-base"><i class="fa-solid fa-xmark-circle mr-2 opacity-80"></i>ยังไม่มา / ขาด</h3>
+                                <span class="bg-white text-rose-600 px-4 py-1 rounded-full text-xs font-black shadow-inner" id="liveAbsentCount">0</span>
                             </div>
-                            <div id="liveAbsentList" class="flex flex-col gap-0 bg-white/80 backdrop-blur-md border border-white border-t-0 rounded-b-3xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.05)] max-h-[600px] overflow-y-auto custom-scroll divide-y divide-slate-50 p-2">
-                                <div class="text-center py-12 text-slate-400 font-medium">กำลังโหลดข้อมูล...</div>
+                            <div id="liveAbsentList" class="flex flex-col gap-0 bg-white/80 backdrop-blur-md border border-white border-t-0 rounded-b-2xl overflow-hidden shadow-sm max-h-[500px] overflow-y-auto custom-scroll divide-y divide-slate-50 p-1.5">
+                                <div class="text-center py-10 text-slate-400 text-sm font-medium">กำลังโหลดข้อมูล...</div>
                             </div>
                         </div>
                     </div>
                 </section>
 
                 <section id="manual" class="tab-content relative">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
-                            <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">ครูเช็คชื่อแทน</h2>
-                            <p class="text-slate-500 font-medium">เลือกสถานะของนักเรียนแต่ละคน แล้วกด <span class="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md text-xs ml-1">บันทึก</span> ที่ด้านล่างสุดเพื่อยืนยัน</p>
+                            <h2 class="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">ครูเช็คชื่อแทน</h2>
+                            <p class="text-slate-500 text-[13px] font-medium">เลือกสถานะของนักเรียนแต่ละคน แล้วกดบันทึกด้านล่างสุด</p>
                         </div>
-                        <div id="manualSaveIndicator" class="bg-white text-slate-500 px-6 py-3 rounded-2xl font-bold shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center transition-all duration-300">
+                        <div id="manualSaveIndicator" class="bg-white text-slate-500 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm border border-slate-100 flex items-center transition-all duration-300">
                             <i class="fa-solid fa-circle-check text-slate-400 mr-2"></i> ยังไม่มีการแก้ไข
                         </div>
                     </div>
 
-                    <div class="bg-white/80 backdrop-blur-md p-6 rounded-[2rem] shadow-sm border border-white mb-6 flex flex-col md:flex-row items-center gap-4">
-                        <div class="flex-1 w-full max-w-sm relative">
-                            <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide"><i class="fa-regular fa-calendar-check text-blue-500 mr-1.5"></i>เลือกวันที่ต้องการเช็ค</label>
-                            <input type="date" id="manualDate" onchange="renderManualTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3 outline-none focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-slate-700 shadow-inner">
+                    <div class="bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-sm border border-white mb-5 flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-1 w-full max-w-[250px] relative">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide"><i class="fa-regular fa-calendar-check text-blue-500 mr-1"></i>เลือกวันที่ต้องการเช็ค</label>
+                            <input type="date" id="manualDate" onchange="renderManualTable()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10 transition-all text-sm font-bold text-slate-700 shadow-inner">
                         </div>
                     </div>
 
-                    <div class="bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] border border-white overflow-hidden pb-6">
-                        <div class="overflow-x-auto p-3">
-                            <table class="w-full text-left border-collapse min-w-[600px]">
+                    <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-sm border border-white overflow-hidden pb-4">
+                        <div class="overflow-x-auto p-2">
+                            <table class="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
-                                    <tr class="text-slate-400 text-[11px] uppercase tracking-wider border-b-2 border-slate-100">
-                                        <th class="py-5 px-6 font-bold text-center w-20">ลำดับ</th>
-                                        <th class="py-5 px-6 font-bold">รหัส</th>
-                                        <th class="py-5 px-6 font-bold">ชื่อ-นามสกุล</th>
-                                        <th class="py-5 px-6 font-bold text-center w-64">คลิกเพื่อเช็คชื่อ</th>
+                                    <tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b-2 border-slate-100">
+                                        <th class="py-3.5 px-4 font-bold text-center w-16">ลำดับ</th>
+                                        <th class="py-3.5 px-4 font-bold">รหัส</th>
+                                        <th class="py-3.5 px-4 font-bold">ชื่อ-นามสกุล</th>
+                                        <th class="py-3.5 px-4 font-bold text-center w-56">คลิกเพื่อเช็คชื่อ</th>
                                     </tr>
                                 </thead>
-                                <tbody id="manualTableBody" class="text-slate-600 font-bold divide-y divide-slate-50">
-                                    <tr><td colspan="4" class="text-center py-20 text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-2xl mb-3 block text-blue-300"></i>กำลังโหลดข้อมูลนักเรียน...</td></tr>
+                                <tbody id="manualTableBody" class="text-slate-600 text-sm font-bold divide-y divide-slate-50">
+                                    <tr><td colspan="4" class="text-center py-16 text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-xl mb-2 block text-blue-300"></i>กำลังโหลดข้อมูลนักเรียน...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
                     <div class="save-bar-sticky">
-                        <div class="bg-gradient-to-r from-white via-white to-blue-50/40 rounded-2xl border border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="bg-gradient-to-r from-white via-white to-blue-50/40 rounded-xl border border-slate-200 shadow-[0_-2px_15px_rgba(0,0,0,0.03)] p-4 flex flex-col md:flex-row items-center justify-between gap-3">
                             <div id="manualDraftSummary" class="flex items-center gap-3 text-slate-600">
-                                <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
-                                    <i class="fa-solid fa-pen-to-square text-slate-400 text-xl"></i>
+                                <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-pen-to-square text-slate-400 text-lg"></i>
                                 </div>
                                 <div>
-                                    <p class="font-black text-slate-700 text-base" id="manualDraftCount">ยังไม่มีการแก้ไข</p>
-                                    <p class="text-xs text-slate-400 font-medium" id="manualDraftHint">เริ่มต้นเลือกสถานะของนักเรียนได้เลย</p>
+                                    <p class="font-black text-slate-700 text-sm" id="manualDraftCount">ยังไม่มีการแก้ไข</p>
+                                    <p class="text-[11px] text-slate-400 font-medium" id="manualDraftHint">เริ่มต้นเลือกสถานะของนักเรียนได้เลย</p>
                                 </div>
                             </div>
-                            <div class="flex gap-3 w-full md:w-auto">
-                                <button onclick="clearManualDraft()" id="manualClearBtn" class="px-5 py-3.5 bg-white border border-slate-200 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 text-slate-500 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                            <div class="flex gap-2 w-full md:w-auto">
+                                <button onclick="clearManualDraft()" id="manualClearBtn" class="px-4 py-2.5 bg-white border border-slate-200 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 text-slate-500 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed" disabled>
                                     <i class="fa-solid fa-rotate-left"></i><span class="hidden sm:inline">ล้างร่าง</span>
                                 </button>
-                                <button onclick="saveAllManualChanges()" id="manualSaveBtn" class="flex-1 md:flex-none px-10 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3" disabled>
-                                    <i class="fa-solid fa-floppy-disk text-lg"></i>
+                                <button onclick="saveAllManualChanges()" id="manualSaveBtn" class="flex-1 md:flex-none px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-black rounded-lg shadow-md shadow-blue-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none flex items-center justify-center gap-2" disabled>
+                                    <i class="fa-solid fa-floppy-disk"></i>
                                     <span>บันทึก</span>
-                                    <span id="manualSaveBtnBadge" class="bg-white/20 px-2 py-0.5 rounded-md text-xs hidden">0</span>
+                                    <span id="manualSaveBtnBadge" class="bg-white/20 px-1.5 py-0.5 rounded-md text-[10px] hidden">0</span>
                                 </button>
                             </div>
                         </div>
@@ -377,245 +397,236 @@
                 </section>
 
                 <section id="verify" class="tab-content">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                        <div><h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">ตรวจสอบการเข้าเรียน (วันนี้)</h2><p class="text-slate-500 font-medium">ระบบประมวลผลยอดสถิติอัตโนมัติ</p></div>
-                        <button onclick="loadRecords()" class="bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 px-6 py-3 rounded-xl text-sm font-bold text-slate-600 shadow-sm transition-all flex items-center group"><i class="fa-solid fa-rotate-right text-blue-500 mr-2 group-hover:rotate-180 transition-transform duration-500"></i> โหลดข้อมูลล่าสุด</button>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+                        <div><h2 class="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">ตรวจสอบการเข้าเรียน (วันนี้)</h2><p class="text-slate-500 text-[13px] font-medium">ระบบประมวลผลยอดสถิติอัตโนมัติ</p></div>
+                        <button onclick="loadRecords()" class="bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 px-5 py-2.5 rounded-xl text-[13px] font-bold text-slate-600 shadow-sm transition-all flex items-center group"><i class="fa-solid fa-rotate-right text-blue-500 mr-2 group-hover:rotate-180 transition-transform duration-500"></i> โหลดข้อมูลล่าสุด</button>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] shadow-sm border border-white flex justify-center relative"><div class="w-40 h-40"><canvas id="todayChart"></canvas></div></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+                        <div class="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-white flex justify-center relative"><div class="w-32 h-32"><canvas id="todayChart"></canvas></div></div>
                         <div class="lg:col-span-2 grid grid-cols-2 gap-4">
-                            <div class="bg-gradient-to-br from-slate-700 to-slate-800 p-8 rounded-[2.5rem] shadow-lg text-white flex flex-col justify-center relative overflow-hidden"><div class="absolute -right-4 -top-4 text-slate-600 opacity-20 text-7xl"><i class="fa-solid fa-users"></i></div><p class="text-slate-300 font-bold mb-1 text-sm z-10">นักเรียนทั้งหมด</p><p id="todayTotal" class="text-6xl font-black mt-1 z-10">0</p></div>
-                            <div class="bg-gradient-to-br from-emerald-400 to-emerald-600 p-8 rounded-[2.5rem] shadow-lg shadow-emerald-500/20 text-white flex flex-col justify-center relative overflow-hidden"><div class="absolute -right-4 -top-4 text-emerald-800 opacity-20 text-7xl"><i class="fa-solid fa-check-double"></i></div><p class="text-emerald-100 font-bold mb-1 text-sm z-10">มาเรียนแล้ว</p><p id="todayPresent" class="text-6xl font-black mt-1 z-10">0</p></div>
-                            <div class="bg-gradient-to-br from-rose-400 to-rose-600 p-8 rounded-[2.5rem] shadow-lg shadow-rose-500/20 text-white flex flex-col justify-center col-span-2 relative overflow-hidden"><div class="absolute -right-4 -bottom-8 text-rose-800 opacity-20 text-8xl"><i class="fa-solid fa-user-xmark"></i></div><p class="text-rose-100 font-bold mb-1 text-sm z-10">ขาด / ป่วย / ลา</p><p id="todayAbsent" class="text-6xl font-black mt-1 z-10">0</p></div>
+                            <div class="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-2xl shadow-sm text-white flex flex-col justify-center relative overflow-hidden"><div class="absolute -right-2 -top-2 text-slate-600 opacity-20 text-6xl"><i class="fa-solid fa-users"></i></div><p class="text-slate-300 font-bold mb-1 text-[11px] z-10">นักเรียนทั้งหมด</p><p id="todayTotal" class="text-5xl font-black z-10">0</p></div>
+                            <div class="bg-gradient-to-br from-emerald-400 to-emerald-600 p-6 rounded-2xl shadow-sm shadow-emerald-500/10 text-white flex flex-col justify-center relative overflow-hidden"><div class="absolute -right-2 -top-2 text-emerald-800 opacity-20 text-6xl"><i class="fa-solid fa-check-double"></i></div><p class="text-emerald-100 font-bold mb-1 text-[11px] z-10">มาเรียนแล้ว</p><p id="todayPresent" class="text-5xl font-black z-10">0</p></div>
+                            <div class="bg-gradient-to-br from-rose-400 to-rose-600 p-6 rounded-2xl shadow-sm shadow-rose-500/10 text-white flex flex-col justify-center col-span-2 relative overflow-hidden"><div class="absolute -right-2 -bottom-6 text-rose-800 opacity-20 text-7xl"><i class="fa-solid fa-user-xmark"></i></div><p class="text-rose-100 font-bold mb-1 text-[11px] z-10">ขาด / ป่วย / ลา</p><p id="todayAbsent" class="text-5xl font-black z-10">0</p></div>
                         </div>
                     </div>
 
-                    <div class="bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-sm border border-white overflow-hidden pb-4"><div class="overflow-x-auto p-3"><table class="w-full text-left border-collapse min-w-[600px]">
-                        <thead><tr class="text-slate-400 text-[11px] uppercase tracking-wider border-b-2 border-slate-100"><th class="py-5 px-6 font-bold">เวลาที่สแกน</th><th class="py-5 px-6 font-bold">รหัส</th><th class="py-5 px-6 font-bold">ชื่อ</th><th class="py-5 px-6 font-bold">ชั้น</th><th class="py-5 px-6 font-bold text-center">ลบข้อมูล</th></tr></thead>
-                        <tbody id="todayTableBody" class="text-slate-600 font-bold divide-y divide-slate-50"></tbody>
+                    <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-sm border border-white overflow-hidden pb-4"><div class="overflow-x-auto p-2"><table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead><tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b-2 border-slate-100"><th class="py-3.5 px-4 font-bold">เวลาที่สแกน</th><th class="py-3.5 px-4 font-bold">รหัส</th><th class="py-3.5 px-4 font-bold">ชื่อ</th><th class="py-3.5 px-4 font-bold">ชั้น</th><th class="py-3.5 px-4 font-bold text-center">ลบ</th></tr></thead>
+                        <tbody id="todayTableBody" class="text-slate-600 text-sm font-bold divide-y divide-slate-50"></tbody>
                     </table></div></div>
                 </section>
 
                 <section id="students" class="tab-content">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
-                            <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">จัดการรายชื่อนักเรียน</h2>
-                            <p class="text-slate-500 font-medium">เพิ่ม/ลบรายชื่อนักเรียน และส่งออกฐานข้อมูลเป็น Excel</p>
+                            <h2 class="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">จัดการรายชื่อนักเรียน</h2>
+                            <p class="text-slate-500 text-[13px] font-medium">เพิ่ม/ลบรายชื่อนักเรียน และส่งออกฐานข้อมูลเป็น Excel</p>
                         </div>
-                        <button onclick="exportToExcel()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-500/20 transition-all flex items-center hover:-translate-y-1">
-                            <i class="fa-solid fa-file-excel mr-2 text-xl"></i> ดาวน์โหลด Excel
+                        <button onclick="exportToExcel()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-emerald-500/20 transition-all flex items-center hover:-translate-y-0.5">
+                            <i class="fa-solid fa-file-excel mr-1.5 text-lg"></i> ดาวน์โหลด Excel
                         </button>
                     </div>
 
-                    <div class="bg-white/60 backdrop-blur-md p-8 rounded-[2.5rem] border border-white shadow-sm mb-8 relative overflow-hidden">
+                    <div class="bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white shadow-sm mb-6 relative overflow-hidden">
                         <div class="absolute inset-0 bg-gradient-to-r from-emerald-50/50 to-transparent pointer-events-none"></div>
-                        <h3 class="text-emerald-700 font-black mb-5 text-lg relative z-10"><i class="fa-solid fa-user-plus mr-2"></i>เพิ่มนักเรียนใหม่เข้าสู่ระบบ</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
-                            <input type="text" id="addStId" placeholder="รหัสประจำตัว (เช่น 00123)" class="bg-white px-5 py-4 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 font-bold shadow-inner transition-all text-sm">
-                            <input type="text" id="addStName" placeholder="ชื่อ-นามสกุล" class="bg-white px-5 py-4 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 font-bold shadow-inner transition-all text-sm">
-                            <select id="addStGender" class="bg-white px-5 py-4 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 font-bold text-slate-600 cursor-pointer shadow-inner transition-all text-sm">
+                        <h3 class="text-emerald-700 font-black mb-4 text-base relative z-10"><i class="fa-solid fa-user-plus mr-1.5"></i>เพิ่มนักเรียนใหม่เข้าสู่ระบบ</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 relative z-10">
+                            <input type="text" id="addStId" placeholder="รหัสประจำตัว (เช่น 00123)" class="bg-white px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 font-bold shadow-inner transition-all text-[13px]">
+                            <input type="text" id="addStName" placeholder="ชื่อ-นามสกุล" class="bg-white px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 font-bold shadow-inner transition-all text-[13px]">
+                            <select id="addStGender" class="bg-white px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 font-bold text-slate-600 cursor-pointer shadow-inner transition-all text-[13px]">
                                 <option value="ชาย">ชาย</option>
                                 <option value="หญิง">หญิง</option>
                             </select>
                             <div class="flex gap-2">
-                                <input type="text" id="addStGrade" placeholder="ชั้น (เช่น ป.1/1)" class="w-full bg-white px-5 py-4 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 font-bold shadow-inner transition-all text-sm">
-                                <button onclick="addNewStudent()" class="bg-emerald-600 hover:bg-emerald-700 text-white w-14 rounded-xl flex items-center justify-center transition-colors shadow-md shadow-emerald-500/20 text-lg"><i class="fa-solid fa-plus"></i></button>
+                                <input type="text" id="addStGrade" placeholder="ชั้น (เช่น ป.1/1)" class="w-full bg-white px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 font-bold shadow-inner transition-all text-[13px]">
+                                <button onclick="addNewStudent()" class="bg-emerald-600 hover:bg-emerald-700 text-white w-12 rounded-xl flex items-center justify-center transition-colors shadow-sm shadow-emerald-500/20 text-base"><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-white overflow-hidden pb-4">
-                        <div class="overflow-x-auto p-3">
-                            <table class="w-full text-left border-collapse min-w-[600px]">
+                    <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-white overflow-hidden pb-4">
+                        <div class="overflow-x-auto p-2">
+                            <table class="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
-                                    <tr class="text-slate-400 text-[11px] uppercase tracking-wider border-b-2 border-slate-100">
-                                        <th class="py-5 px-6 font-bold text-center">ลำดับ</th>
-                                        <th class="py-5 px-6 font-bold">รหัส</th>
-                                        <th class="py-5 px-6 font-bold">ชื่อ-นามสกุล</th>
-                                        <th class="py-5 px-6 font-bold">เพศ</th>
-                                        <th class="py-5 px-6 font-bold">ชั้นเรียน</th>
-                                        <th class="py-5 px-6 font-bold text-center">ลบ</th>
+                                    <tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b-2 border-slate-100">
+                                        <th class="py-3.5 px-4 font-bold text-center">ลำดับ</th>
+                                        <th class="py-3.5 px-4 font-bold">รหัส</th>
+                                        <th class="py-3.5 px-4 font-bold">ชื่อ-นามสกุล</th>
+                                        <th class="py-3.5 px-4 font-bold">เพศ</th>
+                                        <th class="py-3.5 px-4 font-bold">ชั้นเรียน</th>
+                                        <th class="py-3.5 px-4 font-bold text-center">ลบ</th>
                                     </tr>
                                 </thead>
-                                <tbody id="studentManagerBody" class="text-slate-600 font-bold divide-y divide-slate-50"></tbody>
+                                <tbody id="studentManagerBody" class="text-slate-600 text-sm font-bold divide-y divide-slate-50"></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
                 <section id="history" class="tab-content">
-                    <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">ประวัติย้อนหลัง</h2><p class="text-slate-500 font-medium mb-8">ค้นหาและดูสถิติการเข้าเรียนในอดีต</p>
-                    <div class="bg-white/80 backdrop-blur-md p-6 rounded-[2rem] shadow-sm border border-white mb-8 flex flex-col md:flex-row items-center gap-4">
+                    <h2 class="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">ประวัติย้อนหลัง</h2><p class="text-slate-500 text-[13px] font-medium mb-6">ค้นหาและดูสถิติการเข้าเรียนในอดีต</p>
+                    <div class="bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-sm border border-white mb-6 flex flex-col md:flex-row items-center gap-4">
                         <div class="flex-1 w-full relative">
-                            <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">เลือกวันที่ต้องการดู:</label>
-                            <input type="date" id="historyDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-blue-400 font-bold text-slate-700 shadow-inner">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">เลือกวันที่ต้องการดู:</label>
+                            <input type="date" id="historyDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-blue-400 text-sm font-bold text-slate-700 shadow-inner">
                         </div>
-                        <button onclick="renderHistory()" class="w-full md:w-auto mt-6 md:mt-0 bg-slate-800 hover:bg-slate-900 text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-transform hover:-translate-y-1">ค้นหาประวัติ</button>
+                        <button onclick="renderHistory()" class="w-full md:w-auto mt-4 md:mt-0 bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-sm transition-transform hover:-translate-y-0.5">ค้นหาประวัติ</button>
                     </div>
-                    <div id="historyStats" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 hidden">
-                        <div class="bg-white/80 backdrop-blur-md p-6 rounded-[2.5rem] flex items-center justify-center shadow-sm border border-white"><div class="w-32 h-32"><canvas id="historyChart"></canvas></div></div>
+                    <div id="historyStats" class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 hidden">
+                        <div class="bg-white/80 backdrop-blur-md p-5 rounded-2xl flex items-center justify-center shadow-sm border border-white"><div class="w-24 h-24"><canvas id="historyChart"></canvas></div></div>
                         <div class="md:col-span-2 grid grid-cols-2 gap-4">
-                             <div class="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 flex flex-col items-center justify-center"><p class="text-emerald-600 font-bold text-sm mb-1">มาเรียน</p><p id="historyPresent" class="text-5xl font-black text-emerald-700">0</p></div>
-                             <div class="bg-rose-50 p-8 rounded-[2.5rem] border border-rose-100 flex flex-col items-center justify-center"><p class="text-rose-600 font-bold text-sm mb-1">ขาด/ป่วย</p><p id="historyAbsent" class="text-5xl font-black text-rose-700">0</p></div>
+                             <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex flex-col items-center justify-center"><p class="text-emerald-600 font-bold text-[11px] mb-1">มาเรียน</p><p id="historyPresent" class="text-4xl font-black text-emerald-700">0</p></div>
+                             <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 flex flex-col items-center justify-center"><p class="text-rose-600 font-bold text-[11px] mb-1">ขาด/ป่วย</p><p id="historyAbsent" class="text-4xl font-black text-rose-700">0</p></div>
                         </div>
                     </div>
-                    <div class="bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-sm border border-white overflow-hidden pb-4"><div class="overflow-x-auto p-3"><table class="w-full text-left border-collapse min-w-[600px]">
-                        <thead><tr class="text-slate-400 text-[11px] uppercase tracking-wider border-b-2 border-slate-100"><th class="py-5 px-6 font-bold">เวลา</th><th class="py-5 px-6 font-bold">รหัส</th><th class="py-5 px-6 font-bold">ชื่อ</th><th class="py-5 px-6 font-bold">ชั้น</th><th class="py-5 px-6 font-bold text-center">ลบ</th></tr></thead>
-                        <tbody id="historyTableBody" class="text-slate-600 font-bold divide-y divide-slate-50"></tbody>
+                    <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-sm border border-white overflow-hidden pb-4"><div class="overflow-x-auto p-2"><table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead><tr class="text-slate-400 text-[10px] uppercase tracking-wider border-b-2 border-slate-100"><th class="py-3.5 px-4 font-bold">เวลา</th><th class="py-3.5 px-4 font-bold">รหัส</th><th class="py-3.5 px-4 font-bold">ชื่อ</th><th class="py-3.5 px-4 font-bold">ชั้น</th><th class="py-3.5 px-4 font-bold text-center">ลบ</th></tr></thead>
+                        <tbody id="historyTableBody" class="text-slate-600 text-sm font-bold divide-y divide-slate-50"></tbody>
                     </table></div></div>
                 </section>
 
                 <section id="random" class="tab-content">
-                    <div class="text-center mb-10"><h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-500 mb-3 tracking-tight">สุ่มผู้โชคดีประจำวัน</h2><p class="text-slate-500 text-lg font-medium">สุ่มเลือกจากนักเรียนที่ "มาเรียน" ในวันนี้</p></div>
-                    <div class="max-w-2xl mx-auto text-center">
-                        <div class="bg-white/90 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_50px_rgba(249,115,22,0.15)] border border-white p-12 relative overflow-hidden">
+                    <div class="text-center mb-8"><h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-500 mb-2 tracking-tight">สุ่มผู้โชคดีประจำวัน</h2><p class="text-slate-500 text-base font-medium">สุ่มเลือกจากนักเรียนที่ "มาเรียน" ในวันนี้</p></div>
+                    <div class="max-w-xl mx-auto text-center">
+                        <div class="bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-[0_15px_35px_rgba(249,115,22,0.1)] border border-white p-10 relative overflow-hidden">
                             <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-rose-50/50 pointer-events-none"></div>
-                            <div id="randomResult" class="min-h-[200px] flex flex-col items-center justify-center relative z-10">
-                                <div id="randomIcon" class="w-44 h-44 mx-auto bg-white rounded-full flex items-center justify-center text-orange-400 text-6xl mb-8 shadow-xl border-4 border-orange-50 transition-all"><i class="fa-solid fa-gift"></i></div>
-                                <h3 id="randomName" class="text-4xl font-black text-slate-800 mb-4 drop-shadow-sm">กดปุ่มเพื่อเริ่ม!</h3>
-                                <p id="randomId" class="text-xl text-rose-500 font-bold h-8"></p>
+                            <div id="randomResult" class="min-h-[160px] flex flex-col items-center justify-center relative z-10">
+                                <div id="randomIcon" class="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center text-orange-400 text-5xl mb-6 shadow-lg border-4 border-orange-50 transition-all"><i class="fa-solid fa-gift"></i></div>
+                                <h3 id="randomName" class="text-3xl font-black text-slate-800 mb-3 drop-shadow-sm">กดปุ่มเพื่อเริ่ม!</h3>
+                                <p id="randomId" class="text-lg text-rose-500 font-bold h-7"></p>
                             </div>
-                            <button id="randomBtn" onclick="startRandomizer()" class="mt-8 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-black text-xl py-5 px-14 rounded-full shadow-lg shadow-orange-500/30 transition-transform hover:scale-105 relative z-10"><i class="fa-solid fa-dice mr-3"></i> เริ่มสุ่มเลย</button>
+                            <button id="randomBtn" onclick="startRandomizer()" class="mt-6 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-black text-lg py-4 px-10 rounded-full shadow-md shadow-orange-500/20 transition-transform hover:scale-105 relative z-10"><i class="fa-solid fa-dice mr-2"></i> เริ่มสุ่มเลย</button>
                         </div>
                     </div>
                 </section>
 
                 <section id="export" class="tab-content">
-                    <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">พิมพ์แบบบันทึกการมาเรียน (PDF)</h2>
-                    <p class="text-slate-500 font-medium mb-8">เลือกรูปแบบที่ต้องการส่งออก และระบบจะสร้างไฟล์ PDF ให้ทันที</p>
+                    <h2 class="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">พิมพ์แบบบันทึกการมาเรียน (PDF)</h2>
+                    <p class="text-slate-500 text-[13px] font-medium mb-6">เลือกรูปแบบที่ต้องการส่งออก และระบบจะสร้างไฟล์ PDF ให้ทันที</p>
                     
-                    <div class="bg-white/90 backdrop-blur-xl p-8 md:p-12 rounded-[3rem] shadow-[0_10px_40px_rgba(0,0,0,0.05)] border border-white max-w-4xl mx-auto">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+                    <div class="bg-white/90 backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-sm border border-white max-w-3xl mx-auto">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
                             <label class="cursor-pointer">
                                 <input type="radio" name="pdfMode" value="daily" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()" checked>
-                                <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-md">
-                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-calendar-day text-xl"></i></div>
-                                    <p class="font-bold text-sm">รายวัน</p>
+                                <div class="bg-white border-2 border-slate-100 rounded-xl p-4 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-sm">
+                                    <div class="icon-box w-10 h-10 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-2 transition-colors"><i class="fa-solid fa-calendar-day text-base"></i></div>
+                                    <p class="font-bold text-[11px]">รายวัน</p>
                                 </div>
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="pdfMode" value="range" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()">
-                                <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-md">
-                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-calendar-week text-xl"></i></div>
-                                    <p class="font-bold text-sm">ช่วงเวลา</p>
+                                <div class="bg-white border-2 border-slate-100 rounded-xl p-4 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-sm">
+                                    <div class="icon-box w-10 h-10 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-2 transition-colors"><i class="fa-solid fa-calendar-week text-base"></i></div>
+                                    <p class="font-bold text-[11px]">ช่วงเวลา</p>
                                 </div>
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="pdfMode" value="monthly" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()">
-                                <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-md">
-                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-calendar-days text-xl"></i></div>
-                                    <p class="font-bold text-sm">รายเดือน</p>
+                                <div class="bg-white border-2 border-slate-100 rounded-xl p-4 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-sm">
+                                    <div class="icon-box w-10 h-10 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-2 transition-colors"><i class="fa-solid fa-calendar-days text-base"></i></div>
+                                    <p class="font-bold text-[11px]">รายเดือน</p>
                                 </div>
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="pdfMode" value="yearly" class="peer sr-only pdf-mode-radio" onchange="togglePDFOptions()">
-                                <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-md">
-                                    <div class="icon-box w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-3 transition-colors"><i class="fa-solid fa-layer-group text-xl"></i></div>
-                                    <p class="font-bold text-sm">รายปี</p>
+                                <div class="bg-white border-2 border-slate-100 rounded-xl p-4 text-center transition-all hover:bg-slate-50 shadow-sm peer-checked:shadow-sm">
+                                    <div class="icon-box w-10 h-10 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-2 transition-colors"><i class="fa-solid fa-layer-group text-base"></i></div>
+                                    <p class="font-bold text-[11px]">รายปี</p>
                                 </div>
                             </label>
                         </div>
 
-                        <div id="pdfOptDaily" class="mb-10 p-8 bg-slate-50/80 rounded-[2rem] border border-slate-100">
-                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">เลือกวันที่ต้องการ</label>
-                            <input type="date" id="expDate" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-bold shadow-inner transition-all">
+                        <div id="pdfOptDaily" class="mb-8 p-6 bg-slate-50/80 rounded-xl border border-slate-100">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wider">เลือกวันที่ต้องการ</label>
+                            <input type="date" id="expDate" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 text-sm font-bold shadow-inner transition-all">
                         </div>
 
-                        <div id="pdfOptRange" class="mb-10 p-8 bg-slate-50/80 rounded-[2rem] border border-slate-100 hidden">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">ตั้งแต่วันที่</label><input type="date" id="expStart" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-bold shadow-inner transition-all"></div>
-                                <div><label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">ถึงวันที่</label><input type="date" id="expEnd" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-bold shadow-inner transition-all"></div>
+                        <div id="pdfOptRange" class="mb-8 p-6 bg-slate-50/80 rounded-xl border border-slate-100 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div><label class="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wider">ตั้งแต่วันที่</label><input type="date" id="expStart" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 text-sm font-bold shadow-inner transition-all"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wider">ถึงวันที่</label><input type="date" id="expEnd" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 text-sm font-bold shadow-inner transition-all"></div>
                             </div>
                         </div>
 
-                        <div id="pdfOptMonthly" class="mb-10 p-8 bg-slate-50/80 rounded-[2rem] border border-slate-100 hidden">
-                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">เลือกเดือน</label>
-                            <input type="month" id="expMonth" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-bold text-lg shadow-inner transition-all cursor-pointer">
+                        <div id="pdfOptMonthly" class="mb-8 p-6 bg-slate-50/80 rounded-xl border border-slate-100 hidden">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wider">เลือกเดือน</label>
+                            <input type="month" id="expMonth" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 text-sm font-bold shadow-inner transition-all cursor-pointer">
                         </div>
 
-                        <div id="pdfOptYearly" class="mb-10 p-8 bg-slate-50/80 rounded-[2rem] border border-slate-100 hidden">
-                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">เลือกปีการศึกษา (ค.ศ.)</label>
-                            <select id="expYear" class="w-full bg-white border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-500/10 font-bold text-lg cursor-pointer shadow-inner transition-all"></select>
+                        <div id="pdfOptYearly" class="mb-8 p-6 bg-slate-50/80 rounded-xl border border-slate-100 hidden">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wider">เลือกปีการศึกษา (ค.ศ.)</label>
+                            <select id="expYear" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/10 text-sm font-bold cursor-pointer shadow-inner transition-all"></select>
                         </div>
 
-                        <button onclick="generateMasterPDF()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold text-xl py-5 rounded-2xl shadow-lg shadow-rose-500/30 transition-transform hover:-translate-y-1 flex items-center justify-center gap-3">
-                            <i class="fa-solid fa-file-pdf text-2xl drop-shadow-sm"></i> สร้างเอกสารและดาวน์โหลด
+                        <button onclick="generateMasterPDF()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold text-base py-3.5 rounded-xl shadow-md shadow-rose-500/20 transition-transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-lg drop-shadow-sm"></i> สร้างเอกสารและดาวน์โหลด
                         </button>
                     </div>
                 </section>
 
                 <section id="academicReport" class="tab-content">
                     
-                    <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] border border-white mb-8 no-print">
-                        <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+                    <div class="bg-white/90 backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-sm border border-white mb-6 no-print">
+                        <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
                             <div>
-                                <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">
+                                <h2 class="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">
                                     <i class="fa-solid fa-graduation-cap text-purple-500 mr-2"></i>
                                     ส่งออกรายงาน-วิชาการ
                                 </h2>
-                                <p class="text-slate-500 font-medium">รายงานสรุปการเข้าเรียน — แสดงเฉพาะ <span class="font-bold text-rose-500">รายชื่อนักเรียนที่ขาดเรียน</span> เพื่อส่งให้ฝ่ายวิชาการ</p>
+                                <p class="text-slate-500 text-[13px] font-medium">รายงานสรุปการเข้าเรียน — แสดงเฉพาะ <span class="font-bold text-rose-500">รายชื่อนักเรียนที่ขาดเรียน</span> เพื่อส่งให้ฝ่ายวิชาการ</p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
-                            <div class="md:col-span-4">
-                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">เลือกวันที่</label>
-                                <input type="date" id="acaReportDate" onchange="renderAcademicReport()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:border-purple-400 focus:bg-white focus:ring-4 focus:ring-purple-500/10 font-bold text-slate-700 shadow-inner transition-all">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                            <div class="md:col-span-5">
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">เลือกวันที่</label>
+                                <input type="date" id="acaReportDate" onchange="renderAcademicReport()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:border-purple-400 focus:bg-white focus:ring-2 focus:ring-purple-500/10 text-sm font-bold text-slate-700 shadow-inner transition-all">
                             </div>
 
                             <div class="md:col-span-4">
-                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">รูปแบบกระดาษ A4</label>
-                                <div class="flex bg-slate-100 p-1.5 rounded-xl">
-                                    <button onclick="setAcaOrientation('portrait')" id="acaOriPortrait" class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-slate-800">
-                                        <i class="fa-solid fa-file-lines mr-2"></i> แนวตั้ง
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">รูปแบบกระดาษ A4</label>
+                                <div class="flex bg-slate-100 p-1 rounded-lg">
+                                    <button onclick="setAcaOrientation('portrait')" id="acaOriPortrait" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all bg-white shadow-sm text-slate-800">
+                                        <i class="fa-solid fa-file-lines mr-1.5"></i> แนวตั้ง
                                     </button>
-                                    <button onclick="setAcaOrientation('landscape')" id="acaOriLandscape" class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-slate-500 hover:text-slate-700">
-                                        <i class="fa-solid fa-file-image mr-2"></i> แนวนอน
+                                    <button onclick="setAcaOrientation('landscape')" id="acaOriLandscape" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-700">
+                                        <i class="fa-solid fa-file-image mr-1.5"></i> แนวนอน
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="md:col-span-4 flex gap-3">
-                                <button onclick="renderAcademicReport()" class="flex-1 bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 px-6 py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-arrows-rotate text-purple-500"></i> โหลดข้อมูล
-                                </button>
-                                <button onclick="printAcademicReport()" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-print"></i> พิมพ์ / Save PDF
+                            <div class="md:col-span-3 flex gap-2">
+                                <button onclick="renderAcademicReport()" class="flex-1 bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-arrows-rotate text-purple-500"></i> โหลด
                                 </button>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <div class="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-2xl shadow-md text-white relative overflow-hidden">
-                                <div class="absolute -right-4 -top-4 opacity-10 text-6xl"><i class="fa-solid fa-users"></i></div>
-                                <p class="text-slate-300 text-xs font-bold uppercase tracking-wider mb-1">นักเรียนทั้งหมด</p>
-                                <p id="acaTotal" class="text-4xl font-black">0</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
+                            <div class="bg-gradient-to-br from-slate-700 to-slate-800 p-4 rounded-xl shadow-sm text-white relative overflow-hidden">
+                                <div class="absolute -right-2 -top-2 opacity-10 text-5xl"><i class="fa-solid fa-users"></i></div>
+                                <p class="text-slate-300 text-[10px] font-bold uppercase tracking-wider mb-0.5">นักเรียนทั้งหมด</p>
+                                <p id="acaTotal" class="text-3xl font-black">0</p>
                             </div>
-                            <div class="bg-gradient-to-br from-emerald-400 to-emerald-600 p-6 rounded-2xl shadow-md text-white relative overflow-hidden">
-                                <div class="absolute -right-4 -top-4 opacity-10 text-6xl"><i class="fa-solid fa-check-double"></i></div>
-                                <p class="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-1">มาเรียน</p>
-                                <p id="acaPresent" class="text-4xl font-black">0</p>
+                            <div class="bg-gradient-to-br from-emerald-400 to-emerald-600 p-4 rounded-xl shadow-sm text-white relative overflow-hidden">
+                                <div class="absolute -right-2 -top-2 opacity-10 text-5xl"><i class="fa-solid fa-check-double"></i></div>
+                                <p class="text-emerald-100 text-[10px] font-bold uppercase tracking-wider mb-0.5">มาเรียน</p>
+                                <p id="acaPresent" class="text-3xl font-black">0</p>
                             </div>
-                            <div class="bg-gradient-to-br from-rose-500 to-rose-600 p-6 rounded-2xl shadow-md text-white relative overflow-hidden">
-                                <div class="absolute -right-4 -top-4 opacity-10 text-6xl"><i class="fa-solid fa-user-xmark"></i></div>
-                                <p class="text-rose-100 text-xs font-bold uppercase tracking-wider mb-1">ขาด / ลา / ไม่มาเรียน</p>
-                                <p id="acaAbsent" class="text-4xl font-black">0</p>
+                            <div class="bg-gradient-to-br from-rose-500 to-rose-600 p-4 rounded-xl shadow-sm text-white relative overflow-hidden">
+                                <div class="absolute -right-2 -top-2 opacity-10 text-5xl"><i class="fa-solid fa-user-xmark"></i></div>
+                                <p class="text-rose-100 text-[10px] font-bold uppercase tracking-wider mb-0.5">ขาด / ลา / ไม่มาเรียน</p>
+                                <p id="acaAbsent" class="text-3xl font-black">0</p>
                             </div>
                         </div>
 
-                        <div class="md:col-span-12 flex flex-wrap md:flex-nowrap gap-3 mt-6 border-t border-slate-100 pt-6">
-                            <button onclick="renderAcademicReport()" class="w-full md:w-auto bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 px-8 py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-arrows-rotate text-purple-500"></i> โหลดข้อมูล
-                            </button>
+                        <div class="md:col-span-12 flex flex-wrap md:flex-nowrap gap-2.5 mt-5 border-t border-slate-100 pt-5">
                             <div class="flex-1 flex gap-2 justify-end">
-                                <button onclick="printAcademicReport()" class="flex-1 md:flex-none bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-print"></i> พิมพ์เอกสาร
-                                </button>
-                                <button onclick="downloadAcademicReportImage()" class="flex-1 md:flex-none bg-white border-2 border-blue-200 hover:border-blue-400 text-blue-600 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+                                <button onclick="downloadAcademicReportImage()" class="flex-1 md:flex-none bg-white border border-blue-200 hover:border-blue-400 text-blue-600 px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-image"></i> โหลดรูปภาพ
                                 </button>
-                                <button onclick="downloadAcademicReportPDF()" class="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                <button onclick="downloadAcademicReportPDF()" class="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md shadow-purple-500/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-file-pdf"></i> โหลด PDF
                                 </button>
                             </div>
@@ -624,47 +635,47 @@
 
                     <div id="academic-printable" class="paper-preview print-zone paper-portrait">
                         
-                        <div class="border-b-4 border-[#1e293b] pb-6 mb-6 flex flex-col items-center">
-                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-2 border-slate-100 mb-4 overflow-hidden shadow-sm p-1">
-                                <img src="school logo.webp" class="w-full h-full object-cover rounded-full" alt="โลโก้โรงเรียน" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;fa-solid fa-school text-4xl text-slate-700&quot;></i>'">
+                        <div class="border-b-2 border-[#1e293b] pb-4 mb-5 flex flex-col items-center">
+                            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center border border-slate-100 mb-3 overflow-hidden p-0.5">
+                                <img src="school logo.webp" class="w-full h-full object-cover rounded-full" alt="โลโก้โรงเรียน" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;fa-solid fa-school text-3xl text-slate-700&quot;></i>'">
                             </div>
-                            <h1 class="text-3xl font-extrabold text-[#1e293b] mb-1 tracking-wide text-center">รายงานสรุปการเข้าเรียนรายวัน (วิชาการ)</h1>
-                            <h2 class="text-base font-bold text-slate-500 tracking-widest uppercase text-center">Daily Absence Report — Academic Affairs</h2>
+                            <h1 class="text-2xl font-extrabold text-[#1e293b] mb-0.5 tracking-wide text-center">รายงานสรุปการเข้าเรียนรายวัน (วิชาการ)</h1>
+                            <h2 class="text-sm font-bold text-slate-500 tracking-widest uppercase text-center">Daily Absence Report — Academic Affairs</h2>
 
-                            <div class="flex w-full justify-between items-end mt-8 text-sm flex-wrap gap-4">
-                                <div class="text-left text-slate-700 font-medium">
+                            <div class="flex w-full justify-between items-end mt-6 text-[13px] flex-wrap gap-2">
+                                <div class="text-left text-slate-700 font-medium leading-relaxed">
                                     <p><span class="font-bold">หน่วยงาน:</span> โรงเรียนป่าก้าง</p>
                                     <p><span class="font-bold">ข้อมูลระดับชั้น:</span> <span id="acaReportClass">-</span></p>
                                     <p><span class="font-bold">วันที่ของรายงาน:</span> <span id="acaReportDateLabel">-</span></p>
                                 </div>
-                                <div class="text-right text-slate-600">
+                                <div class="text-right text-slate-600 leading-relaxed">
                                     <p>พิมพ์เมื่อ: <span id="acaReportPrintedAt">-</span></p>
                                     <p>ออกรายงานโดย: <span id="acaReportTeacher">-</span></p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-4 mb-6">
-                            <div class="border border-slate-200 rounded-xl p-4 text-center bg-slate-50">
-                                <p class="text-xs text-slate-500 font-bold mb-1">นักเรียนทั้งหมด</p>
-                                <p id="acaPrintTotal" class="text-3xl font-black text-slate-800">0</p>
+                        <div class="grid grid-cols-3 gap-3 mb-5">
+                            <div class="border border-slate-200 rounded-lg p-3 text-center bg-slate-50">
+                                <p class="text-[11px] text-slate-500 font-bold mb-0.5">นักเรียนทั้งหมด</p>
+                                <p id="acaPrintTotal" class="text-2xl font-black text-slate-800">0</p>
                             </div>
-                            <div class="border border-emerald-200 rounded-xl p-4 text-center bg-emerald-50">
-                                <p class="text-xs text-emerald-600 font-bold mb-1">มาเรียน</p>
-                                <p id="acaPrintPresent" class="text-3xl font-black text-emerald-700">0</p>
+                            <div class="border border-emerald-200 rounded-lg p-3 text-center bg-emerald-50">
+                                <p class="text-[11px] text-emerald-600 font-bold mb-0.5">มาเรียน</p>
+                                <p id="acaPrintPresent" class="text-2xl font-black text-emerald-700">0</p>
                             </div>
-                            <div class="border border-rose-200 rounded-xl p-4 text-center bg-rose-50">
-                                <p class="text-xs text-rose-600 font-bold mb-1">ขาด / ลา / ไม่มา</p>
-                                <p id="acaPrintAbsent" class="text-3xl font-black text-rose-700">0</p>
+                            <div class="border border-rose-200 rounded-lg p-3 text-center bg-rose-50">
+                                <p class="text-[11px] text-rose-600 font-bold mb-0.5">ขาด / ลา / ไม่มา</p>
+                                <p id="acaPrintAbsent" class="text-2xl font-black text-rose-700">0</p>
                             </div>
                         </div>
 
                         <div>
-                            <h3 class="text-lg font-bold text-[#1e293b] mb-2 flex items-center gap-2">
+                            <h3 class="text-base font-bold text-[#1e293b] mb-1.5 flex items-center gap-2">
                                 <i class="fa-solid fa-user-xmark text-rose-500"></i>
                                 รายชื่อนักเรียนที่ <span class="text-rose-600">ขาด / ลา / ไม่มาเรียน</span>
                             </h3>
-                            <p class="text-xs text-slate-500 font-medium mb-3">หมายเหตุ: รายการด้านล่างคือรายชื่อนักเรียนที่ยังไม่ได้รับการบันทึกการมาเรียนในระบบในวันดังกล่าว</p>
+                            <p class="text-[11px] text-slate-500 font-medium mb-2.5">หมายเหตุ: รายการด้านล่างคือรายชื่อนักเรียนที่ยังไม่ได้รับการบันทึกการมาเรียนในระบบในวันดังกล่าว</p>
 
                             <table class="report-table">
                                 <thead>
@@ -677,23 +688,23 @@
                                     </tr>
                                 </thead>
                                 <tbody id="acaReportTableBody" class="data-body">
-                                    <tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium">กำลังประมวลผลข้อมูล...</td></tr>
+                                    <tr><td colspan="5" class="text-center py-10 text-slate-400 text-sm font-medium">กำลังประมวลผลข้อมูล...</td></tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-12 mt-16 px-4">
+                        <div class="grid grid-cols-2 gap-8 mt-12 px-2">
                             <div class="text-center">
-                                <p class="text-slate-400 mb-1 text-sm">ลงชื่อ ครูประจำชั้น / ผู้จัดทำรายงาน</p>
-                                <p class="mb-2 text-slate-500">..............................................................</p>
-                                <p class="font-bold text-slate-800">( <span id="acaTeacherSign">-</span> )</p>
-                                <p class="text-xs text-slate-500 mt-1">วันที่ ........ / ........ / ............</p>
+                                <p class="text-slate-400 mb-1 text-[13px]">ลงชื่อ ครูประจำชั้น / ผู้จัดทำรายงาน</p>
+                                <p class="mb-1.5 text-slate-500">..............................................................</p>
+                                <p class="font-bold text-slate-800 text-[13px]">( <span id="acaTeacherSign">-</span> )</p>
+                                <p class="text-[11px] text-slate-500 mt-1">วันที่ ........ / ........ / ............</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-slate-400 mb-1 text-sm">ลงชื่อ ฝ่ายวิชาการ / ผู้ตรวจสอบ</p>
-                                <p class="mb-2 text-slate-500">..............................................................</p>
-                                <p class="font-bold text-slate-800">( ............................................................ )</p>
-                                <p class="text-xs text-slate-500 mt-1">วันที่ ........ / ........ / ............</p>
+                                <p class="text-slate-400 mb-1 text-[13px]">ลงชื่อ ฝ่ายวิชาการ / ผู้ตรวจสอบ</p>
+                                <p class="mb-1.5 text-slate-500">..............................................................</p>
+                                <p class="font-bold text-slate-800 text-[13px]">( ............................................................ )</p>
+                                <p class="text-[11px] text-slate-500 mt-1">วันที่ ........ / ........ / ............</p>
                             </div>
                         </div>
                     </div>
@@ -705,29 +716,29 @@
 
     <div id="pwdModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity">
         <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all relative" id="pwdModalCard">
-            <button onclick="closePwdModal()" class="absolute top-5 right-5 text-slate-300 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+            <button onclick="closePwdModal()" class="absolute top-4 right-4 text-slate-300 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="text-2xl font-black text-center mb-6">เปลี่ยนรหัสผ่าน</h3>
-            <div class="space-y-4">
-                <input type="password" id="oldPwd" placeholder="รหัสผ่านเดิม" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400">
-                <input type="password" id="newPwd" placeholder="รหัสใหม่ (4-6 ตัว)" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400" maxlength="6">
-                <input type="password" id="confirmNewPwd" placeholder="ยืนยันรหัสใหม่" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400" maxlength="6">
+            <h3 class="text-2xl font-black text-center mb-5">เปลี่ยนรหัสผ่าน</h3>
+            <div class="space-y-3">
+                <input type="password" id="oldPwd" placeholder="รหัสผ่านเดิม" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400 text-sm">
+                <input type="password" id="newPwd" placeholder="รหัสใหม่ (4-6 ตัว)" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400 text-sm" maxlength="6">
+                <input type="password" id="confirmNewPwd" placeholder="ยืนยันรหัสใหม่" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-blue-400 text-sm" maxlength="6">
             </div>
 
-            <div class="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-left">
-                <p class="text-[11px] text-amber-800 font-medium leading-relaxed">
+            <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-left">
+                <p class="text-[10px] text-amber-800 font-medium leading-relaxed">
                     <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i> 
                     <span class="font-bold">คำแนะนำ:</span> กรุณาตั้งรหัสผ่านความยาว 4-6 ตัวอักษรหรือตัวเลข<br><br>
                     <span class="font-bold text-rose-600">ข้อควรระวัง:</span> รหัสผ่านนี้ผู้ดูแลระบบสามารถมองเห็นได้เพื่อใช้ในการจัดการฐานข้อมูลหลังบ้าน <b>โปรดหลีกเลี่ยงการใช้รหัสผ่านที่เกี่ยวข้องกับการทำธุรกรรมทางการเงิน หรือข้อมูลความลับส่วนตัวอื่นๆ</b>
                 </p>
             </div>
 
-            <button id="btnSavePwd" onclick="savePassword()" class="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-xl shadow-md">บันทึก</button>
+            <button id="btnSavePwd" onclick="savePassword()" class="w-full mt-5 py-3.5 bg-blue-600 hover:bg-blue-700 transition-colors text-white text-sm font-bold rounded-xl shadow-md">บันทึก</button>
         </div>
     </div>
     
-    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity"><div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all text-center" id="deleteModalCard"><div class="w-20 h-20 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-trash-can text-3xl"></i></div><h3 class="text-2xl font-black mb-6 text-slate-800">ยืนยันลบประวัติ?</h3><input type="password" id="deletePassword" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold mb-6 outline-none focus:border-rose-400" placeholder="รหัสผ่านของคุณ"><div class="flex gap-4"><button onclick="closeDeleteModal()" class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors font-bold rounded-xl">ยกเลิก</button><button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 py-4 bg-rose-500 hover:bg-rose-600 transition-colors text-white font-bold rounded-xl shadow-md shadow-rose-500/20">ยืนยันลบ</button></div></div></div>
+    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity"><div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all text-center" id="deleteModalCard"><div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-5"><i class="fa-solid fa-trash-can text-2xl"></i></div><h3 class="text-xl font-black mb-4 text-slate-800">ยืนยันลบประวัติ?</h3><input type="password" id="deletePassword" class="w-full bg-slate-50 px-4 py-3 border border-slate-200 rounded-xl text-center font-bold mb-5 outline-none focus:border-rose-400 text-sm" placeholder="รหัสผ่านของคุณ"><div class="flex gap-3"><button onclick="closeDeleteModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm transition-colors font-bold rounded-xl">ยกเลิก</button><button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 py-3 bg-rose-500 hover:bg-rose-600 transition-colors text-white text-sm font-bold rounded-xl shadow-md shadow-rose-500/20">ยืนยันลบ</button></div></div></div>
 
     <script>
         // 🔴 วาง URL Web App ของคุณตรงนี้ 🔴
@@ -743,6 +754,11 @@
         let offlineQueue = {}; 
         let randomInterval;
 
+        // Toggle Sidebar Function
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-closed');
+        }
+
         // ==========================================
         // ฟังก์ชันกลับหน้าศูนย์รวม + Popup ความปลอดภัย
         // ==========================================
@@ -751,13 +767,13 @@
             overlay.className = 'fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[10000] flex items-center justify-center transition-opacity duration-300';
             overlay.innerHTML = `
                 <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 text-center" style="animation: slideUpFade 0.4s ease-out forwards;">
-                    <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500 shadow-inner">
-                        <i class="fa-solid fa-shield-halved text-4xl"></i>
+                    <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-5 text-rose-500 shadow-inner">
+                        <i class="fa-solid fa-shield-halved text-3xl"></i>
                     </div>
-                    <h2 class="text-xl font-black text-slate-800 mb-2 tracking-tight">ออกจากระบบทันที</h2>
-                    <p class="text-slate-500 font-medium text-sm">ระบบกำลังบันทึกและออกจากระบบทันที<br>เนื่องด้วยความปลอดภัย</p>
-                    <div class="mt-6 flex justify-center">
-                        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-rose-400"></i>
+                    <h2 class="text-xl font-black text-slate-800 mb-1.5 tracking-tight">ออกจากระบบทันที</h2>
+                    <p class="text-slate-500 font-medium text-[13px]">ระบบกำลังบันทึกและออกจากระบบทันที<br>เนื่องด้วยความปลอดภัย</p>
+                    <div class="mt-5 flex justify-center">
+                        <i class="fa-solid fa-circle-notch fa-spin text-2xl text-rose-400"></i>
                     </div>
                 </div>
             `;
@@ -855,9 +871,9 @@
         // ==========================================
         function showToast(type, message) {
             const container = document.getElementById('toastContainer'); const toast = document.createElement('div');
-            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500 text-2xl"></i>' : '<i class="fa-solid fa-circle-exclamation text-rose-500 text-2xl"></i>';
-            toast.className = `bg-white/95 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 toast-enter`;
-            toast.innerHTML = `${icon} <span class="font-bold text-slate-700 text-sm">${message}</span>`;
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>' : '<i class="fa-solid fa-circle-exclamation text-rose-500 text-xl"></i>';
+            toast.className = `bg-white/95 backdrop-blur-md px-5 py-3 rounded-xl shadow-[0_5px_20px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center gap-3 toast-enter`;
+            toast.innerHTML = `${icon} <span class="font-bold text-slate-700 text-[13px]">${message}</span>`;
             container.appendChild(toast); setTimeout(() => { toast.classList.replace('toast-enter', 'toast-leave'); setTimeout(() => toast.remove(), 400); }, 3000);
         }
         function getLocalYYYYMMDD(dateObj) { const d = new Date(dateObj); if(isNaN(d)) return ""; return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
@@ -872,20 +888,20 @@
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => {
-                b.className = b.textContent.includes('รายงาน-วิชาการ') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-purple-500 hover:bg-purple-50 hover:text-purple-600 rounded-2xl transition-all font-bold"
-                : b.textContent.includes('สุ่ม') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-2xl transition-all font-bold"
-                : b.textContent.includes('จัดการรายชื่อ') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-2xl transition-all font-bold mt-3"
-                : b.textContent.includes('ส่งออก') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-2xl transition-all font-bold mt-3"
-                : b.textContent.includes('รายวัน') ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-all font-bold mt-3"
-                : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all font-bold";
+                b.className = b.textContent.includes('รายงาน-วิชาการ') ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-purple-500 hover:bg-purple-50 hover:text-purple-600 rounded-xl transition-all font-bold text-[13px]"
+                : b.textContent.includes('สุ่ม') ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-orange-500 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all font-bold text-[13px]"
+                : b.textContent.includes('จัดการรายชื่อ') ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all font-bold text-[13px] mt-2"
+                : b.textContent.includes('ส่งออก') ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all font-bold text-[13px] mt-2"
+                : b.textContent.includes('รายวัน') ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all font-bold text-[13px] mt-2"
+                : "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-xl transition-all font-bold text-[13px]";
             });
-            btnElement.className = tabId === 'students' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-emerald-600 text-white rounded-2xl transition-all shadow-md shadow-emerald-500/20 font-bold mt-3"
-            : tabId === 'search' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-indigo-600 text-white rounded-2xl transition-all shadow-md shadow-indigo-500/20 font-bold mt-3"
-            : tabId === 'checkin' ? "nav-btn w-full flex items-center space-x-4 px-5 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl transition-all shadow-md shadow-blue-500/20 font-bold"
-            : tabId === 'random' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-orange-100 text-orange-600 rounded-2xl transition-all font-bold shadow-sm"
-            : tabId === 'export' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-rose-600 text-white rounded-2xl transition-all shadow-md shadow-rose-500/20 font-bold mt-3"
-            : tabId === 'academicReport' ? "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-2xl transition-all shadow-md shadow-purple-500/20 font-bold"
-            : "nav-btn w-full flex items-center space-x-4 px-5 py-3.5 bg-slate-800 text-white rounded-2xl transition-all shadow-md shadow-slate-500/20 font-bold";
+            btnElement.className = tabId === 'students' ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-emerald-600 text-white rounded-xl transition-all shadow-sm shadow-emerald-500/20 font-bold text-[13px] mt-2"
+            : tabId === 'search' ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-indigo-600 text-white rounded-xl transition-all shadow-sm shadow-indigo-500/20 font-bold text-[13px] mt-2"
+            : tabId === 'checkin' ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl transition-all shadow-sm font-bold text-[13px]"
+            : tabId === 'random' ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-orange-100 text-orange-600 rounded-xl transition-all font-bold shadow-sm text-[13px]"
+            : tabId === 'export' ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-rose-600 text-white rounded-xl transition-all shadow-sm shadow-rose-500/20 font-bold text-[13px] mt-2"
+            : tabId === 'academicReport' ? "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-xl transition-all shadow-sm shadow-purple-500/20 font-bold text-[13px]"
+            : "nav-btn center-on-collapse w-full flex items-center space-x-3 px-4 py-3 bg-slate-800 text-white rounded-xl transition-all shadow-sm font-bold text-[13px]";
 
             if(['verify','students','history','export','academicReport'].includes(tabId)) loadRecords();
             if(tabId === 'search') renderDailyOverview();
@@ -921,8 +937,8 @@
                 let foundStudent = globalStudents.find(s => s.id === sid);
                 if (foundStudent) {
                     if (activeGradeContext !== 'All' && !foundStudent.grade.startsWith(activeGradeContext)) { showToast('error', `รับผิดชอบเฉพาะชั้น ${activeGradeContext}`); this.value = ''; return; }
-                    document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
-                    document.getElementById('statusBadge').className = "inline-flex items-center px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 text-sm font-bold rounded-full mb-4 shadow-sm";
+                    document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังบันทึก...';
+                    document.getElementById('statusBadge').className = "inline-flex items-center px-3 py-1 bg-blue-50 text-blue-600 border border-blue-200 text-[13px] font-bold rounded-full mb-3 shadow-sm";
                     document.getElementById('studentPhotoCard').src = `https://ui-avatars.com/api/?name=${foundStudent.name}&background=f8fafc&color=333`;
                     document.getElementById('studentName').textContent = foundStudent.name; document.getElementById('studentIdDisplay').textContent = sid;
                     document.getElementById('studentGrade').textContent = foundStudent.grade; document.getElementById('studentTime').textContent = new Date().toLocaleTimeString('th-TH');
@@ -933,8 +949,8 @@
                 .then(r => r.json()).then(data => {
                     statusEl.innerHTML = '<i class="fa-solid fa-keyboard mr-2"></i> ระบบพร้อมใช้งาน';
                     if (data.status === 'success') {
-                        document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> เข้าเรียนสำเร็จ';
-                        document.getElementById('statusBadge').className = "inline-flex items-center px-4 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 text-sm font-bold rounded-full mb-4 shadow-sm";
+                        document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-check-circle mr-1.5"></i> เข้าเรียนสำเร็จ';
+                        document.getElementById('statusBadge').className = "inline-flex items-center px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 text-[13px] font-bold rounded-full mb-3 shadow-sm";
                         card.classList.replace('border-blue-500', 'border-emerald-500');
                         if(!foundStudent) {
                             document.getElementById('studentName').textContent = data.name; document.getElementById('studentIdDisplay').textContent = sid;
@@ -943,8 +959,8 @@
                         }
                         showToast('success', `บันทึกเวลา ${data.name}`); loadRecords(true); 
                     } else if (data.status === 'duplicate') {
-                        document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> สแกนซ้ำ';
-                        document.getElementById('statusBadge').className = "inline-flex items-center px-4 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 text-sm font-bold rounded-full mb-4 shadow-sm";
+                        document.getElementById('statusBadge').innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> สแกนซ้ำ';
+                        document.getElementById('statusBadge').className = "inline-flex items-center px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 text-[13px] font-bold rounded-full mb-3 shadow-sm";
                         card.classList.replace('border-blue-500', 'border-rose-500'); card.classList.replace('border-emerald-500', 'border-rose-500');
                         document.getElementById('studentTime').innerHTML = `<span class="text-rose-500 text-sm">${data.message}</span>`;
                         card.style.animation = 'none'; setTimeout(() => card.style.animation = 'shake 0.4s ease-in-out', 10);
@@ -971,17 +987,17 @@
                 const rec = todayRecs.find(r => String(r[1]) === String(st.id)); const isPresent = !!rec;
                 const timeStr = isPresent ? new Date(rec[0]).toLocaleTimeString('th-TH') : '-';
                 const delay = (idx % 20) * 0.03; 
-                const card = `<div class="px-5 py-3 hover:bg-slate-50 transition-colors flex items-center justify-between stagger-row" style="animation-delay: ${delay}s"><div class="flex flex-col"><span class="font-bold text-slate-800 text-sm">${st.name}</span><span class="text-[11px] text-slate-500 font-medium">${st.id} • ${st.grade}</span></div><div class="text-right"><span class="text-xs font-black ${isPresent ? 'text-emerald-500' : 'text-slate-300'}">${timeStr}</span></div></div>`;
+                const card = `<div class="px-4 py-2.5 hover:bg-slate-50 transition-colors flex items-center justify-between stagger-row" style="animation-delay: ${delay}s"><div class="flex flex-col"><span class="font-bold text-slate-800 text-[13px]">${st.name}</span><span class="text-[10px] text-slate-500 font-medium">${st.id} • ${st.grade}</span></div><div class="text-right"><span class="text-xs font-black ${isPresent ? 'text-emerald-500' : 'text-slate-300'}">${timeStr}</span></div></div>`;
                 if (isPresent) { pList.innerHTML += card; pC++; } else { aList.innerHTML += card; aC++; }
             });
-            if(pC === 0) pList.innerHTML = '<div class="text-center py-12 text-slate-400 font-medium">ไม่มีรายการ</div>';
-            if(aC === 0) aList.innerHTML = '<div class="text-center py-12 text-slate-400 font-medium">ไม่มีรายการ</div>';
+            if(pC === 0) pList.innerHTML = '<div class="text-center py-10 text-slate-400 text-sm font-medium">ไม่มีรายการ</div>';
+            if(aC === 0) aList.innerHTML = '<div class="text-center py-10 text-slate-400 text-sm font-medium">ไม่มีรายการ</div>';
             document.getElementById('livePresentCount').textContent = pC; document.getElementById('liveAbsentCount').textContent = aC;
         }
         function filterDailyList() { renderDailyOverview(); }
 
         // ==========================================
-        // 3. ครูเช็คชื่อแทน  —  รุ่นบันทึกครั้งเดียว + Auto Save Draft (localStorage)
+        // 3. ครูเช็คชื่อแทน
         // ==========================================
         let manualDraft = {};        
         let baselineStatus = {};     
@@ -1026,7 +1042,7 @@
                 filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g))); 
             }
             if (filteredSt.length === 0) { 
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-16 text-slate-400">ไม่พบรายชื่อนักเรียนในชั้นนี้</td></tr>'; 
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-12 text-slate-400">ไม่พบรายชื่อนักเรียนในชั้นนี้</td></tr>'; 
                 updateDraftIndicator();
                 return; 
             }
@@ -1042,13 +1058,13 @@
             filteredSt.forEach((st, idx) => {
                 const currentStatus = manualDraft[st.id] || baselineStatus[st.id];
                 const isPresent = (currentStatus === 'present');
-                const delay = (idx % 15) * 0.04;
-                const dirtyBadge = manualDraft[st.id] ? '<span class="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 border-2 border-white rounded-full" title="ยังไม่บันทึก"></span>' : '';
-                const btnHTML = `<div class="relative inline-block">${dirtyBadge}<div class="flex items-center bg-slate-100/80 rounded-xl p-1 w-fit mx-auto shadow-inner">
-                    <button onclick="toggleManualStatus('${st.id}', 'present')" id="btn-p-${st.id}" class="px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${isPresent ? 'bg-emerald-500 text-white shadow-md transform scale-105' : 'text-slate-400 hover:bg-slate-200/80 hover:text-slate-600'}">มาเรียน</button>
-                    <button onclick="toggleManualStatus('${st.id}', 'absent')" id="btn-a-${st.id}" class="px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${!isPresent ? 'bg-rose-500 text-white shadow-md transform scale-105' : 'text-slate-400 hover:bg-slate-200/80 hover:text-slate-600'}">ขาด/ลา</button>
+                const delay = (idx % 15) * 0.03;
+                const dirtyBadge = manualDraft[st.id] ? '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 border-2 border-white rounded-full" title="ยังไม่บันทึก"></span>' : '';
+                const btnHTML = `<div class="relative inline-block">${dirtyBadge}<div class="flex items-center bg-slate-100/80 rounded-lg p-1 w-fit mx-auto shadow-inner">
+                    <button onclick="toggleManualStatus('${st.id}', 'present')" id="btn-p-${st.id}" class="px-4 py-1.5 rounded-md text-[13px] font-bold transition-all duration-300 ${isPresent ? 'bg-emerald-500 text-white shadow-sm transform scale-[1.02]' : 'text-slate-400 hover:bg-slate-200/80 hover:text-slate-600'}">มาเรียน</button>
+                    <button onclick="toggleManualStatus('${st.id}', 'absent')" id="btn-a-${st.id}" class="px-4 py-1.5 rounded-md text-[13px] font-bold transition-all duration-300 ${!isPresent ? 'bg-rose-500 text-white shadow-sm transform scale-[1.02]' : 'text-slate-400 hover:bg-slate-200/80 hover:text-slate-600'}">ขาด/ลา</button>
                 </div></div>`;
-                tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors stagger-row" style="animation-delay: ${delay}s"><td class="py-4 px-6 text-center text-sm font-bold text-slate-400">${idx + 1}</td><td class="py-4 px-6 font-bold text-blue-600">${st.id}</td><td class="py-4 px-6 font-bold text-slate-700">${st.name}</td><td class="py-3 px-6 text-center">${btnHTML}</td></tr>`;
+                tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors stagger-row" style="animation-delay: ${delay}s"><td class="py-3.5 px-4 text-center text-xs font-bold text-slate-400">${idx + 1}</td><td class="py-3.5 px-4 font-bold text-blue-600 text-xs">${st.id}</td><td class="py-3.5 px-4 font-bold text-slate-700 text-[13px]">${st.name}</td><td class="py-3 px-4 text-center">${btnHTML}</td></tr>`;
             });
 
             updateDraftIndicator();
@@ -1064,11 +1080,11 @@
             const btnP = document.getElementById(`btn-p-${studentId}`);
             const btnA = document.getElementById(`btn-a-${studentId}`);
             if (status === 'present') {
-                btnP.className = 'px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 bg-emerald-500 text-white shadow-md transform scale-105';
-                btnA.className = 'px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 text-slate-400 hover:bg-slate-200/80 hover:text-slate-600';
+                btnP.className = 'px-4 py-1.5 rounded-md text-[13px] font-bold transition-all duration-300 bg-emerald-500 text-white shadow-sm transform scale-[1.02]';
+                btnA.className = 'px-4 py-1.5 rounded-md text-[13px] font-bold transition-all duration-300 text-slate-400 hover:bg-slate-200/80 hover:text-slate-600';
             } else {
-                btnP.className = 'px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 text-slate-400 hover:bg-slate-200/80 hover:text-slate-600';
-                btnA.className = 'px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 bg-rose-500 text-white shadow-md transform scale-105';
+                btnP.className = 'px-4 py-1.5 rounded-md text-[13px] font-bold transition-all duration-300 text-slate-400 hover:bg-slate-200/80 hover:text-slate-600';
+                btnA.className = 'px-4 py-1.5 rounded-md text-[13px] font-bold transition-all duration-300 bg-rose-500 text-white shadow-sm transform scale-[1.02]';
             }
 
             const dateStr = document.getElementById('manualDate').value;
@@ -1087,15 +1103,15 @@
 
             if (count === 0) {
                 indicator.innerHTML = '<i class="fa-solid fa-circle-check text-slate-400 mr-2"></i> ยังไม่มีการแก้ไข';
-                indicator.className = 'bg-white text-slate-500 px-6 py-3 rounded-2xl font-bold shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center transition-all duration-300';
+                indicator.className = 'bg-white text-slate-500 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm border border-slate-100 flex items-center transition-all duration-300';
                 if (draftCountEl) draftCountEl.textContent = 'ยังไม่มีการแก้ไข';
                 if (draftHintEl) draftHintEl.textContent = 'เริ่มต้นเลือกสถานะของนักเรียนได้เลย';
                 if (saveBtn) saveBtn.disabled = true;
                 if (clearBtn) clearBtn.disabled = true;
                 if (badge) badge.classList.add('hidden');
             } else {
-                indicator.innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i> มีการแก้ไข ${count} รายการ <span class="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md ml-2 font-bold">ร่างถูกเซฟอัตโนมัติ</span>`;
-                indicator.className = 'bg-amber-50 text-amber-700 px-6 py-3 rounded-2xl font-bold shadow-sm border border-amber-200 flex items-center transition-all duration-300';
+                indicator.innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 mr-1.5"></i> มีการแก้ไข ${count} รายการ <span class="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md ml-1.5 font-bold">ร่างเซฟแล้ว</span>`;
+                indicator.className = 'bg-amber-50 text-amber-700 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm border border-amber-200 flex items-center transition-all duration-300';
                 if (draftCountEl) draftCountEl.textContent = `มีการเปลี่ยนแปลง ${count} รายการ`;
                 if (draftHintEl) draftHintEl.textContent = 'ร่างถูกเซฟอัตโนมัติแล้ว — กด "บันทึก" เพื่อยืนยันไปยังระบบ';
                 if (saveBtn) saveBtn.disabled = false;
@@ -1122,7 +1138,7 @@
             const saveBtn = document.getElementById('manualSaveBtn');
             const oriHTML = saveBtn.innerHTML;
             saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> บันทึก...';
 
             fetch(scriptUrl, { 
                 method: 'POST', 
@@ -1133,12 +1149,9 @@
                 saveBtn.innerHTML = oriHTML;
                 if (data.status === 'success') {
                     const summary = buildAbsentSummary(updates);
-
                     manualDraft = {};
                     removeDraftForDate(dateStr);
-
                     loadRecords(true);
-
                     showSaveSuccessPopup(dateStr, summary);
                 } else {
                     showToast('error', data.message || 'บันทึกไม่สำเร็จ — ร่างยังคงเก็บไว้ในเครื่อง');
@@ -1173,56 +1186,56 @@
         function showSaveSuccessPopup(dateStr, summary) {
             const thaiDate = new Date(dateStr).toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
             const namesHTML = summary.absentNames.length === 0 
-                ? '<p class="text-emerald-600 font-bold text-center py-3"><i class="fa-solid fa-circle-check mr-2"></i>นักเรียนมาเรียนครบทุกคน 🎉</p>'
-                : `<div class="max-h-64 overflow-y-auto custom-scroll bg-rose-50/60 rounded-2xl border border-rose-100 p-4">
-                       <p class="text-xs text-rose-700 font-bold uppercase tracking-wider mb-2">รายชื่อ (${summary.absentNames.length} คน)</p>
-                       <ol class="list-decimal list-inside space-y-1.5">
-                           ${summary.absentNames.map(n => `<li class="text-sm font-bold text-rose-800">${n}</li>`).join('')}
+                ? '<p class="text-emerald-600 font-bold text-center py-2 text-sm"><i class="fa-solid fa-circle-check mr-1.5"></i>นักเรียนมาเรียนครบทุกคน 🎉</p>'
+                : `<div class="max-h-48 overflow-y-auto custom-scroll bg-rose-50/60 rounded-xl border border-rose-100 p-3">
+                       <p class="text-[10px] text-rose-700 font-bold uppercase tracking-wider mb-1.5">รายชื่อ (${summary.absentNames.length} คน)</p>
+                       <ol class="list-decimal list-inside space-y-1">
+                           ${summary.absentNames.map(n => `<li class="text-[13px] font-bold text-rose-800">${n}</li>`).join('')}
                        </ol>
                    </div>`;
 
             const overlay = document.createElement('div');
             overlay.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4';
             overlay.innerHTML = `
-                <div class="bg-white rounded-[2rem] shadow-2xl max-w-lg w-full overflow-hidden" style="animation: slideUpFade 0.4s ease-out forwards;">
-                    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-6 text-white text-center relative">
-                        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
-                            <i class="fa-solid fa-circle-check text-4xl"></i>
+                <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full overflow-hidden" style="animation: slideUpFade 0.3s ease-out forwards;">
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-5 text-white text-center relative">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2 backdrop-blur-sm">
+                            <i class="fa-solid fa-circle-check text-2xl"></i>
                         </div>
-                        <h2 class="text-2xl font-black tracking-tight">ยืนยันการบันทึก</h2>
-                        <p class="text-emerald-50 font-medium text-sm mt-1">ข้อมูลถูกส่งไปยังฐานข้อมูลแล้ว</p>
+                        <h2 class="text-xl font-black tracking-tight">ยืนยันการบันทึก</h2>
+                        <p class="text-emerald-50 font-medium text-[11px] mt-0.5">ข้อมูลถูกส่งไปยังฐานข้อมูลแล้ว</p>
                     </div>
-                    <div class="p-6 space-y-4">
-                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">ประจำวันที่</p>
-                            <p class="font-bold text-slate-800 text-base">${thaiDate}</p>
-                            <p class="text-xs text-slate-500 font-medium mt-1">ชั้นเรียน: <span class="text-slate-700 font-bold">${activeGradeContext}</span></p>
+                    <div class="p-5 space-y-3">
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">ประจำวันที่</p>
+                            <p class="font-bold text-slate-800 text-sm">${thaiDate}</p>
+                            <p class="text-[10px] text-slate-500 font-medium mt-0.5">ชั้นเรียน: <span class="text-slate-700 font-bold">${activeGradeContext}</span></p>
                         </div>
 
                         <div class="grid grid-cols-3 gap-2">
-                            <div class="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
-                                <p class="text-[10px] text-slate-500 font-bold uppercase">ทั้งหมด</p>
-                                <p class="text-2xl font-black text-slate-800">${summary.totalCount}</p>
+                            <div class="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
+                                <p class="text-[9px] text-slate-500 font-bold uppercase">ทั้งหมด</p>
+                                <p class="text-lg font-black text-slate-800">${summary.totalCount}</p>
                             </div>
-                            <div class="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-100">
-                                <p class="text-[10px] text-emerald-600 font-bold uppercase">มาเรียน</p>
-                                <p class="text-2xl font-black text-emerald-700">${summary.presentCount}</p>
+                            <div class="bg-emerald-50 rounded-lg p-2 text-center border border-emerald-100">
+                                <p class="text-[9px] text-emerald-600 font-bold uppercase">มาเรียน</p>
+                                <p class="text-lg font-black text-emerald-700">${summary.presentCount}</p>
                             </div>
-                            <div class="bg-rose-50 rounded-xl p-3 text-center border border-rose-100">
-                                <p class="text-[10px] text-rose-600 font-bold uppercase">ขาด/ลา</p>
-                                <p class="text-2xl font-black text-rose-700">${summary.absentCount}</p>
+                            <div class="bg-rose-50 rounded-lg p-2 text-center border border-rose-100">
+                                <p class="text-[9px] text-rose-600 font-bold uppercase">ขาด/ลา</p>
+                                <p class="text-lg font-black text-rose-700">${summary.absentCount}</p>
                             </div>
                         </div>
 
                         <div>
-                            <p class="text-sm font-bold text-slate-700 mb-2">
+                            <p class="text-[13px] font-bold text-slate-700 mb-1.5">
                                 สรุปนักเรียนขาดทั้งหมด <span class="text-rose-600">${summary.absentCount}</span> คน ได้แก่:
                             </p>
                             ${namesHTML}
                         </div>
 
-                        <button onclick="this.closest('.fixed').remove()" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg">
-                            <i class="fa-solid fa-check mr-2"></i> รับทราบและปิดหน้าต่าง
+                        <button onclick="this.closest('.fixed').remove()" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl transition-all shadow-sm text-sm">
+                            <i class="fa-solid fa-check mr-1.5"></i> รับทราบและปิดหน้าต่าง
                         </button>
                     </div>
                 </div>
@@ -1264,8 +1277,8 @@
 
                     const tbody = document.getElementById('todayTableBody'); tbody.innerHTML = '';
                     const todayRecs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === todayStr).reverse();
-                    if(todayRecs.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-16 text-slate-400">ยังไม่มีข้อมูลการเข้าเรียน</td></tr>'; }
-                    else { todayRecs.forEach((row, i) => { const delay = (i % 10) * 0.05; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors group stagger-row" style="animation-delay: ${delay}s"><td class="py-5 px-6 text-sm font-bold text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td><td class="py-5 px-6 font-bold text-blue-600">${row[1]}</td><td class="py-5 px-6 font-bold text-slate-700">${row[2]}</td><td class="py-5 px-6 text-sm font-bold text-slate-500">${row[4]}</td><td class="py-5 px-6 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button></td></tr>`; });}
+                    if(todayRecs.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400 text-sm">ยังไม่มีข้อมูลการเข้าเรียน</td></tr>'; }
+                    else { todayRecs.forEach((row, i) => { const delay = (i % 10) * 0.05; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors group stagger-row" style="animation-delay: ${delay}s"><td class="py-3.5 px-4 text-xs font-bold text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td><td class="py-3.5 px-4 font-bold text-blue-600 text-xs">${row[1]}</td><td class="py-3.5 px-4 font-bold text-slate-700 text-[13px]">${row[2]}</td><td class="py-3.5 px-4 text-[11px] font-bold text-slate-500">${row[4]}</td><td class="py-3.5 px-4 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-8 h-8 rounded-lg shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100 text-[10px]"><i class="fa-solid fa-trash-can"></i></button></td></tr>`; });}
 
                     if(document.getElementById('students').classList.contains('active')) renderStudentManager();
                     if(document.getElementById('history').classList.contains('active')) renderHistory();
@@ -1283,9 +1296,9 @@
             const tbody = document.getElementById('studentManagerBody');
             let filteredSt = globalStudents;
             if(activeGradeContext !== 'All') { const allowedList = activeGradeContext.split(',').map(g => g.trim()); filteredSt = globalStudents.filter(s => allowedList.some(g => s.grade.startsWith(g))); }
-            if(filteredSt.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-12 text-slate-400">ไม่พบรายชื่อในชั้นเรียนนี้</td></tr>'; return; }
+            if(filteredSt.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-slate-400 text-sm">ไม่พบรายชื่อในชั้นเรียนนี้</td></tr>'; return; }
             tbody.innerHTML = '';
-            filteredSt.forEach((st, i) => { const delay = (i % 15) * 0.03; tbody.innerHTML += `<tr class="hover:bg-emerald-50/30 transition-colors group stagger-row" style="animation-delay: ${delay}s"><td class="py-4 px-6 text-center text-sm font-bold text-slate-400">${i + 1}</td><td class="py-4 px-6 font-black text-emerald-600">${st.id}</td><td class="py-4 px-6 font-bold text-slate-700">${st.name}</td><td class="py-4 px-6 text-sm font-bold text-slate-500">${st.gender}</td><td class="py-4 px-6 text-sm font-bold text-slate-500">${st.grade}</td><td class="py-4 px-6 text-center"><button onclick="deleteStudent('${st.id}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-user-minus"></i></button></td></tr>`; });
+            filteredSt.forEach((st, i) => { const delay = (i % 15) * 0.03; tbody.innerHTML += `<tr class="hover:bg-emerald-50/30 transition-colors group stagger-row" style="animation-delay: ${delay}s"><td class="py-3.5 px-4 text-center text-xs font-bold text-slate-400">${i + 1}</td><td class="py-3.5 px-4 font-black text-emerald-600 text-xs">${st.id}</td><td class="py-3.5 px-4 font-bold text-slate-700 text-[13px]">${st.name}</td><td class="py-3.5 px-4 text-xs font-bold text-slate-500">${st.gender}</td><td class="py-3.5 px-4 text-xs font-bold text-slate-500">${st.grade}</td><td class="py-3.5 px-4 text-center"><button onclick="deleteStudent('${st.id}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-8 h-8 rounded-lg shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100 text-[10px]"><i class="fa-solid fa-user-minus"></i></button></td></tr>`; });
         }
         function addNewStudent() {
             const id = document.getElementById('addStId').value.trim(); const name = document.getElementById('addStName').value.trim(); const gender = document.getElementById('addStGender').value; const grade = document.getElementById('addStGrade').value.trim();
@@ -1323,19 +1336,19 @@
             const stats = calculateStats(allRecords, d); document.getElementById('historyPresent').textContent = stats.present; document.getElementById('historyAbsent').textContent = stats.absent; createChart('historyChart', stats.present, stats.absent);
             const tbody = document.getElementById('historyTableBody'); tbody.innerHTML = '';
             const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d).reverse();
-            if(recs.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-16 text-slate-400">ไม่มีข้อมูล</td></tr>';
-            else recs.forEach((row, i) => { const delay = (i % 10) * 0.05; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors group stagger-row" style="animation-delay: ${delay}s"><td class="py-5 px-6 text-sm font-bold text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td><td class="py-5 px-6 font-bold text-blue-600">${row[1]}</td><td class="py-5 px-6 font-bold text-slate-700">${row[2]}</td><td class="py-5 px-6 text-sm font-bold text-slate-500">${row[4]}</td><td class="py-5 px-6 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-10 h-10 rounded-xl shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button></td></tr>`; });
+            if(recs.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400 text-sm">ไม่มีข้อมูล</td></tr>';
+            else recs.forEach((row, i) => { const delay = (i % 10) * 0.05; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors group stagger-row" style="animation-delay: ${delay}s"><td class="py-3.5 px-4 text-xs font-bold text-slate-500">${new Date(row[0]).toLocaleTimeString('th-TH')}</td><td class="py-3.5 px-4 font-bold text-blue-600 text-xs">${row[1]}</td><td class="py-3.5 px-4 font-bold text-slate-700 text-[13px]">${row[2]}</td><td class="py-3.5 px-4 text-[11px] font-bold text-slate-500">${row[4]}</td><td class="py-3.5 px-4 text-center"><button onclick="openDeleteModal('${row[0]}')" class="text-slate-300 hover:text-white bg-white hover:bg-rose-500 w-8 h-8 rounded-lg shadow-sm border border-slate-200 transition-all opacity-0 group-hover:opacity-100 text-[10px]"><i class="fa-solid fa-trash-can"></i></button></td></tr>`; });
         }
 
         function startRandomizer() {
             const d = getLocalYYYYMMDD(new Date()); const recs = allRecords.filter(r => getLocalYYYYMMDD(r[0]) === d);
             if(recs.length === 0) { showToast("error", "ไม่มีนักเรียนมาเรียนวันนี้"); return; }
-            const btn = document.getElementById('randomBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> กำลังสุ่ม...'; document.getElementById('randomIcon').innerHTML = '<i class="fa-solid fa-dice animate-roll"></i>';
+            const btn = document.getElementById('randomBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังสุ่ม...'; document.getElementById('randomIcon').innerHTML = '<i class="fa-solid fa-dice animate-roll"></i>';
             let count = 0; if(randomInterval) clearInterval(randomInterval);
             randomInterval = setInterval(() => {
                 const rand = recs[Math.floor(Math.random() * recs.length)];
                 document.getElementById('randomName').textContent = rand[2]; document.getElementById('randomId').textContent = "รหัส: " + rand[1]; count++;
-                if(count >= 20) { clearInterval(randomInterval); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-shuffle mr-3"></i> สุ่มใหม่อีกครั้ง'; document.getElementById('randomIcon').innerHTML = `<img src="https://ui-avatars.com/api/?name=${rand[2]}&background=f43f5e&color=fff" class="w-full h-full rounded-full">`; }
+                if(count >= 20) { clearInterval(randomInterval); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-shuffle mr-2"></i> สุ่มใหม่อีกครั้ง'; document.getElementById('randomIcon').innerHTML = `<img src="https://ui-avatars.com/api/?name=${rand[2]}&background=f43f5e&color=fff" class="w-full h-full rounded-full">`; }
             }, 80);
         }
 
@@ -1522,7 +1535,7 @@
             tbody.innerHTML = '';
 
             if (absentList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-slate-500 font-bold"><i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-3 block"></i>นักเรียนมาเรียนครบทุกคน</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-500 font-bold"><i class="fa-solid fa-circle-check text-emerald-500 text-2xl mb-2 block"></i>นักเรียนมาเรียนครบทุกคน</td></tr>';
             } else {
                 absentList.forEach((st, idx) => {
                     tbody.innerHTML += `
@@ -1548,24 +1561,16 @@
                 paper.classList.add('paper-portrait');
                 document.body.classList.remove('academic-print-landscape');
 
-                btnPortrait.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-slate-800';
-                btnLandscape.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-slate-500 hover:text-slate-700';
+                btnPortrait.className = 'flex-1 py-1.5 rounded-md text-xs font-bold transition-all bg-white shadow-sm text-slate-800';
+                btnLandscape.className = 'flex-1 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-700';
             } else {
                 paper.classList.remove('paper-portrait');
                 paper.classList.add('paper-landscape');
                 document.body.classList.add('academic-print-landscape');
 
-                btnLandscape.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-slate-800';
-                btnPortrait.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all text-slate-500 hover:text-slate-700';
+                btnLandscape.className = 'flex-1 py-1.5 rounded-md text-xs font-bold transition-all bg-white shadow-sm text-slate-800';
+                btnPortrait.className = 'flex-1 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-700';
             }
-        }
-
-        // --- ฟังก์ชันพิมพ์เอกสาร (Print)
-        function printAcademicReport() {
-            showToast('success', 'กำลังเตรียมเอกสารสำหรับพิมพ์...');
-            setTimeout(() => { 
-                window.print(); 
-            }, 500);
         }
 
         // --- ฟังก์ชันดาวน์โหลดภาพ (PNG)
