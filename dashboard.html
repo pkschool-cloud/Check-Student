@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style> 
@@ -59,7 +60,7 @@
         .pdf-mode-radio:checked + div { border-color: #ef4444; background-color: #fff1f2; color: #be123c; transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.1); }
         .pdf-mode-radio:checked + div .icon-box { background-color: #ef4444; color: white; transform: scale(1.1); }
 
-        #pdf-monthly-container { position: absolute; left: -9999px; top: 0; width: 1122px; background: white; padding: 40px; font-family: 'Sarabun', 'Prompt', sans-serif; }
+        #pdf-monthly-container { position: absolute; left: -9999px; top: 0; width: 1122px; background: white; padding: 40px; font-family: 'Sarabun', sans-serif; }
         .pdf-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
         .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 4px 2px; }
         .pdf-table th { background-color: #f3f4f6; font-weight: bold; }
@@ -70,10 +71,11 @@
             background: white; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08);
             border: 1px solid #e2e8f0; padding: 40px 50px; transition: all 0.3s ease;
             position: relative; overflow: hidden; border-radius: 12px;
+            font-family: 'Sarabun', sans-serif; /* บังคับใช้ Sarabun ที่ส่วนของรายงานเพื่อให้เสถียรที่สุด */
         }
         .paper-portrait { width: 100%; max-width: 210mm; min-height: 297mm; }
         .paper-landscape { width: 100%; max-width: 297mm; min-height: 210mm; }
-        .report-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 13px; page-break-inside: auto; }
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 14px; page-break-inside: auto; }
         .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 10px 12px; }
         .report-table th { background-color: #1e293b; color: white; text-align: center; font-weight: 600; white-space: nowrap; }
         .report-table tr { page-break-inside: avoid; page-break-after: auto; }
@@ -95,7 +97,7 @@
             html, body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; height: auto !important; }
             body * { visibility: hidden; }
             .print-zone, .print-zone * { visibility: visible; }
-            .print-zone { position: absolute !important; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; display: block !important; }
+            .print-zone { position: absolute !important; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; display: block !important; font-family: 'Sarabun', sans-serif !important; }
             .paper-preview { padding: 20px !important; max-width: 100% !important; box-shadow: none !important; border: none !important; }
             .no-print, aside, header { display: none !important; }
             .report-table th { background-color: #f1f5f9 !important; color: #000 !important; }
@@ -573,6 +575,15 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <div class="md:col-span-4 flex gap-3">
+                                <button onclick="renderAcademicReport()" class="flex-1 bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 px-6 py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-arrows-rotate text-purple-500"></i> โหลดข้อมูล
+                                </button>
+                                <button onclick="printAcademicReport()" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-print"></i> พิมพ์ / Save PDF
+                                </button>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -970,21 +981,37 @@
         function filterDailyList() { renderDailyOverview(); }
 
         // ==========================================
-        // 3. ครูเช็คชื่อแทน  —  รุ่นบันทึกครั้งเดียว + Auto Save Draft
+        // 3. ครูเช็คชื่อแทน  —  รุ่นบันทึกครั้งเดียว + Auto Save Draft (localStorage)
         // ==========================================
         let manualDraft = {};        
         let baselineStatus = {};     
         const DRAFT_STORAGE_KEY = 'manualAttendanceDrafts_v2'; 
 
-        function loadAllDrafts() { try { return JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || '{}'); } catch(e) { return {}; } }
-        function saveAllDrafts(allDrafts) { try { localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(allDrafts)); } catch(e){} }
+        function loadAllDrafts() {
+            try { return JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || '{}'); }
+            catch(e) { return {}; }
+        }
+        function saveAllDrafts(allDrafts) {
+            try { localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(allDrafts)); } catch(e){}
+        }
         function persistCurrentDraft(dateStr) {
             const all = loadAllDrafts();
-            if (Object.keys(manualDraft).length === 0) { delete all[dateStr]; } else { all[dateStr] = manualDraft; }
+            if (Object.keys(manualDraft).length === 0) {
+                delete all[dateStr];
+            } else {
+                all[dateStr] = manualDraft;
+            }
             saveAllDrafts(all);
         }
-        function loadDraftForDate(dateStr) { const all = loadAllDrafts(); return all[dateStr] || {}; }
-        function removeDraftForDate(dateStr) { const all = loadAllDrafts(); delete all[dateStr]; saveAllDrafts(all); }
+        function loadDraftForDate(dateStr) {
+            const all = loadAllDrafts();
+            return all[dateStr] || {};
+        }
+        function removeDraftForDate(dateStr) {
+            const all = loadAllDrafts();
+            delete all[dateStr];
+            saveAllDrafts(all);
+        }
 
         function renderManualTable() {
             const dateStr = document.getElementById('manualDate').value; 
@@ -1028,7 +1055,11 @@
         }
 
         function toggleManualStatus(studentId, status) {
-            if (baselineStatus[studentId] === status) { delete manualDraft[studentId]; } else { manualDraft[studentId] = status; }
+            if (baselineStatus[studentId] === status) {
+                delete manualDraft[studentId];
+            } else {
+                manualDraft[studentId] = status;
+            }
 
             const btnP = document.getElementById(`btn-p-${studentId}`);
             const btnA = document.getElementById(`btn-a-${studentId}`);
@@ -1093,15 +1124,21 @@
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
 
-            fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, updates: updates }) })
+            fetch(scriptUrl, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'syncManual', dateStr: dateStr, updates: updates }) 
+            })
             .then(r => r.json())
             .then(data => {
                 saveBtn.innerHTML = oriHTML;
                 if (data.status === 'success') {
                     const summary = buildAbsentSummary(updates);
+
                     manualDraft = {};
                     removeDraftForDate(dateStr);
+
                     loadRecords(true);
+
                     showSaveSuccessPopup(dateStr, summary);
                 } else {
                     showToast('error', data.message || 'บันทึกไม่สำเร็จ — ร่างยังคงเก็บไว้ในเครื่อง');
@@ -1494,7 +1531,7 @@
                             <td class="text-center font-mono text-blue-600 font-bold">${st.id}</td>
                             <td class="font-bold text-slate-700">${st.name}</td>
                             <td class="text-center text-slate-500 font-bold">${st.grade}</td>
-                            <td class="text-center"><span class="bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-bold border border-rose-100">ขาดเรียน</span></td>
+                            <td class="text-center font-bold text-rose-600">ขาดเรียน</td>
                         </tr>
                     `;
                 });
@@ -1537,7 +1574,6 @@
             if(!reportElement) return;
             showToast('success', 'กำลังสร้างรูปภาพ กรุณารอสักครู่...');
             try {
-                // ต้องเพิ่ม useCORS: true เพื่อให้เรนเดอร์รูปภาพโรงเรียนได้
                 const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
                 const link = document.createElement('a');
                 link.download = `รายงานวิชาการ_${activeGradeContext}_${document.getElementById('acaReportDate').value}.png`;
