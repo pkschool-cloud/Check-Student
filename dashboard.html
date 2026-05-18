@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -572,15 +573,6 @@
                                     </button>
                                 </div>
                             </div>
-
-                            <div class="md:col-span-4 flex gap-3">
-                                <button onclick="renderAcademicReport()" class="flex-1 bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 px-6 py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-arrows-rotate text-purple-500"></i> โหลดข้อมูล
-                                </button>
-                                <button onclick="printAcademicReport()" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-print"></i> พิมพ์ / Save PDF
-                                </button>
-                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -600,13 +592,30 @@
                                 <p id="acaAbsent" class="text-4xl font-black">0</p>
                             </div>
                         </div>
+
+                        <div class="md:col-span-12 flex flex-wrap md:flex-nowrap gap-3 mt-6 border-t border-slate-100 pt-6">
+                            <button onclick="renderAcademicReport()" class="w-full md:w-auto bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 px-8 py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-arrows-rotate text-purple-500"></i> โหลดข้อมูล
+                            </button>
+                            <div class="flex-1 flex gap-2 justify-end">
+                                <button onclick="printAcademicReport()" class="flex-1 md:flex-none bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-print"></i> พิมพ์เอกสาร
+                                </button>
+                                <button onclick="downloadAcademicReportImage()" class="flex-1 md:flex-none bg-white border-2 border-blue-200 hover:border-blue-400 text-blue-600 px-6 py-3.5 rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-image"></i> โหลดรูปภาพ
+                                </button>
+                                <button onclick="downloadAcademicReportPDF()" class="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-file-pdf"></i> โหลด PDF
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="academic-printable" class="paper-preview print-zone paper-portrait">
                         
                         <div class="border-b-4 border-[#1e293b] pb-6 mb-6 flex flex-col items-center">
                             <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-2 border-slate-100 mb-4 overflow-hidden shadow-sm p-1">
-                                <img src="school logo.jpg" class="w-full h-full object-cover rounded-full" alt="โลโก้โรงเรียน" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;fa-solid fa-school text-4xl text-slate-700&quot;></i>'">
+                                <img src="school logo.webp" class="w-full h-full object-cover rounded-full" alt="โลโก้โรงเรียน" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;fa-solid fa-school text-4xl text-slate-700&quot;></i>'">
                             </div>
                             <h1 class="text-3xl font-extrabold text-[#1e293b] mb-1 tracking-wide text-center">รายงานสรุปการเข้าเรียนรายวัน (วิชาการ)</h1>
                             <h2 class="text-base font-bold text-slate-500 tracking-widest uppercase text-center">Daily Absence Report — Academic Affairs</h2>
@@ -710,7 +719,7 @@
     <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 transition-opacity"><div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 transform scale-95 transition-all text-center" id="deleteModalCard"><div class="w-20 h-20 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-trash-can text-3xl"></i></div><h3 class="text-2xl font-black mb-6 text-slate-800">ยืนยันลบประวัติ?</h3><input type="password" id="deletePassword" class="w-full bg-slate-50 px-5 py-4 border border-slate-200 rounded-xl text-center font-bold mb-6 outline-none focus:border-rose-400" placeholder="รหัสผ่านของคุณ"><div class="flex gap-4"><button onclick="closeDeleteModal()" class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors font-bold rounded-xl">ยกเลิก</button><button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 py-4 bg-rose-500 hover:bg-rose-600 transition-colors text-white font-bold rounded-xl shadow-md shadow-rose-500/20">ยืนยันลบ</button></div></div></div>
 
     <script>
-        // 🔴 วาง URL Web App ของคุณตรงนี้ (Deploy ใหม่หลังจากแก้ Code.gs แล้ว) 🔴
+        // 🔴 วาง URL Web App ของคุณตรงนี้ 🔴
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbzTuMhhaZmEU0swirnrut_VfTPLRUM6lItYvwa4vT90LHGM2C6STBtDUhrYG3VHSK0X/exec';
 
         // --- ประกาศตัวแปร ---
@@ -961,7 +970,7 @@
         function filterDailyList() { renderDailyOverview(); }
 
         // ==========================================
-        // 3. ครูเช็คชื่อแทน
+        // 3. ครูเช็คชื่อแทน  —  รุ่นบันทึกครั้งเดียว + Auto Save Draft
         // ==========================================
         let manualDraft = {};        
         let baselineStatus = {};     
@@ -1143,8 +1152,8 @@
                         <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
                             <i class="fa-solid fa-circle-check text-4xl"></i>
                         </div>
-                        <h2 class="text-2xl font-black tracking-tight">ยืนยันการบันทึกเรียบร้อย</h2>
-                        <p class="text-emerald-50 font-medium text-sm mt-1">บันทึกข้อมูลการเช็คชื่อสำเร็จแล้ว</p>
+                        <h2 class="text-2xl font-black tracking-tight">ยืนยันการบันทึก</h2>
+                        <p class="text-emerald-50 font-medium text-sm mt-1">ข้อมูลถูกส่งไปยังฐานข้อมูลแล้ว</p>
                     </div>
                     <div class="p-6 space-y-4">
                         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
@@ -1175,8 +1184,8 @@
                             ${namesHTML}
                         </div>
 
-                        <button onclick="this.closest('.fixed').remove()" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all">
-                            <i class="fa-solid fa-check mr-2"></i> รับทราบ
+                        <button onclick="this.closest('.fixed').remove()" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg">
+                            <i class="fa-solid fa-check mr-2"></i> รับทราบและปิดหน้าต่าง
                         </button>
                     </div>
                 </div>
@@ -1514,11 +1523,44 @@
             }
         }
 
+        // --- ฟังก์ชันพิมพ์เอกสาร (Print)
         function printAcademicReport() {
             showToast('success', 'กำลังเตรียมเอกสารสำหรับพิมพ์...');
             setTimeout(() => { 
                 window.print(); 
             }, 500);
+        }
+
+        // --- ฟังก์ชันดาวน์โหลดภาพ (PNG)
+        async function downloadAcademicReportImage() {
+            const reportElement = document.getElementById('academic-printable');
+            if(!reportElement) return;
+            showToast('success', 'กำลังสร้างรูปภาพ กรุณารอสักครู่...');
+            try {
+                // ต้องเพิ่ม useCORS: true เพื่อให้เรนเดอร์รูปภาพโรงเรียนได้
+                const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                const link = document.createElement('a');
+                link.download = `รายงานวิชาการ_${activeGradeContext}_${document.getElementById('acaReportDate').value}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                showToast('error', 'ไม่สามารถสร้างรูปภาพได้ กรุณาลองใหม่');
+            }
+        }
+
+        // --- ฟังก์ชันดาวน์โหลด PDF (ผ่าน html2pdf)
+        function downloadAcademicReportPDF() {
+            const element = document.getElementById('academic-printable');
+            const isLandscape = element.classList.contains('paper-landscape');
+            const opt = {
+                margin:       10,
+                filename:     `รายงานวิชาการ_${activeGradeContext}_${document.getElementById('acaReportDate').value}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: isLandscape ? 'landscape' : 'portrait' }
+            };
+            showToast('success', 'กำลังสร้าง PDF กรุณารอสักครู่...');
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
