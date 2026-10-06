@@ -18,6 +18,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -156,7 +157,8 @@
         .sheet-table thead th.closed { background: #f87171; color: #7f1d1d; }
         .sheet-table .p { color: #15803d; font-weight: 700; }
         .sheet-table .a { color: #dc2626; font-weight: 600; }
-        .sheet-table tfoot td { font-weight: 700; }
+        .sheet-table tr.sheet-total td { font-weight: 700; }
+        .sheet-legend .pgno { margin-left: auto; color: #6b7280; }
         .sheet-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: #374151; margin-top: 8px; }
         .sheet-legend .box { display: inline-block; width: 12px; height: 12px; background: #fca5a5; border: 1px solid #1f2937; vertical-align: -2px; margin-right: 4px; }
         .sheet-notes { margin-top: 10px; font-size: 12px; }
@@ -384,7 +386,7 @@
                     </div>
 
                     <div class="card p-5 mb-5">
-                        <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+                        <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3">
                             <div class="w-full sm:w-60">
                                 <label class="label" for="manualDate"><i class="fa-regular fa-calendar-check text-brand-500 mr-1"></i>เลือกวันที่ต้องการเช็ค</label>
                                 <input type="date" id="manualDate" onchange="renderManualTable()" class="field">
@@ -393,6 +395,13 @@
                                 <i class="fa-solid fa-users"></i> มาเรียนทุกคน
                             </button>
                             <p id="manualDayNote" class="hidden text-[12px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-full px-3 py-1.5 sm:mb-1.5"></p>
+                            <div class="w-full sm:w-72 sm:ml-auto">
+                                <label class="label" for="manualSearch"><i class="fa-solid fa-magnifying-glass text-brand-500 mr-1"></i>ค้นหานักเรียน</label>
+                                <div class="relative">
+                                    <input type="text" id="manualSearch" oninput="renderManualTable()" autocomplete="off" class="field !pr-11" placeholder="พิมพ์รหัส ชื่อ หรือนามสกุล">
+                                    <button type="button" id="manualSearchClear" onclick="clearManualSearch()" class="hidden absolute right-1.5 top-1.5 w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors" title="ล้างคำค้น" aria-label="ล้างคำค้น"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1233,7 +1242,11 @@
             Object.keys(manualDraft).forEach(id => { if (baselineStatus[id] === undefined || baselineStatus[id] === manualDraft[id]) delete manualDraft[id]; });
 
             if (students.length === 0) { tbody.innerHTML = emptyRow(4, 'ไม่พบรายชื่อนักเรียนในชั้นนี้'); updateDraftIndicator(); return; }
-            tbody.innerHTML = students.map((st, idx) =>
+            const q = $('manualSearch').value.trim().toLowerCase();
+            $('manualSearchClear').classList.toggle('hidden', !q);
+            const shown = students.map((st, idx) => ({ st, idx })).filter(o => !q || String(o.st.id).toLowerCase().includes(q) || String(o.st.name).toLowerCase().includes(q));
+            if (shown.length === 0) { tbody.innerHTML = emptyRow(4, 'ไม่พบนักเรียนที่ตรงกับคำค้น', 'fa-face-frown'); updateDraftIndicator(); return; }
+            tbody.innerHTML = shown.map(({ st, idx }) =>
                 `<tr class="stagger-row" style="animation-delay:${Math.min(idx, 15) * 0.02}s"><td class="text-center text-xs font-semibold text-slate-400">${idx + 1}</td><td class="font-bold text-brand-700 text-xs">${esc(st.id)}</td><td class="font-semibold text-slate-800">${esc(st.name)}</td><td class="text-center !py-2" id="mcell-${esc(st.id)}">${manualCellHTML(st)}</td></tr>`
             ).join('');
             updateDraftIndicator();
@@ -1247,6 +1260,15 @@
             if (cell) cell.innerHTML = manualCellHTML({ id: studentId });
             persistCurrentDraft($('manualDate').value);
             updateDraftIndicator();
+            // ค้นหาแล้วแก้สถานะเสร็จ -> ล้างคำค้นอัตโนมัติ พร้อมค้นหาคนถัดไป
+            if ($('manualSearch').value.trim()) clearManualSearch();
+        }
+
+        function clearManualSearch() {
+            const box = $('manualSearch');
+            box.value = '';
+            renderManualTable();
+            box.focus();
         }
 
         function updateDraftIndicator() {
@@ -1778,37 +1800,54 @@
         const DAY_STATUS = { P: 'มาเรียน', A: 'ขาด', X: 'วันหยุด', W: 'ยังไม่มา', '': '-' };
         function noteText(n) { return `${thaiDateFull(n.ds)} — ${n.type === 'open' ? 'เปิดเรียนเพิ่ม' : 'ปิดเรียน'} เนื่องจาก ${n.note}`; }
 
-        function sheetHTML(m) {
-            let h = `<div class="sheet-head"><h1>${esc(m.title)}</h1><p>${esc(m.subtitle).replace(/ {5}/, '&emsp;&emsp;')}</p><p>${esc(m.periodLabel)}</p></div>`;
-
+        // ---- ชิ้นส่วนของตาราง (ใช้ร่วมกันทั้งพรีวิวและ PDF แบบแบ่งหน้า) ----
+        function sheetHeadHTML(m) {
+            return `<div class="sheet-head"><h1>${esc(m.title)}</h1><p>${esc(m.subtitle).replace(/ {5}/, '&emsp;&emsp;')}</p><p>${esc(m.periodLabel)}</p></div>`;
+        }
+        function sheetTableOpen(m) { return `<table class="sheet-table"${m.mode === 'day' ? ' style="font-size:12px"' : ''}>`; }
+        function sheetTheadHTML(m) {
             if (m.mode === 'day') {
                 const c = m.cols[0];
-                h += `<table class="sheet-table" style="font-size:12px"><thead><tr><th style="width:48px">เลขที่</th><th style="width:90px">รหัส</th><th>ชื่อ - นามสกุล</th><th style="width:80px">ชั้น</th><th style="width:100px" class="${c.open ? '' : 'closed'}">เวลาที่มา</th><th style="width:100px">สถานะ</th></tr></thead><tbody>`;
-                h += m.rows.map(r => {
-                    const cell = r.cells[0];
-                    const cls = cell.s === 'P' ? 'p' : (cell.s === 'A' ? 'a' : '');
-                    return `<tr><td>${r.no}</td><td>${esc(r.id)}</td><td class="name">${esc(r.name)}</td><td>${esc(r.grade)}</td><td class="${c.open ? '' : 'closed'}">${cell.t ? cell.t.toLocaleTimeString('th-TH') : ''}</td><td class="c-total"><span class="${cls}">${DAY_STATUS[cell.s]}</span></td></tr>`;
-                }).join('');
-                h += `</tbody><tfoot><tr><td colspan="4">รวมทั้งสิ้น ${m.rows.length} คน</td><td class="${c.open ? '' : 'closed'}"></td><td class="c-total">มา ${m.sumPresent} / <span class="c-absent">ขาด ${m.sumAbsent}</span></td></tr></tfoot></table>`;
-            } else {
-                const n = m.cols.length; const week = m.mode === 'week';
-                h += `<table class="sheet-table"><thead><tr><th rowspan="2" style="width:34px">เลข<br>ที่</th><th rowspan="2" style="width:${week ? 220 : 150}px">ชื่อ - นามสกุล</th><th colspan="${n}">วันที่</th><th rowspan="2" class="c-absent" style="width:44px">ขาด</th><th rowspan="2" style="width:58px">รวมมา<br>เรียน</th></tr><tr>`;
-                h += m.cols.map(c => `<th class="${c.open ? '' : 'closed'}">${week ? TH_DOW_SHORT[c.date.getDay()] + '<br>' : ''}${c.date.getDate()}</th>`).join('');
-                h += `</tr></thead><tbody>`;
-                h += m.rows.map(r => `<tr><td>${r.no}</td><td class="name">${esc(r.name)}</td>` +
-                    r.cells.map((cell, ci) => `<td class="${m.cols[ci].open ? '' : 'closed'}">${cell.s === 'P' ? '<span class="p">/</span>' : (cell.s === 'A' ? '<span class="a">ข</span>' : '')}</td>`).join('') +
-                    `<td class="c-absent">${r.absent > 0 ? r.absent : '-'}</td><td class="c-total">${r.present}</td></tr>`).join('');
-                h += `</tbody><tfoot><tr><td colspan="2">รวมทั้งสิ้น</td>` +
-                    m.cols.map((c, ci) => `<td class="${c.open ? '' : 'closed'}" style="font-size:9px">${m.colTotals[ci] > 0 ? m.colTotals[ci] : ''}</td>`).join('') +
-                    `<td class="c-absent">${m.sumAbsent > 0 ? m.sumAbsent : '-'}</td><td class="c-total">${m.sumPresent}</td></tr></tfoot></table>`;
-                h += `<div class="sheet-legend"><span><b class="p" style="color:#15803d">/</b> = มาเรียน</span><span><b style="color:#dc2626">ข</b> = ขาดเรียน</span><span><span class="box"></span>วันหยุด / ปิดเรียน</span></div>`;
+                return `<tr><th style="width:48px">เลขที่</th><th style="width:90px">รหัส</th><th>ชื่อ - นามสกุล</th><th style="width:80px">ชั้น</th><th style="width:100px" class="${c.open ? '' : 'closed'}">เวลาที่มา</th><th style="width:100px">สถานะ</th></tr>`;
             }
-
+            const week = m.mode === 'week';
+            return `<tr><th rowspan="2" style="width:34px">เลข<br>ที่</th><th rowspan="2" style="width:${week ? 220 : 150}px">ชื่อ - นามสกุล</th><th colspan="${m.cols.length}">วันที่</th><th rowspan="2" class="c-absent" style="width:44px">ขาด</th><th rowspan="2" style="width:58px">รวมมา<br>เรียน</th></tr><tr>` +
+                m.cols.map(c => `<th class="${c.open ? '' : 'closed'}">${week ? TH_DOW_SHORT[c.date.getDay()] + '<br>' : ''}${c.date.getDate()}</th>`).join('') + `</tr>`;
+        }
+        function sheetRowHTML(m, r) {
+            if (m.mode === 'day') {
+                const c = m.cols[0], cell = r.cells[0];
+                const cls = cell.s === 'P' ? 'p' : (cell.s === 'A' ? 'a' : '');
+                return `<tr><td>${r.no}</td><td>${esc(r.id)}</td><td class="name">${esc(r.name)}</td><td>${esc(r.grade)}</td><td class="${c.open ? '' : 'closed'}">${cell.t ? cell.t.toLocaleTimeString('th-TH') : ''}</td><td class="c-total"><span class="${cls}">${DAY_STATUS[cell.s]}</span></td></tr>`;
+            }
+            return `<tr><td>${r.no}</td><td class="name">${esc(r.name)}</td>` +
+                r.cells.map((cell, ci) => `<td class="${m.cols[ci].open ? '' : 'closed'}">${cell.s === 'P' ? '<span class="p">/</span>' : (cell.s === 'A' ? '<span class="a">ข</span>' : '')}</td>`).join('') +
+                `<td class="c-absent">${r.absent > 0 ? r.absent : '-'}</td><td class="c-total">${r.present}</td></tr>`;
+        }
+        function sheetTotalRowHTML(m) {
+            if (m.mode === 'day') {
+                const c = m.cols[0];
+                return `<tr class="sheet-total"><td colspan="4">รวมทั้งสิ้น ${m.rows.length} คน</td><td class="${c.open ? '' : 'closed'}"></td><td class="c-total">มา ${m.sumPresent} / <span class="c-absent">ขาด ${m.sumAbsent}</span></td></tr>`;
+            }
+            return `<tr class="sheet-total"><td colspan="2">รวมทั้งสิ้น</td>` +
+                m.cols.map((c, ci) => `<td class="${c.open ? '' : 'closed'}" style="font-size:9px">${m.colTotals[ci] > 0 ? m.colTotals[ci] : ''}</td>`).join('') +
+                `<td class="c-absent">${m.sumAbsent > 0 ? m.sumAbsent : '-'}</td><td class="c-total">${m.sumPresent}</td></tr>`;
+        }
+        // คำอธิบายสัญลักษณ์ + หมายเหตุ (ใน PDF จะใส่ท้ายตารางทุกหน้า)
+        function sheetFootHTML(m, pageLabel) {
+            const pg = pageLabel ? `<span class="pgno">${pageLabel}</span>` : '';
+            let h = m.mode === 'day'
+                ? (pg ? `<div class="sheet-legend">${pg}</div>` : '')
+                : `<div class="sheet-legend"><span><b style="color:#15803d">/</b> = มาเรียน</span><span><b style="color:#dc2626">ข</b> = ขาดเรียน</span><span><span class="box"></span>วันหยุด / ปิดเรียน</span>${pg}</div>`;
             if (m.notes.length) {
                 h += `<div class="sheet-notes"><h4>หมายเหตุ</h4><ul>` + m.notes.map(n =>
                     `<li>${thaiDateFull(n.ds)} — <span class="${n.type === 'open' ? 't-open' : 't-closed'}">${n.type === 'open' ? 'เปิดเรียนเพิ่ม' : 'ปิดเรียน'}</span> เนื่องจาก ${esc(n.note)}</li>`).join('') + `</ul></div>`;
             }
             return h;
+        }
+        function sheetHTML(m) {
+            return sheetHeadHTML(m) + sheetTableOpen(m) + `<thead>${sheetTheadHTML(m)}</thead><tbody>` +
+                m.rows.map(r => sheetRowHTML(m, r)).join('') + sheetTotalRowHTML(m) + `</tbody></table>` + sheetFootHTML(m);
         }
 
         function renderSheetExport() {
@@ -1848,39 +1887,200 @@
             return aoa;
         }
 
-        function downloadSheetPDF() {
-            const m = getSheetModelForExport(); if (!m) return;
-            const wrap = document.createElement('div');
-            wrap.className = 'sheet-paper'; wrap.style.cssText = 'width:100%;padding:2px;box-sizing:border-box;';
-            wrap.innerHTML = sheetHTML(m);
-            const opt = { margin: 8, filename: sheetFileName(m, 'pdf'), image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: m.mode === 'month' ? 'landscape' : 'portrait' }, pagebreak: { mode: ['css', 'legacy'] } };
-            showToast('success', 'กำลังสร้าง PDF กรุณารอสักครู่...');
-            html2pdf().set(opt).from(wrap).save();
+        function saveBlob(blob, filename) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); link.remove();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1500);
         }
 
-        function downloadSheetExcel() {
+        // PDF: แบ่งหน้าเอง เพื่อให้ "หัวเรื่อง + หัวคอลัมน์" และ "หมายเหตุ" อยู่ครบทุกหน้า
+        let sheetPdfBusy = false;
+        async function downloadSheetPDF() {
+            const m = getSheetModelForExport(); if (!m || sheetPdfBusy) return;
+            sheetPdfBusy = true;
+            showToast('success', 'กำลังสร้าง PDF กรุณารอสักครู่...');
+            const landscape = m.mode === 'month';
+            const MARGIN = 8, pw = (landscape ? 297 : 210) - MARGIN * 2, ph = (landscape ? 210 : 297) - MARGIN * 2;
+            const stage = document.createElement('div');
+            stage.style.cssText = `position:fixed;left:-10000px;top:0;width:${pw}mm;background:#fff;`;
+            document.body.appendChild(stage);
+            try {
+                if (document.fonts && document.fonts.ready) await document.fonts.ready;
+                const probe = document.createElement('div'); probe.style.height = (ph - 6) + 'mm'; stage.appendChild(probe);
+                const maxH = probe.offsetHeight; probe.remove();
+
+                const pages = [];
+                const newPage = () => {
+                    const pg = document.createElement('div');
+                    pg.className = 'sheet-paper'; pg.style.cssText = 'width:100%;box-sizing:border-box;padding:1px;';
+                    pg.innerHTML = sheetHeadHTML(m) + sheetTableOpen(m) + `<thead>${sheetTheadHTML(m)}</thead><tbody></tbody></table>` + sheetFootHTML(m, ' ');
+                    stage.appendChild(pg); pages.push(pg);
+                    return pg.querySelector('tbody');
+                };
+                let tb = newPage();
+                const tmp = document.createElement('tbody');
+                m.rows.map(r => sheetRowHTML(m, r)).concat([sheetTotalRowHTML(m)]).forEach(html => {
+                    tmp.innerHTML = html; const tr = tmp.firstElementChild;
+                    tb.appendChild(tr);
+                    if (pages[pages.length - 1].offsetHeight > maxH && tb.children.length > 1) { tb = newPage(); tb.appendChild(tr); }
+                });
+                pages.forEach((pg, i) => { pg.querySelector('.pgno').textContent = `หน้า ${i + 1} / ${pages.length}`; });
+
+                const opt = { margin: MARGIN, filename: sheetFileName(m, 'pdf'), image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: landscape ? 'landscape' : 'portrait' } };
+                let worker = html2pdf().set(opt).from(pages[0]).toPdf();
+                pages.slice(1).forEach(pg => { worker = worker.get('pdf').then(pdf => { pdf.addPage(); }).from(pg).toContainer().toCanvas().toPdf(); });
+                await worker.save();
+            } catch (err) {
+                showToast('error', 'สร้าง PDF ไม่สำเร็จ กรุณาลองใหม่');
+            } finally {
+                stage.remove(); sheetPdfBusy = false;
+            }
+        }
+
+        // Excel: จัดรูปแบบเหมือนตารางบนหน้าจอ (สี เส้นตาราง รวมเซลล์ ตรึงหัวตาราง) และแก้ไขต่อได้ ยอดรวมเป็นสูตร
+        async function downloadSheetExcel() {
             const m = getSheetModelForExport(); if (!m) return;
-            const aoa = sheetAOA(m);
-            const ws = XLSX.utils.aoa_to_sheet(aoa);
-            const width = aoa[4].length;
-            ws['!merges'] = [0, 1, 2].map(r => ({ s: { r, c: 0 }, e: { r, c: width - 1 } }));
-            ws['!cols'] = m.mode === 'day'
-                ? [{ wch: 7 }, { wch: 12 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 12 }]
-                : [{ wch: 7 }, { wch: 28 }, ...m.cols.map(() => ({ wch: m.mode === 'week' ? 8 : 5 })), { wch: 7 }, { wch: 11 }];
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'การมาเรียน');
-            XLSX.writeFile(wb, sheetFileName(m, 'xlsx'));
-            showToast('success', 'ดาวน์โหลด Excel แล้ว');
+            if (typeof ExcelJS === 'undefined') return showToast('error', 'โหลดตัวสร้าง Excel ไม่สำเร็จ กรุณารีเฟรชหน้าแล้วลองใหม่');
+            const day = m.mode === 'day', week = m.mode === 'week';
+            const FONT = 'Tahoma', INK = 'FF111827', RED_T = 'FFDC2626', GREEN_T = 'FF15803D';
+            const C_HEAD = 'FFDFECC9', C_CLOSED = 'FFFCA5A5', C_CLOSED_H = 'FFF87171', C_TOTAL = 'FFFFF200';
+            const thin = { style: 'thin', color: { argb: 'FF1F2937' } };
+            const fill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
+            const paint = (cell, o = {}) => {
+                cell.border = { top: thin, left: thin, bottom: thin, right: thin };
+                cell.alignment = { horizontal: o.left ? 'left' : 'center', vertical: 'middle', wrapText: true, indent: o.left ? 1 : 0 };
+                cell.font = { name: FONT, size: o.size || 10, bold: !!o.bold, color: { argb: o.color || INK } };
+                if (o.fill) cell.fill = fill(o.fill);
+                if (o.fmt) cell.numFmt = o.fmt;
+                return cell;
+            };
+
+            const wb = new ExcelJS.Workbook(); wb.creator = tName || SCHOOL_NAME; wb.created = new Date();
+            const ws = wb.addWorksheet('การมาเรียน', { pageSetup: { paperSize: 9, orientation: m.mode === 'month' ? 'landscape' : 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, margins: { left: 0.3, right: 0.3, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 } } });
+            const n = m.cols.length;
+            const nCols = day ? 6 : n + 4;
+            const L = i => ws.getColumn(i).letter;
+
+            // หัวเรื่อง 3 บรรทัด
+            [[m.title, 14, true], [m.subtitle.replace(/ {5}/, '        '), 12, false], [m.periodLabel, 12, false]].forEach(([text, size, bold], i) => {
+                ws.mergeCells(i + 1, 1, i + 1, nCols);
+                const c = ws.getCell(i + 1, 1); c.value = text;
+                c.font = { name: FONT, size, bold, color: { argb: INK } }; c.alignment = { horizontal: 'center', vertical: 'middle' };
+                ws.getRow(i + 1).height = i === 0 ? 26 : 21;
+            });
+
+            let r;                      // แถวปัจจุบัน
+            const firstData = day ? 6 : 7;
+            const lastData = firstData + m.rows.length - 1;
+
+            if (day) {
+                const c0 = m.cols[0];
+                [7, 13, 34, 11, 14, 14].forEach((w, i) => ws.getColumn(i + 1).width = w);
+                ['เลขที่', 'รหัส', 'ชื่อ - นามสกุล', 'ชั้น', 'เวลาที่มา', 'สถานะ'].forEach((t, i) => { const c = ws.getCell(5, i + 1); c.value = t; paint(c, { bold: true, fill: (i === 4 && !c0.open) ? C_CLOSED_H : C_HEAD }); });
+                ws.getRow(5).height = 24;
+                m.rows.forEach((row, i) => {
+                    r = firstData + i; const cell = row.cells[0]; ws.getRow(r).height = 20;
+                    paint(ws.getCell(r, 1)).value = row.no;
+                    paint(ws.getCell(r, 2)).value = String(row.id);
+                    paint(ws.getCell(r, 3), { left: true }).value = row.name;
+                    paint(ws.getCell(r, 4)).value = row.grade;
+                    paint(ws.getCell(r, 5), { fill: c0.open ? null : C_CLOSED }).value = cell.t ? cell.t.toLocaleTimeString('th-TH') : '';
+                    paint(ws.getCell(r, 6), { bold: true, fill: C_TOTAL }).value = DAY_STATUS[cell.s];
+                });
+                ws.addConditionalFormatting({ ref: `F${firstData}:F${lastData}`, rules: [
+                    { type: 'cellIs', operator: 'equal', formulae: ['"มาเรียน"'], priority: 1, style: { font: { color: { argb: GREEN_T }, bold: true } } },
+                    { type: 'cellIs', operator: 'equal', formulae: ['"ขาด"'], priority: 2, style: { font: { color: { argb: RED_T }, bold: true } } } ] });
+                r = lastData + 1; ws.getRow(r).height = 22;
+                ws.mergeCells(r, 1, r, 4);
+                for (let c = 1; c <= 4; c++) paint(ws.getCell(r, c), { bold: true });
+                ws.getCell(r, 1).value = { formula: `"รวมทั้งสิ้น "&COUNTA(C${firstData}:C${lastData})&" คน"`, result: `รวมทั้งสิ้น ${m.rows.length} คน` };
+                paint(ws.getCell(r, 5), { bold: true, fill: c0.open ? null : C_CLOSED }).value = { formula: `"มา "&COUNTIF(F${firstData}:F${lastData},"มาเรียน")`, result: `มา ${m.sumPresent}` };
+                paint(ws.getCell(r, 6), { bold: true, fill: C_TOTAL, color: RED_T }).value = { formula: `"ขาด "&COUNTIF(F${firstData}:F${lastData},"ขาด")`, result: `ขาด ${m.sumAbsent}` };
+                ws.views = [{ state: 'frozen', xSplit: 0, ySplit: 5 }];
+                ws.pageSetup.printTitlesRow = '5:5';
+            } else {
+                const cAbs = n + 3, cTot = n + 4, d1 = L(3), dn = L(n + 2);
+                ws.getColumn(1).width = 6; ws.getColumn(2).width = 30;
+                for (let i = 0; i < n; i++) ws.getColumn(i + 3).width = week ? 9 : 4.3;
+                ws.getColumn(cAbs).width = 8; ws.getColumn(cTot).width = 11;
+
+                // หัวตาราง 2 ชั้น
+                ws.mergeCells(5, 1, 6, 1); ws.mergeCells(5, 2, 6, 2); ws.mergeCells(5, 3, 5, n + 2); ws.mergeCells(5, cAbs, 6, cAbs); ws.mergeCells(5, cTot, 6, cTot);
+                for (let rr = 5; rr <= 6; rr++) for (let c = 1; c <= nCols; c++) paint(ws.getCell(rr, c), { bold: true, fill: C_HEAD });
+                ws.getCell(5, 1).value = 'เลข\nที่'; ws.getCell(5, 2).value = 'ชื่อ - นามสกุล'; ws.getCell(5, 3).value = 'วันที่';
+                ws.getCell(5, cAbs).value = 'ขาด'; ws.getCell(5, cAbs).font = { name: FONT, size: 10, bold: true, color: { argb: RED_T } };
+                ws.getCell(5, cTot).value = 'รวมมา\nเรียน';
+                m.cols.forEach((c, i) => {
+                    const cell = ws.getCell(6, i + 3);
+                    cell.value = week ? `${TH_DOW_SHORT[c.date.getDay()]}\n${c.date.getDate()}` : c.date.getDate();
+                    if (!c.open) { cell.fill = fill(C_CLOSED_H); cell.font = { name: FONT, size: 10, bold: true, color: { argb: 'FF7F1D1D' } }; }
+                });
+                ws.getRow(5).height = 20; ws.getRow(6).height = week ? 32 : 20;
+
+                // ข้อมูลนักเรียน
+                m.rows.forEach((row, i) => {
+                    r = firstData + i; ws.getRow(r).height = 20;
+                    paint(ws.getCell(r, 1)).value = row.no;
+                    paint(ws.getCell(r, 2), { left: true }).value = row.name;
+                    row.cells.forEach((cell, ci) => {
+                        const c = paint(ws.getCell(r, ci + 3), { fill: m.cols[ci].open ? null : C_CLOSED });
+                        if (cell.s === 'P') c.value = '/'; else if (cell.s === 'A') c.value = 'ข';
+                    });
+                    paint(ws.getCell(r, cAbs), { color: RED_T, bold: true, fmt: '0;-0;"-"' }).value = { formula: `COUNTIF(${d1}${r}:${dn}${r},"ข")`, result: row.absent };
+                    paint(ws.getCell(r, cTot), { bold: true, fill: C_TOTAL }).value = { formula: `COUNTIF(${d1}${r}:${dn}${r},"/")`, result: row.present };
+                });
+                // สี / และ ข เปลี่ยนตามที่พิมพ์แก้ไขภายหลัง
+                ws.addConditionalFormatting({ ref: `${d1}${firstData}:${dn}${lastData}`, rules: [
+                    { type: 'cellIs', operator: 'equal', formulae: ['"/"'], priority: 1, style: { font: { color: { argb: GREEN_T }, bold: true } } },
+                    { type: 'cellIs', operator: 'equal', formulae: ['"ข"'], priority: 2, style: { font: { color: { argb: RED_T }, bold: true } } } ] });
+
+                // แถวรวมทั้งสิ้น
+                r = lastData + 1; ws.getRow(r).height = 22;
+                ws.mergeCells(r, 1, r, 2); paint(ws.getCell(r, 1), { bold: true }).value = 'รวมทั้งสิ้น'; paint(ws.getCell(r, 2), { bold: true });
+                m.cols.forEach((c, i) => {
+                    const col = L(i + 3);
+                    paint(ws.getCell(r, i + 3), { bold: true, size: 8, fill: c.open ? null : C_CLOSED, fmt: '0;-0;;@' }).value = { formula: `COUNTIF(${col}${firstData}:${col}${lastData},"/")`, result: m.colTotals[i] };
+                });
+                paint(ws.getCell(r, cAbs), { bold: true, color: RED_T, fmt: '0;-0;"-"' }).value = { formula: `SUM(${L(cAbs)}${firstData}:${L(cAbs)}${lastData})`, result: m.sumAbsent };
+                paint(ws.getCell(r, cTot), { bold: true, fill: C_TOTAL }).value = { formula: `SUM(${L(cTot)}${firstData}:${L(cTot)}${lastData})`, result: m.sumPresent };
+
+                // คำอธิบายสัญลักษณ์
+                r += 2; ws.mergeCells(r, 1, r, nCols);
+                ws.getCell(r, 1).value = { richText: [
+                    { font: { name: FONT, size: 9, bold: true, color: { argb: GREEN_T } }, text: '/' }, { font: { name: FONT, size: 9 }, text: ' = มาเรียน      ' },
+                    { font: { name: FONT, size: 9, bold: true, color: { argb: RED_T } }, text: 'ข' }, { font: { name: FONT, size: 9 }, text: ' = ขาดเรียน      ' },
+                    { font: { name: FONT, size: 9, bold: true, color: { argb: 'FFF87171' } }, text: '■' }, { font: { name: FONT, size: 9 }, text: ' = วันหยุด / ปิดเรียน' } ] };
+                ws.views = [{ state: 'frozen', xSplit: 2, ySplit: 6 }];
+                ws.pageSetup.printTitlesRow = '5:6'; ws.pageSetup.printTitlesColumn = 'A:B';
+            }
+
+            // หมายเหตุ (เฉพาะวันที่ใส่หมายเหตุไว้)
+            if (m.notes.length) {
+                r += 2; ws.mergeCells(r, 1, r, nCols);
+                ws.getCell(r, 1).value = 'หมายเหตุ'; ws.getCell(r, 1).font = { name: FONT, size: 10, bold: true };
+                m.notes.forEach(nt => {
+                    r++; ws.mergeCells(r, 1, r, nCols);
+                    ws.getCell(r, 1).value = { richText: [
+                        { font: { name: FONT, size: 10 }, text: `• ${thaiDateFull(nt.ds)} — ` },
+                        { font: { name: FONT, size: 10, bold: true, color: { argb: nt.type === 'open' ? GREEN_T : 'FFB91C1C' } }, text: nt.type === 'open' ? 'เปิดเรียนเพิ่ม' : 'ปิดเรียน' },
+                        { font: { name: FONT, size: 10 }, text: ` เนื่องจาก ${nt.note}` } ] };
+                });
+            }
+            ws.headerFooter.oddFooter = '&C&8หน้า &P / &N';
+
+            try {
+                const buf = await wb.xlsx.writeBuffer();
+                saveBlob(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), sheetFileName(m, 'xlsx'));
+                showToast('success', 'ดาวน์โหลด Excel แล้ว');
+            } catch (err) { showToast('error', 'สร้างไฟล์ Excel ไม่สำเร็จ กรุณาลองใหม่'); }
         }
 
         function downloadSheetCSV() {
             const m = getSheetModelForExport(); if (!m) return;
             const csv = sheetAOA(m).map(row => row.map(v => { const s = String(v ?? ''); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(',')).join('\r\n');
             const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });   // BOM ให้ Excel อ่านภาษาไทยได้
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob); link.download = sheetFileName(m, 'csv');
-            document.body.appendChild(link); link.click(); link.remove();
-            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+            saveBlob(blob, sheetFileName(m, 'csv'));
             showToast('success', 'ดาวน์โหลด CSV แล้ว');
         }
 
